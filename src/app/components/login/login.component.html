@@ -1,0 +1,49 @@
+<body>
+  <div>
+    <form class="example-form">
+      <mat-form-field class="example-full-width">
+        <mat-label>Correo electrónico</mat-label>
+        <input
+          type="email"
+          matInput
+          [formControl]="emailFormControl"
+          [errorStateMatcher]="matcher"
+          placeholder="@correo.com"
+        />
+        @if (emailFormControl.hasError('email') &&
+        !emailFormControl.hasError('required')) {
+        <mat-error>Por favor ingresa un correo electrónico válido</mat-error>
+        } @if (emailFormControl.hasError('required')) {
+        <mat-error>Correo electrónico es <strong>requerido</strong></mat-error>
+        }
+      </mat-form-field>
+      <br /><br />
+      <mat-form-field class="example-full-width">
+        <mat-label>Contraseña</mat-label>
+        <input
+          type="password"
+          matInput
+          [formControl]="emailFormControl"
+          [errorStateMatcher]="matcher"
+          placeholder="Contraseña"
+        />
+        @if (emailFormControl.hasError('contraseña') &&
+        !emailFormControl.hasError('required')) {
+        <mat-error>Por favor ingresa una contraseña válida</mat-error>
+        } @if (emailFormControl.hasError('required')) {
+        <mat-error>Contraseña es <strong>requerida</strong></mat-error>
+        }
+      </mat-form-field>
+    </form>
+    <section>
+      <mat-icon>user</mat-icon>
+      <div>
+        <button mat-flat-button>Registrar</button>
+      </div>
+      <br />
+      <div>
+        <button mat-flat-button>Ingresar</button>
+      </div>
+    </section>
+  </div>
+</body>
