@@ -1,0 +1,88 @@
+<div class="home-container">
+  <!-- Left side - Images -->
+  <div class="image-section">
+    <div class="image-wrapper student-image">
+      <img
+        src="assets/images/students-group.png"
+        alt="Estudiantes"
+        class="section-image"
+      />
+      <div class="image-overlay"></div>
+    </div>
+    <div class="image-wrapper teacher-image">
+      <img
+        src="assets/images/teacher-classroom.png"
+        alt="Profesores"
+        class="section-image"
+      />
+      <div class="image-overlay"></div>
+    </div>
+  </div>
+
+  <!-- Right side - Content -->
+  <div class="content-section">
+    <div class="content-wrapper">
+      <!-- Logo section -->
+      <div class="logo-section">
+        <img
+          src="assets/images/MIKHUY.png"
+          alt="MIKHUY Logo"
+          class="logo-img"
+        />
+        <h1 class="app-name">MIKHUY</h1>
+        <p class="tagline">Aprende, Juega y Crece Saludable</p>
+      </div>
+
+      <!-- Role selection buttons -->
+      <div class="role-selection">
+        <button
+          mat-raised-button
+          class="role-btn student-btn"
+          matRipple
+          (click)="navigateToLogin('student')"
+        >
+          <div class="btn-content">
+            <mat-icon class="btn-icon">school</mat-icon>
+            <div class="btn-text">
+              <h2>Alumnos</h2>
+              <p>Accede a tus clases y juegos</p>
+            </div>
+            <mat-icon class="btn-arrow">arrow_forward</mat-icon>
+          </div>
+        </button>
+
+        <button
+          mat-raised-button
+          class="role-btn teacher-btn"
+          matRipple
+          (click)="navigateToLogin('teacher')"
+        >
+          <div class="btn-content">
+            <mat-icon class="btn-icon">person</mat-icon>
+            <div class="btn-text">
+              <h2>Profesores</h2>
+              <p>Gestiona tus clases</p>
+            </div>
+            <mat-icon class="btn-arrow">arrow_forward</mat-icon>
+          </div>
+        </button>
+      </div>
+
+      <!-- Features -->
+      <div class="features">
+        <div class="feature-item">
+          <mat-icon>smart_toy</mat-icon>
+          <span>Chatbot IA</span>
+        </div>
+        <div class="feature-item">
+          <mat-icon>videogame_asset</mat-icon>
+          <span>Juegos</span>
+        </div>
+        <div class="feature-item">
+          <mat-icon>emoji_events</mat-icon>
+          <span>Recompensas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

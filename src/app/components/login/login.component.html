@@ -1,49 +1,78 @@
-<body>
-  <div>
-    <form class="example-form">
-      <mat-form-field class="example-full-width">
-        <mat-label>Correo electrónico</mat-label>
-        <input
-          type="email"
-          matInput
-          [formControl]="emailFormControl"
-          [errorStateMatcher]="matcher"
-          placeholder="@correo.com"
-        />
-        @if (emailFormControl.hasError('email') &&
-        !emailFormControl.hasError('required')) {
-        <mat-error>Por favor ingresa un correo electrónico válido</mat-error>
-        } @if (emailFormControl.hasError('required')) {
-        <mat-error>Correo electrónico es <strong>requerido</strong></mat-error>
-        }
-      </mat-form-field>
-      <br /><br />
-      <mat-form-field class="example-full-width">
-        <mat-label>Contraseña</mat-label>
-        <input
-          type="password"
-          matInput
-          [formControl]="emailFormControl"
-          [errorStateMatcher]="matcher"
-          placeholder="Contraseña"
-        />
-        @if (emailFormControl.hasError('contraseña') &&
-        !emailFormControl.hasError('required')) {
-        <mat-error>Por favor ingresa una contraseña válida</mat-error>
-        } @if (emailFormControl.hasError('required')) {
-        <mat-error>Contraseña es <strong>requerida</strong></mat-error>
-        }
-      </mat-form-field>
-    </form>
-    <section>
-      <mat-icon>user</mat-icon>
-      <div>
-        <button mat-flat-button>Registrar</button>
-      </div>
-      <br />
-      <div>
-        <button mat-flat-button>Ingresar</button>
-      </div>
-    </section>
+<div class="login-container">
+  <!-- Left side - Image -->
+  <div class="image-section">
+    <img src="assets/images/login.png" alt="Alimentación saludable" class="login-image">
   </div>
-</body>
+
+  <!-- Right side - Login Form -->
+  <div class="form-section">
+    <!-- Back button -->
+    <button mat-icon-button class="back-btn" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <div class="form-wrapper">
+      <!-- Logo -->
+      <div class="logo-section">
+        <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="logo-img">
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+        <!-- Username/Email field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Usuario</mat-label>
+          <input matInput 
+                 type="email" 
+                 placeholder="Usuario o Correo electrónico"
+                 formControlName="username">
+          <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
+            El usuario es requerido
+          </mat-error>
+          <mat-error *ngIf="loginForm.get('username')?.hasError('email')">
+            Ingresa un correo válido
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Password field -->
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Contraseña</mat-label>
+          <input matInput 
+                 [type]="hidePassword ? 'password' : 'text'"
+                 placeholder="Contraseña"
+                 formControlName="password">
+          <button mat-icon-button 
+                  matSuffix 
+                  type="button"
+                  (click)="togglePasswordVisibility()">
+            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+          <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+            La contraseña es requerida
+          </mat-error>
+          <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+            Mínimo 6 caracteres
+          </mat-error>
+        </mat-form-field>
+
+        <!-- Remember me & Forgot password -->
+        <div class="options-row">
+          <mat-slide-toggle formControlName="rememberMe" color="primary">
+            Recordar contraseña
+          </mat-slide-toggle>
+          <a class="forgot-link" (click)="forgotPassword()">
+            ¿Olvidaste tu contraseña?
+          </a>
+        </div>
+
+        <!-- Submit button -->
+        <button mat-raised-button 
+                type="submit" 
+                class="submit-btn"
+                [disabled]="!loginForm.valid">
+          Ingresar
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
