@@ -1,0 +1,147 @@
+<div class="landing-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="header-logo">
+    </div>
+
+    <div class="header-center">
+      <button mat-raised-button class="nav-btn games-btn" (click)="navigateToGames()">
+        <mat-icon>sports_esports</mat-icon>
+        JUEGOS
+      </button>
+      <button mat-raised-button class="nav-btn benefits-btn" (click)="navigateToBenefits()">
+        <mat-icon>card_giftcard</mat-icon>
+        BENEFICIOS
+      </button>
+    </div>
+
+    <div class="header-right">
+      <!-- Points Display -->
+      <div class="points-display">
+        <mat-icon class="points-icon">stars</mat-icon>
+        <span class="points-value">{{studentPoints}}</span>
+      </div>
+
+      <button mat-icon-button class="icon-btn notifications-btn" [matMenuTriggerFor]="notificationMenu">
+        <mat-icon [matBadge]="notificationCount" [matBadgeHidden]="notificationCount === 0" matBadgeColor="warn">notifications</mat-icon>
+      </button>
+
+      <mat-menu #notificationMenu="matMenu" class="notification-menu">
+        <div class="notification-header">
+          <h3>Notificaciones</h3>
+        </div>
+        <div class="notification-content" *ngIf="notifications.length === 0">
+          <div class="empty-notifications">
+            <mat-icon>notifications_off</mat-icon>
+            <p>No tienes notificaciones</p>
+          </div>
+        </div>
+        <div class="notification-content" *ngIf="notifications.length > 0">
+          <button mat-menu-item *ngFor="let notif of notifications" class="notification-item">
+            <mat-icon>{{notif.icon}}</mat-icon>
+            <div class="notif-text">
+              <span class="notif-title">{{notif.title}}</span>
+              <span class="notif-time">{{notif.time}}</span>
+            </div>
+          </button>
+        </div>
+      </mat-menu>
+
+      <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <mat-menu #menu="matMenu" class="user-menu">
+        <button mat-menu-item (click)="openProfile()">
+          <mat-icon>person</mat-icon>
+          <span>Perfil</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Salir</span>
+        </button>
+      </mat-menu>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Title Section -->
+    <section class="title-section">
+      <h1 class="main-title">MIKHUY</h1>
+      <p class="main-description">
+        "Una plataforma web donde cuidar tu alimentación es una aventura épica. Desafía a tus amigos, 
+        compite por el primer lugar, y desbloquea recompensas que harán vibrar a todo tu colegio. Deja 
+        atrás las viejas costumbres y conviértete en el campeón de tu salud, ¡alcanzando tu mejor versión 
+        de ti mismo!"
+      </p>
+    </section>
+
+    <!-- Question Section -->
+    <section class="question-section">
+      <h2 class="section-question">¿Qué puedo realizar en esta plataforma web?</h2>
+    </section>
+
+    <!-- Features Cards -->
+    <section class="features-section">
+      <div class="feature-card games-card" (click)="navigateToGames()">
+        <div class="card-icon-wrapper">
+          <div class="card-icon games-icon">
+            <mat-icon>sports_esports</mat-icon>
+            <span class="icon-label">JUEGOS</span>
+          </div>
+        </div>
+        <h3 class="card-title">Juegos</h3>
+        <p class="card-description">
+          Nuestra plataforma transforma la evaluación de hábitos en una experiencia divertida a través de 
+          Juegos Educativos. Los estudiantes participan en tests psicológico-nutricionales gamificados para 
+          aprender sobre su relación con la comida y el bienestar, haciendo que el monitoreo sea atractivo 
+          y menos invasivo. El objetivo es que, al jugar, los alumnos no solo creen conciencia sobre sus 
+          elecciones alimentarias, sino que también aprendan de forma activa, obteniendo una recompensa por 
+          su participación activa.
+        </p>
+      </div>
+
+      <div class="feature-card rewards-card" (click)="navigateToBenefits()">
+        <div class="card-icon-wrapper">
+          <div class="card-icon rewards-icon">
+            <mat-icon>emoji_events</mat-icon>
+            <span class="icon-label">RECOMPENSAS</span>
+          </div>
+        </div>
+        <h3 class="card-title">Recompensas</h3>
+        <p class="card-description">
+          El sistema de Puntos y Beneficios actúa como un poderoso refuerzo positivo. Los puntos ganados 
+          en los juegos se convierten en una moneda virtual que los estudiantes pueden canjear en la sección 
+          de Beneficios. Esta funcionalidad les permite obtener descuentos o productos específicos en la 
+          bodega del colegio, vinculándolos directamente su esfuerzo en la plataforma con recompensas 
+          tangibles que fomentan la elección de opciones más saludables dentro del entorno escolar.
+        </p>
+      </div>
+
+      <div class="feature-card chatbot-card" (click)="navigateToChatbot()">
+        <div class="card-icon-wrapper">
+          <div class="card-icon chatbot-icon">
+            <mat-icon>smart_toy</mat-icon>
+            <span class="icon-label">CHATBOT</span>
+          </div>
+        </div>
+        <h3 class="card-title">Chatbot Nutricional</h3>
+        <p class="card-description">
+          Incorporamos un Chatbot avanzado, impulsado por Inteligencia Artificial Generativa, para ofrecer 
+          apoyo nutricional inmediato y personalizado. Los estudiantes pueden interactuar con este asistente 
+          virtual para hacer preguntas nutricionales y obtener respuestas rápidas sobre mentalidad o entender 
+          mejor la información nutricional. La IA generativa permite que las respuestas sean contundentes y 
+          claras, brindando un acompañamiento constante y no crítico en su camino hacia una alimentación 
+          más saludable.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Floating Chatbot Button -->
+  <button mat-fab class="chatbot-fab" (click)="navigateToChatbot()" matTooltip="Chatbot Nutricional IA">
+    <mat-icon>smart_toy</mat-icon>
+  </button>
+</div>

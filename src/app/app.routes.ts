@@ -1,16 +1,37 @@
-import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
-import { NgModule } from '@angular/core';
+import { LandingAlumnosComponent } from './components/landing-alumnos/landing-alumnos.component';
+import { LandingProfesoresComponent } from './components/landing-profesores/landing-profesores.component';
+import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-    { path: '', redirectTo: '/home', pathMatch: 'full' }, // Redirige al home por defecto
-    { path: 'home', component: HomeComponent },
-    { path: 'login', component: LoginComponent }
+  {
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full'
+  },
+  {
+    path: 'home',
+    component: HomeComponent,
+    title: 'MIKHUY - Inicio'
+  },
+  {
+    path: 'login',
+    component: LoginComponent,
+    title: 'MIKHUY - Iniciar Sesión'
+  },
+  {
+    path: 'landing-alumnos',
+    component: LandingAlumnosComponent,
+    title: 'MIKHUY - Portal Alumnos'
+  },
+  {
+    path: 'landing-profesores',
+    component: LandingProfesoresComponent,
+    title: 'MIKHUY - Portal Profesores'
+  },
+  {
+    path: '**',
+    redirectTo: 'home'
+  }
 ];
-
-@NgModule({
-  imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
-})
-export class AppRoutingModule { }

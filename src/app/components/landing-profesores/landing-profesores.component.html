@@ -1,0 +1,127 @@
+<div class="landing-container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="header-logo">
+    </div>
+
+    <div class="header-center">
+      <button mat-raised-button class="nav-btn dashboard-btn" (click)="navigateToDashboards()">
+        <mat-icon>bar_chart</mat-icon>
+        DASHBOARDS
+      </button>
+    </div>
+
+    <div class="header-right">
+      <button mat-icon-button class="icon-btn notifications-btn" [matMenuTriggerFor]="notificationMenu">
+        <mat-icon [matBadge]="notificationCount" [matBadgeHidden]="notificationCount === 0" matBadgeColor="warn">notifications</mat-icon>
+      </button>
+
+      <mat-menu #notificationMenu="matMenu" class="notification-menu">
+        <div class="notification-header">
+          <h3>Progreso de Estudiantes</h3>
+        </div>
+        <div class="notification-content" *ngIf="studentProgressNotifications.length === 0">
+          <div class="empty-notifications">
+            <mat-icon>notifications_off</mat-icon>
+            <p>No hay actualizaciones de progreso</p>
+          </div>
+        </div>
+        <div class="notification-content" *ngIf="studentProgressNotifications.length > 0">
+          <button mat-menu-item *ngFor="let notif of studentProgressNotifications" class="notification-item" [class.game-notif]="notif.type === 'game'" [class.test-notif]="notif.type === 'test'" [class.achievement-notif]="notif.type === 'achievement'">
+            <mat-icon>{{notif.icon}}</mat-icon>
+            <div class="notif-text">
+              <span class="notif-student">{{notif.studentName}}</span>
+              <span class="notif-action">{{notif.action}}</span>
+              <span class="notif-time">{{notif.time}}</span>
+            </div>
+          </button>
+        </div>
+      </mat-menu>
+
+      <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <mat-menu #menu="matMenu" class="user-menu">
+        <button mat-menu-item (click)="openProfile()">
+          <mat-icon>person</mat-icon>
+          <span>Perfil</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Salir</span>
+        </button>
+      </mat-menu>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Title Section -->
+    <section class="title-section">
+      <h1 class="main-title">MIKHUY</h1>
+      <p class="main-description">
+        Una plataforma web que impulsa el bienestar y el desarrollo integral a través de la nutrición. 
+        Fomenta hábitos saludables en tu aula, inspira a tus alumnos a alcanzar su mejor potencial y 
+        convierte el aprendizaje en un éxito compartido.
+      </p>
+    </section>
+
+    <!-- Question Section -->
+    <section class="question-section">
+      <h2 class="section-question">¿Qué puedo realizar en esta plataforma web?</h2>
+    </section>
+
+    <!-- Features Cards -->
+    <section class="features-section">
+      <div class="feature-card monitoring-card" (click)="navigateToMonitoring()">
+        <div class="card-icon-wrapper">
+          <div class="card-icon monitoring-icon">
+            <mat-icon>groups</mat-icon>
+            <span class="icon-label">MONITOREO</span>
+          </div>
+        </div>
+        <h3 class="card-title">Monitoreo de alumnos</h3>
+        <p class="card-description">
+          Esta sección ofrece a los profesores una visión clara y proyectiva del comportamiento alimentario de sus estudiantes. Pueden acceder a perfiles individuales y grupales para identificar patrones en las interacciones de los alumnos con los juegos, el chatbot. Este monitoreo constante permite una intervención temprana basada en datos, ayudando a detectar tendencias o riesgos nutricionales antes de que se conviertan en un problema.
+        </p>
+      </div>
+
+      <div class="feature-card dashboard-card" (click)="navigateToDashboards()">
+        <div class="card-icon-wrapper">
+          <div class="card-icon dashboard-icon">
+            <mat-icon>dashboard</mat-icon>
+            <span class="icon-label">DASHBOARDS</span>
+          </div>
+        </div>
+        <h3 class="card-title">Dashboards</h3>
+        <p class="card-description">
+          Los profesores tienen acceso a Dashboards de Datos interactivos que transforman la información 
+          cruda en conocimiento accionable. Estos paneles visuales muestran métricas clave como la 
+          frecuencia de juego, los puntajes técnicos de los tests psicológico-nutricionales, y los temas 
+          consultados con el chatbot. El objetivo es ofrecer una visualización en tiempo real del bienestar 
+          nutricional de la clase, facilitando la toma de decisiones informadas y la planificación de 
+          estrategias de apoyo.
+        </p>
+      </div>
+
+      <div class="feature-card reports-card" (click)="navigateToReports()">
+        <div class="card-icon-wrapper">
+          <div class="card-icon reports-icon">
+            <mat-icon>description</mat-icon>
+            <span class="icon-label">REPORTES</span>
+          </div>
+        </div>
+        <h3 class="card-title">Reportes para Padres</h3>
+        <p class="card-description">
+          Para asegurar la continuidad del apoyo en casa, la plataforma permite descargar reportes detallados 
+          y listos para compartir. Estos informes están en un formato claro y fácil de entender para los 
+          padres de familia. Para las escuelas y los padres, estas narrativas son esencial para facilitar la 
+          comunicación y la colaboración entre la escuela y el hogar, brindando a los padres la información 
+          necesaria para reforzar las elecciones saludables y el monitoreo fuera del entorno escolar.
+        </p>
+      </div>
+    </section>
+  </main>
+</div>

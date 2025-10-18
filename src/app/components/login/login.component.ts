@@ -1,12 +1,12 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -18,16 +18,16 @@ import { ActivatedRoute, Router } from '@angular/router';
     MatButtonModule,
     MatIconModule,
     MatFormFieldModule,
-    MatSlideToggleModule,
+    MatSlideToggleModule
   ],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css',
+  styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   hidePassword = true;
-  userRole: string ='student';
-  
+  userRole: string = 'student';
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -35,11 +35,12 @@ export class LoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    //Obtener el rol de la URL
+    // Obtener el rol de la URL
     this.route.queryParams.subscribe(params => {
       this.userRole = params['role'] || 'student';
-    })
-  // Inicializar formulario
+    });
+
+    // Inicializar formulario
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -55,8 +56,31 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.valid) {
       console.log('Login data:', this.loginForm.value);
       console.log('User role:', this.userRole);
-      // Aquí iría la lógica de autenticación
-      this.router.navigate(['/landing estudiantes']);
+      
+      // ⚠️ MODO DESARROLLO - Sin backend
+      // Simular autenticación exitosa con datos de prueba
+      const mockUser = {
+        id: '1',
+        name: this.userRole === 'student' ? 'Juan Pérez' : 'Prof. María García',
+        email: this.loginForm.value.username,
+        role: this.userRole,
+        points: this.userRole === 'student' ? 1250 : undefined
+      };
+      
+      // Guardar en memoria (sin llamada a backend)
+      sessionStorage.setItem('userRole', this.userRole);
+      sessionStorage.setItem('currentUser', JSON.stringify(mockUser));
+      sessionStorage.setItem('isAuthenticated', 'true');
+      
+      // Simular delay de red (opcional)
+      setTimeout(() => {
+        // Redirigir según el rol
+        if (this.userRole === 'student') {
+          this.router.navigate(['/landing-alumnos']);
+        } else if (this.userRole === 'teacher') {
+          this.router.navigate(['/landing-profesores']);
+        }
+      }, 500);
     }
   }
 
