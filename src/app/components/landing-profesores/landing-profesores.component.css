@@ -101,7 +101,7 @@
   color: #48A3F3;
 }
 
-/* Notification Menu */
+/* Menú de Notificaciones */
 .notification-menu {
   min-width: 380px;
   max-width: 450px;
@@ -202,14 +202,14 @@
   font-style: italic;
 }
 
-/* Main Content */
+/* Contenido Principal */
 .main-content {
   max-width: 1400px;
   margin: 0 auto;
   padding: 3rem 2rem;
 }
 
-/* Title Section */
+/* Sección de título */
 .title-section {
   text-align: center;
   margin-bottom: 3rem;
@@ -233,7 +233,7 @@
   font-weight: 400;
 }
 
-/* Question Section */
+/* Sección de Pregunta */
 .question-section {
   text-align: center;
   margin-bottom: 3rem;
@@ -246,7 +246,7 @@
   color: #48A3F3;
 }
 
-/* Features Section */
+/* Cards de Características */
 .features-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -340,7 +340,7 @@
   text-align: justify;
 }
 
-/* Animations */
+/* Animaciones */
 @keyframes fadeInDown {
   from {
     opacity: 0;

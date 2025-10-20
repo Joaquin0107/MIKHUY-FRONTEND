@@ -14,7 +14,7 @@
   font-family: "Poppins", sans-serif;
 }
 
-/* Left side - Images */
+/* Imágenes - Lado derecho */
 .image-section {
   flex: 1;
   display: flex;
@@ -59,7 +59,7 @@
   opacity: 0.4;
 }
 
-/* Right side - Content */
+/* Contenido - Lado Derecho */
 .content-section {
   flex: 1;
   display: flex;
@@ -75,7 +75,7 @@
   animation: fadeInUp 0.8s ease-out;
 }
 
-/* Logo section */
+/* Sección de Logo */
 .logo-section {
   text-align: center;
   margin-bottom: 1rem;
@@ -104,7 +104,7 @@
   font-weight: 400;
 }
 
-/* Role selection */
+/* Selección de Rol */
 .role-selection {
   display: flex;
   flex-direction: column;
@@ -189,7 +189,7 @@
   border-color: #3d8fd9 !important;
 }
 
-/* Features */
+/* Características */
 .features {
   display: flex;
   justify-content: center;
@@ -220,7 +220,7 @@
   color: #48a3f3;
 }
 
-/* Animations */
+/* Animaciones */
 @keyframes fadeInUp {
   from {
     opacity: 0;

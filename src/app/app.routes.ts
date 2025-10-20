@@ -1,3 +1,4 @@
+import { RegistroComponent } from './components/registro/registro.component';
 import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
 import { LandingAlumnosComponent } from './components/landing-alumnos/landing-alumnos.component';
@@ -8,30 +9,35 @@ export const routes: Routes = [
   {
     path: '',
     redirectTo: 'home',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'home',
     component: HomeComponent,
-    title: 'MIKHUY - Inicio'
+    title: 'MIKHUY - Inicio',
   },
   {
     path: 'login',
     component: LoginComponent,
-    title: 'MIKHUY - Iniciar Sesión'
+    title: 'MIKHUY - Iniciar Sesión',
   },
   {
     path: 'landing-alumnos',
     component: LandingAlumnosComponent,
-    title: 'MIKHUY - Portal Alumnos'
+    title: 'MIKHUY - Portal Alumnos',
   },
   {
     path: 'landing-profesores',
     component: LandingProfesoresComponent,
-    title: 'MIKHUY - Portal Profesores'
+    title: 'MIKHUY - Portal Profesores',
+  },
+  {
+    path: 'registro',
+    component: RegistroComponent,
+    title: 'MIKHUY - Registro',
   },
   {
     path: '**',
-    redirectTo: 'home'
-  }
+    redirectTo: 'home',
+  },
 ];

@@ -1,12 +1,12 @@
 <div class="login-container">
-  <!-- Left side - Image -->
+  <!-- Imágen - Lado izquierdo -->
   <div class="image-section">
     <img src="assets/images/login.png" alt="Alimentación saludable" class="login-image">
   </div>
 
-  <!-- Right side - Login Form -->
+  <!-- Formulario login - Lado derecho -->
   <div class="form-section">
-    <!-- Back button -->
+    <!-- Botón de regreso -->
     <button mat-icon-button class="back-btn" (click)="goBack()">
       <mat-icon>arrow_back</mat-icon>
     </button>
@@ -17,9 +17,9 @@
         <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="logo-img">
       </div>
 
-      <!-- Form -->
+      <!-- Formulario -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-        <!-- Username/Email field -->
+        <!-- Campo de Usuario/Email -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Usuario</mat-label>
           <input matInput 
@@ -34,7 +34,7 @@
           </mat-error>
         </mat-form-field>
 
-        <!-- Password field -->
+        <!-- Campo de contraseña -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Contraseña</mat-label>
           <input matInput 
@@ -55,7 +55,7 @@
           </mat-error>
         </mat-form-field>
 
-        <!-- Remember me & Forgot password -->
+        <!-- Recordar contraseña y Olvidaste tu contraseña -->
         <div class="options-row">
           <mat-slide-toggle formControlName="rememberMe" color="primary">
             Recordar contraseña
@@ -65,13 +65,19 @@
           </a>
         </div>
 
-        <!-- Submit button -->
+        <!-- Botón de ingreso -->
         <button mat-raised-button 
                 type="submit" 
                 class="submit-btn"
                 [disabled]="!loginForm.valid">
           Ingresar
         </button>
+
+        <!-- Link de registro -->
+        <div class="register-link">
+          <span>¿No tienes cuenta?</span>
+          <a (click)="goToRegister()" class="link-btn">Regístrate aquí</a>
+        </div>
       </form>
     </div>
   </div>
