@@ -1,3 +1,5 @@
+import { BeneficiosComponent } from './components/beneficios/beneficios.component';
+import { JuegosComponent } from './components/juegos/juegos.component';
 import { RegistroComponent } from './components/registro/registro.component';
 import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
@@ -35,6 +37,16 @@ export const routes: Routes = [
     path: 'registro',
     component: RegistroComponent,
     title: 'MIKHUY - Registro',
+  },
+  {
+    path: 'juegos',
+    component: JuegosComponent,
+    title: 'MIKHUY - Juegos',
+  },
+  {
+    path: 'beneficios',
+    component: BeneficiosComponent,
+    title: 'MIKHUY - Beneficios',
   },
   {
     path: '**',

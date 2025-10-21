@@ -1,0 +1,114 @@
+<div class="beneficios-container">
+  <!-- Header -->
+  <header class="beneficios-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="header-logo">
+    </div>
+
+    <div class="header-center">
+      <button mat-raised-button class="games-btn" (click)="navigateToGames()">
+        <mat-icon>sports_esports</mat-icon>
+        JUEGOS
+      </button>
+      <button mat-raised-button class="benefits-btn">
+        <mat-icon>card_giftcard</mat-icon>
+        BENEFICIOS
+      </button>
+    </div>
+
+    <div class="header-right">
+      <div class="points-display">
+        <mat-icon class="points-icon">stars</mat-icon>
+        <span class="points-value">{{studentPoints}}</span>
+      </div>
+
+      <button mat-icon-button class="icon-btn notifications-btn" [matMenuTriggerFor]="notificationMenu">
+        <mat-icon [matBadge]="notificationCount" [matBadgeHidden]="notificationCount === 0" matBadgeColor="warn">notifications</mat-icon>
+      </button>
+
+      <mat-menu #notificationMenu="matMenu" class="notification-menu">
+        <div class="notification-header">
+          <h3>Notificaciones</h3>
+        </div>
+        <div class="notification-content">
+          <div class="empty-notifications">
+            <mat-icon>notifications_off</mat-icon>
+            <p>No tienes notificaciones</p>
+          </div>
+        </div>
+      </mat-menu>
+
+      <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <mat-menu #menu="matMenu" class="user-menu">
+        <button mat-menu-item (click)="openProfile()">
+          <mat-icon>person</mat-icon>
+          <span>Perfil</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Salir</span>
+        </button>
+      </mat-menu>
+    </div>
+  </header>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-bar">
+      <mat-icon>search</mat-icon>
+      <input type="text" 
+             placeholder="Buscar beneficios..." 
+             [value]="searchQuery"
+             (input)="searchQuery=$any($event.target).value; searchBeneficios()">
+      <button mat-icon-button *ngIf="searchQuery" (click)="searchQuery=''; searchBeneficios()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Beneficios Grid -->
+  <div class="beneficios-grid">
+    <mat-card *ngFor="let beneficio of filteredBeneficios" class="beneficio-card">
+      <div class="card-image">
+        <img [src]="beneficio.imagen" [alt]="beneficio.nombre" (error)="onImageError($event)">
+        <div class="stock-badge" *ngIf="beneficio.stock && beneficio.stock <= 5">
+          ¡Solo {{beneficio.stock}}!
+        </div>
+      </div>
+
+      <mat-card-content>
+        <h3>{{beneficio.nombre}}</h3>
+        <div class="puntos-info">
+          <span class="puntos">{{beneficio.puntos}}pts</span>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-raised-button 
+                class="canjear-btn"
+                [disabled]="!canCanjear(beneficio)"
+                (click)="canjearBeneficio(beneficio)">
+          <mat-icon>shopping_cart</mat-icon>
+          {{canCanjear(beneficio) ? 'Canjear' : 'Sin puntos'}}
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="filteredBeneficios.length === 0">
+    <mat-icon>search_off</mat-icon>
+    <p>No se encontraron beneficios</p>
+  </div>
+
+  <!-- Floating Chatbot Button -->
+  <button mat-fab class="chatbot-fab" (click)="navigateToChatbot()">
+    <mat-icon>smart_toy</mat-icon>
+  </button>
+</div>

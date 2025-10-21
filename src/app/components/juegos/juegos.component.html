@@ -1,0 +1,106 @@
+<div class="juegos-container">
+  <!-- Header -->
+  <header class="juegos-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="header-logo">
+    </div>
+
+    <div class="header-center">
+      <h1>Juegos Educativos</h1>
+    </div>
+
+    <div class="header-right">
+      <!-- Beneficios/Recompensas Button -->
+      <button mat-raised-button class="benefits-btn" (click)="navigateToBenefits()">
+        <mat-icon>card_giftcard</mat-icon>
+        BENEFICIOS
+      </button>
+
+      <!-- Points Display -->
+      <div class="points-display">
+        <mat-icon class="points-icon">stars</mat-icon>
+        <span class="points-value">{{studentPoints}}</span>
+      </div>
+
+      <!-- Notifications -->
+      <button mat-icon-button class="icon-btn notifications-btn" [matMenuTriggerFor]="notificationMenu">
+        <mat-icon [matBadge]="notificationCount" [matBadgeHidden]="notificationCount === 0" matBadgeColor="warn">notifications</mat-icon>
+      </button>
+
+      <mat-menu #notificationMenu="matMenu" class="notification-menu">
+        <div class="notification-header">
+          <h3>Notificaciones</h3>
+        </div>
+        <div class="notification-content">
+          <div class="empty-notifications">
+            <mat-icon>notifications_off</mat-icon>
+            <p>No tienes notificaciones</p>
+          </div>
+        </div>
+      </mat-menu>
+
+      <!-- Menu -->
+      <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <mat-menu #menu="matMenu" class="user-menu">
+        <button mat-menu-item (click)="openProfile()">
+          <mat-icon>person</mat-icon>
+          <span>Perfil</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Salir</span>
+        </button>
+      </mat-menu>
+    </div>
+  </header>
+
+  <!-- Games Grid -->
+  <div class="games-grid">
+    <mat-card *ngFor="let juego of juegos" class="game-card">
+      <div class="card-image">
+        <img [src]="juego.image" [alt]="juego.title" (error)="onImageError($event)">
+        <div class="categoria-badge">{{juego.categoria}}</div>
+      </div>
+      
+      <mat-card-content>
+        <h2>{{juego.title}}</h2>
+        <p class="subtitle">{{juego.subtitle}}</p>
+        <p class="description">{{juego.description}}</p>
+        
+        <div class="progress-section">
+          <div class="progress-info">
+            <span>Nivel {{juego.nivelActual}}/{{juego.maxNiveles}}</span>
+            <span class="puntos">{{juego.puntosGanados}} pts</span>
+          </div>
+          <mat-progress-bar 
+            mode="determinate" 
+            [value]="getProgressPercent(juego)"
+            color="primary">
+          </mat-progress-bar>
+        </div>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-button (click)="verPosiciones(juego)">
+          <mat-icon>leaderboard</mat-icon>
+          Posiciones
+        </button>
+        <button mat-raised-button color="primary" (click)="jugar(juego)">
+          <mat-icon>play_arrow</mat-icon>
+          Jugar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Floating Chatbot Button -->
+  <button mat-fab class="chatbot-fab" (click)="navigateToChatbot()">
+    <mat-icon>smart_toy</mat-icon>
+  </button>
+</div>
