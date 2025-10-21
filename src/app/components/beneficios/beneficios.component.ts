@@ -48,7 +48,7 @@ export class BeneficiosComponent implements OnInit {
       id: 'manzana',
       nombre: 'Manzana',
       puntos: 15,
-      imagen: 'assets/images/beneficio-manzana.jpg',
+      imagen: 'assets/images/manzana.png',
       descripcion: 'Esta fruta es beneficiosa porque es una buena fuente de fibra, lo que ayuda a la digestión y a mantener la sensación de saciedad. También contiene vitaminas y antioxidantes que fortalecen el sistema inmunológico y reducen el riesgo de enfermedades.',
       categoria: 'Fruta',
       stock: 10
@@ -57,7 +57,7 @@ export class BeneficiosComponent implements OnInit {
       id: 'agua',
       nombre: 'Agua',
       puntos: 20,
-      imagen: 'assets/images/beneficio-agua.jpg',
+      imagen: 'assets/images/agua.png',
       descripcion: 'El agua es esencial para mantener el cuerpo hidratado, regular la temperatura corporal y transportar nutrientes. Beber suficiente agua ayuda a mejorar la concentración y el rendimiento físico.',
       categoria: 'Bebida',
       stock: 20
@@ -66,7 +66,7 @@ export class BeneficiosComponent implements OnInit {
       id: 'manzana-agua',
       nombre: 'Manzana + Agua',
       puntos: 25,
-      imagen: 'assets/images/beneficio-combo1.jpg',
+      imagen: 'assets/images/combo1.png',
       descripcion: 'Combo perfecto para mantenerte hidratado y con energía. La manzana aporta fibra y vitaminas, mientras el agua te mantiene hidratado durante todo el día.',
       categoria: 'Combo',
       stock: 15
@@ -75,7 +75,7 @@ export class BeneficiosComponent implements OnInit {
       id: 'manzana-uva-refresco',
       nombre: 'Manzana + Uva + Refresco',
       puntos: 45,
-      imagen: 'assets/images/beneficio-combo2.jpg',
+      imagen: 'assets/images/combo2.png',
       descripcion: 'Combo completo que combina frutas frescas con una bebida refrescante. Ideal para el recreo.',
       categoria: 'Combo',
       stock: 8
@@ -84,7 +84,7 @@ export class BeneficiosComponent implements OnInit {
       id: 'mango-frutas-agua',
       nombre: 'Mango + Frutos + Agua',
       puntos: 35,
-      imagen: 'assets/images/beneficio-combo3.jpg',
+      imagen: 'assets/images/combo3.png',
       descripcion: 'Mix tropical con mango, frutos secos y agua. Rico en vitaminas, minerales y antioxidantes.',
       categoria: 'Combo',
       stock: 12
@@ -93,7 +93,7 @@ export class BeneficiosComponent implements OnInit {
       id: 'ensalada-frutas',
       nombre: 'Ensalada de Frutas',
       puntos: 80,
-      imagen: 'assets/images/beneficio-ensalada-frutas.jpg',
+      imagen: 'assets/images/ensalada-frutas.png',
       descripcion: 'Deliciosa mezcla de frutas frescas de temporada. Rica en vitaminas, fibra y antioxidantes.',
       categoria: 'Ensalada',
       stock: 6
@@ -102,7 +102,7 @@ export class BeneficiosComponent implements OnInit {
       id: 'ensalada-fresca',
       nombre: 'Ensalada Fresca',
       puntos: 85,
-      imagen: 'assets/images/beneficio-ensalada-verde.jpg',
+      imagen: 'assets/images/ensalada-verde.png',
       descripcion: 'Ensalada verde con vegetales frescos, tomate y aderezo ligero. Perfecta para un almuerzo saludable.',
       categoria: 'Ensalada',
       stock: 5
@@ -111,7 +111,7 @@ export class BeneficiosComponent implements OnInit {
       id: 'chaufa-quinoa',
       nombre: 'Chaufa de Quinoa',
       puntos: 115,
-      imagen: 'assets/images/beneficio-chaufa.jpg',
+      imagen: 'assets/images/chaufa.png',
       descripcion: 'Arroz chaufa preparado con quinoa, vegetales y proteína. Alto en proteínas y bajo en grasas.',
       categoria: 'Plato Principal',
       stock: 4
@@ -120,7 +120,7 @@ export class BeneficiosComponent implements OnInit {
       id: 'almuerzo-mix',
       nombre: 'Almuerzo mix',
       puntos: 150,
-      imagen: 'assets/images/beneficio-almuerzo.jpg',
+      imagen: 'assets/images/almuerzo.png',
       descripcion: 'Plato completo con proteína, carbohidratos complejos y vegetales. Balanceado nutricionalmente.',
       categoria: 'Plato Principal',
       stock: 3
@@ -129,7 +129,7 @@ export class BeneficiosComponent implements OnInit {
       id: 'menu-completo',
       nombre: 'Menú Completo',
       puntos: 200,
-      imagen: 'assets/images/beneficio-menu.jpg',
+      imagen: 'assets/images/menu.png',
       descripcion: 'Menú completo con entrada, plato principal, ensalada y bebida. La mejor opción para un almuerzo nutritivo.',
       categoria: 'Menú',
       stock: 2
