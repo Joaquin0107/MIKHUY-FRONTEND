@@ -37,7 +37,7 @@ export class RegistroComponent implements OnInit {
   selectedAvatar: string | null = null;
 
   // Opciones para estudiantes
-  grados = ['1ro', '2do', '3ro', '4to', '5to', '6to'];
+  grados = ['1ro', '2do', '3ro', '4to', '5to'];
   secciones = ['A', 'B', 'C', 'D'];
 
   // Opciones para profesores

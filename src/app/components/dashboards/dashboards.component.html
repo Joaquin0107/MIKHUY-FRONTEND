@@ -1,0 +1,336 @@
+<div class="dashboards-container">
+  <!-- Header -->
+  <header class="dashboards-header">
+    <div class="header-left">
+      <button mat-icon-button class="back-btn" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <img src="assets/images/mikhuy-logo.png" alt="MIKHUY Logo" class="header-logo">
+    </div>
+
+    <div class="header-center">
+      <button mat-raised-button class="dashboard-btn">
+        <mat-icon>bar_chart</mat-icon>
+        DASHBOARDS
+      </button>
+    </div>
+
+    <div class="header-right">
+      <button mat-icon-button class="icon-btn notifications-btn" [matMenuTriggerFor]="notificationMenu">
+        <mat-icon [matBadge]="notificationCount" [matBadgeHidden]="notificationCount === 0" matBadgeColor="warn">notifications</mat-icon>
+      </button>
+
+      <mat-menu #notificationMenu="matMenu" class="notification-menu">
+        <div class="notification-header">
+          <h3>Progreso de Estudiantes</h3>
+        </div>
+        <div class="notification-content">
+          <div class="empty-notifications">
+            <mat-icon>notifications_off</mat-icon>
+            <p>No hay actualizaciones</p>
+          </div>
+        </div>
+      </mat-menu>
+
+      <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <mat-menu #menu="matMenu" class="user-menu">
+        <button mat-menu-item (click)="openProfile()">
+          <mat-icon>person</mat-icon>
+          <span>Perfil</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Salir</span>
+        </button>
+      </mat-menu>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="dashboards-content">
+    
+    <!-- Sidebar con lista de estudiantes -->
+    <div class="sidebar">
+      <!-- Search -->
+      <div class="search-box">
+        <mat-icon>search</mat-icon>
+        <input type="text" 
+               placeholder="Buscar nombre" 
+               [value]="searchQuery"
+               (input)="searchQuery=$any($event.target).value; searchStudents()">
+      </div>
+
+      <!-- Student List -->
+      <mat-list class="student-list">
+        <mat-list-item *ngFor="let student of filteredStudents" 
+                       [class.active]="selectedStudent?.id === student.id"
+                       (click)="selectStudent(student)">
+          <div class="student-item">
+            <div class="student-avatar">
+              <img [src]="getAvatarUrl(student)" 
+                   [alt]="student.nombre"
+                   (error)="onAvatarError($event)">
+              <mat-icon *ngIf="!student.avatar">account_circle</mat-icon>
+            </div>
+            <div class="student-info">
+              <h4>{{student.nombre}} {{student.apellido}}</h4>
+              <p>{{student.grado}} - Sección {{student.seccion}}</p>
+            </div>
+          </div>
+        </mat-list-item>
+      </mat-list>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-main" *ngIf="selectedStudent">
+      
+      <!-- Student Profile Card -->
+      <mat-card class="profile-summary">
+        <div class="profile-content">
+          <div class="profile-avatar">
+            <img [src]="getAvatarUrl(selectedStudent)" 
+                 [alt]="selectedStudent.nombre"
+                 (error)="onAvatarError($event)">
+            <mat-icon *ngIf="!selectedStudent.avatar">account_circle</mat-icon>
+          </div>
+          <div class="profile-details">
+            <h2>{{selectedStudent.nombre}} {{selectedStudent.apellido}}</h2>
+            <div class="profile-stats">
+              <div class="stat-item">
+                <span class="label">Edad:</span>
+                <span class="value">{{selectedStudent.edad}}</span>
+              </div>
+              <div class="stat-item">
+                <span class="label">Talla:</span>
+                <span class="value">{{selectedStudent.talla}}</span>
+              </div>
+              <div class="stat-item">
+                <span class="label">Peso:</span>
+                <span class="value">{{selectedStudent.peso}}</span>
+              </div>
+              <div class="stat-item">
+                <span class="label">Grado:</span>
+                <span class="value">{{selectedStudent.grado}} - {{selectedStudent.seccion}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="profile-actions">
+          <button mat-raised-button class="download-btn" (click)="descargarReporte()">
+            <mat-icon>download</mat-icon>
+            Descargar reporte
+          </button>
+          <button mat-raised-button class="email-btn" (click)="enviarCorreo()">
+            <mat-icon>email</mat-icon>
+            Enviar por correo
+          </button>
+        </div>
+      </mat-card>
+
+      <!-- Charts Grid -->
+      <div class="charts-grid">
+        
+        <!-- Gráfico 1: Tendencia de Peso -->
+        <mat-card class="chart-card">
+          <mat-card-header>
+            <mat-icon class="info-icon" matTooltip="Evolución del peso durante el año">info</mat-icon>
+            <mat-card-title>Gráfico de Tendencia de Peso</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <div class="chart-placeholder">
+                <svg viewBox="0 0 400 250" class="line-chart">
+                  <text x="10" y="20" class="chart-label">60</text>
+                  <text x="10" y="100" class="chart-label">40</text>
+                  <text x="10" y="180" class="chart-label">20</text>
+                  <text x="10" y="240" class="chart-label">0</text>
+                  
+                  <!-- Línea de tendencia -->
+                  <polyline points="50,50 100,60 150,70 200,85 250,100 300,120 350,140"
+                            class="trend-line"/>
+                  
+                  <!-- Área de rango saludable -->
+                  <rect x="50" y="60" width="300" height="80" class="healthy-range"/>
+                  <text x="360" y="100" class="range-label">Rango del Aluable</text>
+                  
+                  <!-- Etiquetas de eje X -->
+                  <text x="50" y="230" class="axis-label">Ene</text>
+                  <text x="100" y="230" class="axis-label">Feb</text>
+                  <text x="150" y="230" class="axis-label">Mar</text>
+                  <text x="200" y="230" class="axis-label">Abr</text>
+                  <text x="250" y="230" class="axis-label">Abr</text>
+                  <text x="300" y="230" class="axis-label">May</text>
+                </svg>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Gráfico 2: Distribución de Macronutrientes -->
+        <mat-card class="chart-card">
+          <mat-card-header>
+            <mat-card-title>Distribución de Macronutrientes</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <svg viewBox="0 0 200 200" class="donut-chart">
+                <!-- Proteínas 30% -->
+                <circle cx="100" cy="100" r="60" class="donut-segment protein"/>
+                <!-- Grasas 20% -->
+                <circle cx="100" cy="100" r="60" class="donut-segment fat"
+                        stroke-dasharray="75 300" stroke-dashoffset="-113"/>
+                <!-- Carbohidratos 50% -->
+                <circle cx="100" cy="100" r="60" class="donut-segment carbs"
+                        stroke-dasharray="157 300" stroke-dashoffset="-188"/>
+                
+                <text x="100" y="105" class="donut-center">100%</text>
+              </svg>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <span class="legend-color protein-color"></span>
+                  <span>Proteínas 30%</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color carbs-color"></span>
+                  <span>Carbohidratos 50%</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color fat-color"></span>
+                  <span>Grasas 20%</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Gráfico 3: Cumplimiento de Calorías Diarias -->
+        <mat-card class="chart-card">
+          <mat-card-header>
+            <mat-card-title>Cumplimiento de Calorías Diarias</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <svg viewBox="0 0 400 250" class="area-chart">
+                <!-- Línea de objetivo -->
+                <line x1="50" y1="120" x2="350" y2="120" class="objective-line" stroke-dasharray="5,5"/>
+                <text x="360" y="125" class="small-label">Objetivo Calórico (1200 kcal)</text>
+                
+                <!-- Área de cumplimiento -->
+                <polygon points="50,120 80,100 120,90 160,110 200,80 240,100 280,95 320,105 350,110 350,230 50,230"
+                         class="calorie-area"/>
+                
+                <!-- Línea de datos -->
+                <polyline points="50,120 80,100 120,90 160,110 200,80 240,100 280,95 320,105 350,110"
+                          class="calorie-line"/>
+                
+                <!-- Etiquetas -->
+                <text x="30" y="50" class="chart-label">60</text>
+                <text x="30" y="120" class="chart-label">50</text>
+                <text x="30" y="190" class="chart-label">20</text>
+                <text x="30" y="240" class="chart-label">0</text>
+                
+                <text x="50" y="245" class="axis-label">Proteína</text>
+                <text x="140" y="245" class="axis-label">Manos de Diaria (8 vasos)</text>
+              </svg>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Tabla: Frutas y Verduras -->
+        <mat-card class="chart-card table-card">
+          <mat-card-header>
+            <mat-card-title>Frutas y Verduras</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="data-table">
+              <div class="table-row">
+                <div class="color-bar green-bar"></div>
+                <span>5</span>
+              </div>
+              <div class="table-row">
+                <div class="color-bar green-bar"></div>
+                <span>5</span>
+              </div>
+              <div class="table-row">
+                <div class="color-bar yellow-bar"></div>
+                <span>1</span>
+              </div>
+              <div class="table-row">
+                <div class="color-bar red-bar"></div>
+                <span>1</span>
+              </div>
+            </div>
+            <p class="table-footer">Azúcares Añadidos</p>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Gráfico 5: Ingesta Semanal de Agua -->
+        <mat-card class="chart-card">
+          <mat-card-header>
+            <mat-card-title>Ingesta Semanal de Agua Diaries</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <svg viewBox="0 0 350 200" class="bar-chart">
+                <!-- Barras -->
+                <rect x="40" y="140" width="30" height="40" class="bar blue-bar"/>
+                <rect x="85" y="100" width="30" height="80" class="bar blue-bar"/>
+                <rect x="130" y="120" width="30" height="60" class="bar blue-bar"/>
+                <rect x="175" y="110" width="30" height="70" class="bar blue-bar"/>
+                <rect x="220" y="60" width="30" height="120" class="bar blue-bar"/>
+                <rect x="265" y="90" width="30" height="90" class="bar blue-bar"/>
+                <rect x="310" y="100" width="30" height="80" class="bar blue-bar"/>
+                
+                <!-- Etiquetas -->
+                <text x="10" y="180" class="chart-label">4</text>
+                <text x="10" y="140" class="chart-label">6</text>
+                <text x="10" y="100" class="chart-label">25</text>
+              </svg>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Gráfico 6: Concentración Vitaminas y Minerales -->
+        <mat-card class="chart-card">
+          <mat-card-header>
+            <mat-card-title>Concentración Vitaminas y Minerales</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <svg viewBox="0 0 200 200" class="radar-chart">
+                <!-- Polígono de datos -->
+                <polygon points="100,50 150,80 130,150 70,150 50,80"
+                         class="radar-area"/>
+                
+                <!-- Líneas guía -->
+                <line x1="100" y1="100" x2="100" y2="30" class="radar-guide"/>
+                <line x1="100" y1="100" x2="170" y2="70" class="radar-guide"/>
+                <line x1="100" y1="100" x2="150" y2="170" class="radar-guide"/>
+                <line x1="100" y1="100" x2="50" y2="170" class="radar-guide"/>
+                <line x1="100" y1="100" x2="30" y2="70" class="radar-guide"/>
+                
+                <!-- Etiquetas -->
+                <text x="100" y="20" class="radar-label" text-anchor="middle">Vitamina A</text>
+                <text x="180" y="75" class="radar-label">Calcio</text>
+                <text x="100" y="195" class="radar-label" text-anchor="middle">Vitamina A</text>
+              </svg>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!selectedStudent">
+      <mat-icon>person_search</mat-icon>
+      <p>Selecciona un estudiante para ver su dashboard</p>
+    </div>
+
+  </div>
+</div>

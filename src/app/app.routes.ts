@@ -1,3 +1,4 @@
+import { DashboardsComponent } from './components/dashboards/dashboards.component';
 import { BeneficiosComponent } from './components/beneficios/beneficios.component';
 import { JuegosComponent } from './components/juegos/juegos.component';
 import { RegistroComponent } from './components/registro/registro.component';
@@ -6,6 +7,7 @@ import { LoginComponent } from './components/login/login.component';
 import { LandingAlumnosComponent } from './components/landing-alumnos/landing-alumnos.component';
 import { LandingProfesoresComponent } from './components/landing-profesores/landing-profesores.component';
 import { Routes } from '@angular/router';
+import { PerfilComponent } from './components/perfil/perfil.component';
 
 export const routes: Routes = [
   {
@@ -47,6 +49,16 @@ export const routes: Routes = [
     path: 'beneficios',
     component: BeneficiosComponent,
     title: 'MIKHUY - Beneficios',
+  },
+  {
+    path: 'perfil',
+    component: PerfilComponent,
+    title: 'MIKHUY - Mi Perfil',
+  },
+  {
+    path: 'dashboards',
+    component: DashboardsComponent,
+    title: 'MIKHUY - Dashboards',
   },
   {
     path: '**',
