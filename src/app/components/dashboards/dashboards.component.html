@@ -135,132 +135,398 @@
       <!-- Charts Grid -->
       <div class="charts-grid">
         
-        <!-- Gráfico 1: Tendencia de Peso -->
-        <mat-card class="chart-card">
+        <!-- Gráfico 1: Conocimiento Nutricional -->
+        <mat-card class="chart-card" *ngIf="selectedStudent && selectedStudent.gameData">
           <mat-card-header>
-            <mat-icon class="info-icon" matTooltip="Evolución del peso durante el año">info</mat-icon>
-            <mat-card-title>Gráfico de Tendencia de Peso</mat-card-title>
+            <mat-icon class="info-icon" matTooltip="Resultados del Desafío Nutrimental">info</mat-icon>
+            <mat-card-title>Conocimiento Nutricional</mat-card-title>
+            <span class="data-source">Datos del Desafío Nutrimental</span>
           </mat-card-header>
           <mat-card-content>
             <div class="chart-container">
-              <div class="chart-placeholder">
-                <svg viewBox="0 0 400 250" class="line-chart">
-                  <text x="10" y="20" class="chart-label">60</text>
-                  <text x="10" y="100" class="chart-label">40</text>
-                  <text x="10" y="180" class="chart-label">20</text>
-                  <text x="10" y="240" class="chart-label">0</text>
-                  
-                  <!-- Línea de tendencia -->
-                  <polyline points="50,50 100,60 150,70 200,85 250,100 300,120 350,140"
-                            class="trend-line"/>
-                  
-                  <!-- Área de rango saludable -->
-                  <rect x="50" y="60" width="300" height="80" class="healthy-range"/>
-                  <text x="360" y="100" class="range-label">Rango del Aluable</text>
-                  
-                  <!-- Etiquetas de eje X -->
-                  <text x="50" y="230" class="axis-label">Ene</text>
-                  <text x="100" y="230" class="axis-label">Feb</text>
-                  <text x="150" y="230" class="axis-label">Mar</text>
-                  <text x="200" y="230" class="axis-label">Abr</text>
-                  <text x="250" y="230" class="axis-label">Abr</text>
-                  <text x="300" y="230" class="axis-label">May</text>
-                </svg>
+              <div class="knowledge-stats">
+                <div class="stat-circle">
+                  <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" class="stat-bg"/>
+                    <circle cx="50" cy="50" r="40" class="stat-progress"
+                            [attr.stroke-dasharray]="(selectedStudent.gameData!.nutrimental.porcentajeAciertos * 2.51) + ' 251'"
+                            [style.stroke]="selectedStudent.gameData!.nutrimental.porcentajeAciertos >= 80 ? '#7BC67E' : selectedStudent.gameData!.nutrimental.porcentajeAciertos >= 60 ? '#FFB74D' : '#f44336'"/>
+                    <text x="50" y="55" class="stat-text">{{selectedStudent.gameData!.nutrimental.porcentajeAciertos}}%</text>
+                  </svg>
+                  <p>Aciertos</p>
+                </div>
+                <div class="knowledge-details">
+                  <div class="detail-item">
+                    <mat-icon>emoji_events</mat-icon>
+                    <div>
+                      <strong>Nivel {{selectedStudent.gameData!.nutrimental.nivelActual}}/10</strong>
+                      <span>{{selectedStudent.gameData!.nutrimental.puntosGanados}} puntos</span>
+                    </div>
+                  </div>
+                  <div class="detail-item">
+                    <mat-icon>schedule</mat-icon>
+                    <div>
+                      <strong>Último juego</strong>
+                      <span>{{selectedStudent.gameData!.nutrimental.ultimoJuego}}</span>
+                    </div>
+                  </div>
+                  <div class="detail-item" *ngIf="selectedStudent.gameData!.nutrimental.temasDebiles.length > 0">
+                    <mat-icon>lightbulb</mat-icon>
+                    <div>
+                      <strong>Temas a reforzar</strong>
+                      <span>{{selectedStudent.gameData!.nutrimental.temasDebiles.join(', ')}}</span>
+                    </div>
+                  </div>
+                  <div class="detail-item success" *ngIf="selectedStudent.gameData!.nutrimental.temasDebiles.length === 0">
+                    <mat-icon>check_circle</mat-icon>
+                    <div>
+                      <strong>¡Excelente!</strong>
+                      <span>Domina todos los temas</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </mat-card-content>
         </mat-card>
 
         <!-- Gráfico 2: Distribución de Macronutrientes -->
-        <mat-card class="chart-card">
+        <mat-card class="chart-card" *ngIf="selectedStudent && selectedStudent.gameData">
           <mat-card-header>
             <mat-card-title>Distribución de Macronutrientes</mat-card-title>
+            <span class="data-source">Datos del Reto 7 Días</span>
           </mat-card-header>
           <mat-card-content>
             <div class="chart-container">
               <svg viewBox="0 0 200 200" class="donut-chart">
-                <!-- Proteínas 30% -->
-                <circle cx="100" cy="100" r="60" class="donut-segment protein"/>
-                <!-- Grasas 20% -->
-                <circle cx="100" cy="100" r="60" class="donut-segment fat"
-                        stroke-dasharray="75 300" stroke-dashoffset="-113"/>
-                <!-- Carbohidratos 50% -->
+                <!-- Proteínas -->
+                <circle cx="100" cy="100" r="60" class="donut-segment protein"
+                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData!.macronutrientes.proteinas) + ' 300'"/>
+                <!-- Carbohidratos -->
                 <circle cx="100" cy="100" r="60" class="donut-segment carbs"
-                        stroke-dasharray="157 300" stroke-dashoffset="-188"/>
+                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData!.macronutrientes.carbohidratos) + ' 300'"
+                        [attr.stroke-dashoffset]="-getCircleSegment(selectedStudent.gameData!.macronutrientes.proteinas)"/>
+                <!-- Grasas -->
+                <circle cx="100" cy="100" r="60" class="donut-segment fat"
+                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData!.macronutrientes.grasas) + ' 300'"
+                        [attr.stroke-dashoffset]="-(getCircleSegment(selectedStudent.gameData!.macronutrientes.proteinas) + getCircleSegment(selectedStudent.gameData!.macronutrientes.carbohidratos))"/>
                 
                 <text x="100" y="105" class="donut-center">100%</text>
               </svg>
               <div class="chart-legend">
                 <div class="legend-item">
                   <span class="legend-color protein-color"></span>
-                  <span>Proteínas 30%</span>
+                  <span>Proteínas {{selectedStudent.gameData!.macronutrientes.proteinas}}%</span>
                 </div>
                 <div class="legend-item">
                   <span class="legend-color carbs-color"></span>
-                  <span>Carbohidratos 50%</span>
+                  <span>Carbohidratos {{selectedStudent.gameData!.macronutrientes.carbohidratos}}%</span>
                 </div>
                 <div class="legend-item">
                   <span class="legend-color fat-color"></span>
-                  <span>Grasas 20%</span>
+                  <span>Grasas {{selectedStudent.gameData!.macronutrientes.grasas}}%</span>
                 </div>
               </div>
             </div>
           </mat-card-content>
         </mat-card>
 
-        <!-- Gráfico 3: Cumplimiento de Calorías Diarias -->
-        <mat-card class="chart-card">
+        <!-- Gráfico 3: Etapa de Cambio (Coach Exprés) -->
+        <mat-card class="chart-card" *ngIf="selectedStudent && selectedStudent.gameData">
           <mat-card-header>
-            <mat-card-title>Cumplimiento de Calorías Diarias</mat-card-title>
+            <mat-card-title>Etapa de Cambio Conductual</mat-card-title>
+            <span class="data-source">Datos del Coach Exprés</span>
           </mat-card-header>
           <mat-card-content>
             <div class="chart-container">
-              <svg viewBox="0 0 400 250" class="area-chart">
-                <!-- Línea de objetivo -->
-                <line x1="50" y1="120" x2="350" y2="120" class="objective-line" stroke-dasharray="5,5"/>
-                <text x="360" y="125" class="small-label">Objetivo Calórico (1200 kcal)</text>
-                
-                <!-- Área de cumplimiento -->
-                <polygon points="50,120 80,100 120,90 160,110 200,80 240,100 280,95 320,105 350,110 350,230 50,230"
-                         class="calorie-area"/>
-                
-                <!-- Línea de datos -->
-                <polyline points="50,120 80,100 120,90 160,110 200,80 240,100 280,95 320,105 350,110"
-                          class="calorie-line"/>
-                
-                <!-- Etiquetas -->
-                <text x="30" y="50" class="chart-label">60</text>
-                <text x="30" y="120" class="chart-label">50</text>
-                <text x="30" y="190" class="chart-label">20</text>
-                <text x="30" y="240" class="chart-label">0</text>
-                
-                <text x="50" y="245" class="axis-label">Proteína</text>
-                <text x="140" y="245" class="axis-label">Manos de Diaria (8 vasos)</text>
-              </svg>
+              <div class="stage-indicator">
+                <div class="stage-circle" [class.active]="selectedStudent.gameData!.coachExpres.etapaActual === 'Pre-contemplación'">
+                  <span class="stage-number">1</span>
+                  <p>Pre-contemplación</p>
+                </div>
+                <div class="stage-connector" [class.active]="['Contemplación', 'Preparación', 'Acción', 'Mantenimiento'].includes(selectedStudent.gameData!.coachExpres.etapaActual)"></div>
+                <div class="stage-circle" [class.active]="selectedStudent.gameData!.coachExpres.etapaActual === 'Contemplación'">
+                  <span class="stage-number">2</span>
+                  <p>Contemplación</p>
+                </div>
+                <div class="stage-connector" [class.active]="['Preparación', 'Acción', 'Mantenimiento'].includes(selectedStudent.gameData!.coachExpres.etapaActual)"></div>
+                <div class="stage-circle" [class.active]="selectedStudent.gameData!.coachExpres.etapaActual === 'Preparación'">
+                  <span class="stage-number">3</span>
+                  <p>Preparación</p>
+                </div>
+                <div class="stage-connector" [class.active]="['Acción', 'Mantenimiento'].includes(selectedStudent.gameData!.coachExpres.etapaActual)"></div>
+                <div class="stage-circle" [class.active]="selectedStudent.gameData!.coachExpres.etapaActual === 'Acción'">
+                  <span class="stage-number">4</span>
+                  <p>Acción</p>
+                </div>
+                <div class="stage-connector" [class.active]="selectedStudent.gameData!.coachExpres.etapaActual === 'Mantenimiento'"></div>
+                <div class="stage-circle" [class.active]="selectedStudent.gameData!.coachExpres.etapaActual === 'Mantenimiento'">
+                  <span class="stage-number">5</span>
+                  <p>Mantenimiento</p>
+                </div>
+              </div>
+              <div class="motivation-score">
+                <mat-icon>psychology</mat-icon>
+                <div>
+                  <strong>Motivación: {{selectedStudent.gameData!.coachExpres.puntajeMotivacion}}/5.0</strong>
+                  <p>Disposición al cambio: {{selectedStudent.gameData!.coachExpres.disposicionCambio}}/5</p>
+                </div>
+              </div>
             </div>
           </mat-card-content>
         </mat-card>
 
         <!-- Tabla: Frutas y Verduras -->
-        <mat-card class="chart-card table-card">
+        <mat-card class="chart-card table-card" *ngIf="selectedStudent && selectedStudent.gameData">
           <mat-card-header>
-            <mat-card-title>Frutas y Verduras</mat-card-title>
+            <mat-card-title>Consumo de Grupos Alimenticios</mat-card-title>
+            <span class="data-source">Datos del Reto 7 Días</span>
           </mat-card-header>
           <mat-card-content>
             <div class="data-table">
               <div class="table-row">
-                <div class="color-bar green-bar"></div>
-                <span>5</span>
+                <span class="food-label">Frutas:</span>
+                <div class="color-bar green-bar" [style.width.%]="(selectedStudent.gameData!.reto7Dias.alimentosPorGrupo.frutas / 7) * 100"></div>
+                <span>{{selectedStudent.gameData!.reto7Dias.alimentosPorGrupo.frutas}}</span>
               </div>
               <div class="table-row">
-                <div class="color-bar green-bar"></div>
-                <span>5</span>
+                <span class="food-label">Verduras:</span>
+                <div class="color-bar green-bar" [style.width.%]="(selectedStudent.gameData!.reto7Dias.alimentosPorGrupo.verduras / 7) * 100"></div>
+                <span>{{selectedStudent.gameData!.reto7Dias.alimentosPorGrupo.verduras}}</span>
               </div>
               <div class="table-row">
-                <div class="color-bar yellow-bar"></div>
-                <span>1</span>
+                <span class="food-label">Lácteos:</span>
+                <div class="color-bar yellow-bar" [style.width.%]="(selectedStudent.gameData!.reto7Dias.alimentosPorGrupo.lacteos / 7) * 100"></div>
+                <span>{{selectedStudent.gameData!.reto7Dias.alimentosPorGrupo.lacteos}}</span>
               </div>
               <div class="table-row">
+                <span class="food-label">Dulces:</span>
+                <div class="color-bar red-bar" [style.width.%]="(selectedStudent.gameData!.reto7Dias.alimentosPorGrupo.dulces / 7) * 100"></div>
+                <span>{{selectedStudent.gameData!.reto7Dias.alimentosPorGrupo.dulces}}</span>
+              </div>
+            </div>
+            <p class="table-footer">Promedio en 7 días</p>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Gráfico 5: Ingesta Semanal de Agua -->
+        <mat-card class="chart-card" *ngIf="selectedStudent && selectedStudent.gameData">
+          <mat-card-header>
+            <mat-card-title>Registro de Emociones al Comer</mat-card-title>
+            <span class="data-source">Datos del Reto 7 Días</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <div class="emotion-bars">
+                <div class="emotion-item">
+                  <span class="emotion-emoji">😊</span>
+                  <div class="emotion-bar-bg">
+                    <div class="emotion-bar happy" [style.width.%]="(selectedStudent.gameData!.reto7Dias.emocionesAlComer.feliz / 21) * 100"></div>
+                  </div>
+                  <span class="emotion-count">{{selectedStudent.gameData!.reto7Dias.emocionesAlComer.feliz}}</span>
+                </div>
+                <div class="emotion-item">
+                  <span class="emotion-emoji">😐</span>
+                  <div class="emotion-bar-bg">
+                    <div class="emotion-bar normal" [style.width.%]="(selectedStudent.gameData!.reto7Dias.emocionesAlComer.normal / 21) * 100"></div>
+                  </div>
+                  <span class="emotion-count">{{selectedStudent.gameData!.reto7Dias.emocionesAlComer.normal}}</span>
+                </div>
+                <div class="emotion-item">
+                  <span class="emotion-emoji">😢</span>
+                  <div class="emotion-bar-bg">
+                    <div class="emotion-bar sad" [style.width.%]="(selectedStudent.gameData!.reto7Dias.emocionesAlComer.triste / 21) * 100"></div>
+                  </div>
+                  <span class="emotion-count">{{selectedStudent.gameData!.reto7Dias.emocionesAlComer.triste}}</span>
+                </div>
+                <div class="emotion-item">
+                  <span class="emotion-emoji">😰</span>
+                  <div class="emotion-bar-bg">
+                    <div class="emotion-bar stressed" [style.width.%]="(selectedStudent.gameData!.reto7Dias.emocionesAlComer.estresado / 21) * 100"></div>
+                  </div>
+                  <span class="emotion-count">{{selectedStudent.gameData!.reto7Dias.emocionesAlComer.estresado}}</span>
+                </div>
+                <div class="emotion-item">
+                  <span class="emotion-emoji">😬</span>
+                  <div class="emotion-bar-bg">
+                    <div class="emotion-bar anxious" [style.width.%]="(selectedStudent.gameData!.reto7Dias.emocionesAlComer.ansioso / 21) * 100"></div>
+                  </div>
+                  <span class="emotion-count">{{selectedStudent.gameData!.reto7Dias.emocionesAlComer.ansioso}}</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Gráfico 6: Concentración Vitaminas y Minerales -->
+        <mat-card class="chart-card" *ngIf="selectedStudent && selectedStudent.gameData">
+          <mat-card-header>
+            <mat-card-title>Concentración Vitaminas y Minerales</mat-card-title>
+            <span class="data-source">Calculado del Reto 7 Días</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <div class="vitamin-bars">
+                <div class="vitamin-item">
+                  <span class="vitamin-label">Vitamina A</span>
+                  <div class="vitamin-bar-container">
+                    <div class="vitamin-bar" [style.width.%]="selectedStudent.gameData!.vitaminas.vitaminaA"
+                         [class.good]="selectedStudent.gameData!.vitaminas.vitaminaA >= 80"
+                         [class.medium]="selectedStudent.gameData!.vitaminas.vitaminaA >= 60 && selectedStudent.gameData!.vitaminas.vitaminaA < 80"
+                         [class.low]="selectedStudent.gameData!.vitaminas.vitaminaA < 60"></div>
+                  </div>
+                  <span class="vitamin-value">{{selectedStudent.gameData!.vitaminas.vitaminaA}}%</span>
+                </div>
+                <div class="vitamin-item">
+                  <span class="vitamin-label">Vitamina C</span>
+                  <div class="vitamin-bar-container">
+                    <div class="vitamin-bar" [style.width.%]="selectedStudent.gameData!.vitaminas.vitaminaC"
+                         [class.good]="selectedStudent.gameData!.vitaminas.vitaminaC >= 80"
+                         [class.medium]="selectedStudent.gameData!.vitaminas.vitaminaC >= 60 && selectedStudent.gameData!.vitaminas.vitaminaC < 80"
+                         [class.low]="selectedStudent.gameData!.vitaminas.vitaminaC < 60"></div>
+                  </div>
+                  <span class="vitamin-value">{{selectedStudent.gameData!.vitaminas.vitaminaC}}%</span>
+                </div>
+                <div class="vitamin-item">
+                  <span class="vitamin-label">Calcio</span>
+                  <div class="vitamin-bar-container">
+                    <div class="vitamin-bar" [style.width.%]="selectedStudent.gameData!.vitaminas.calcio"
+                         [class.good]="selectedStudent.gameData!.vitaminas.calcio >= 80"
+                         [class.medium]="selectedStudent.gameData!.vitaminas.calcio >= 60 && selectedStudent.gameData!.vitaminas.calcio < 80"
+                         [class.low]="selectedStudent.gameData!.vitaminas.calcio < 60"></div>
+                  </div>
+                  <span class="vitamin-value">{{selectedStudent.gameData!.vitaminas.calcio}}%</span>
+                </div>
+                <div class="vitamin-item">
+                  <span class="vitamin-label">Hierro</span>
+                  <div class="vitamin-bar-container">
+                    <div class="vitamin-bar" [style.width.%]="selectedStudent.gameData!.vitaminas.hierro"
+                         [class.good]="selectedStudent.gameData!.vitaminas.hierro >= 80"
+                         [class.medium]="selectedStudent.gameData!.vitaminas.hierro >= 60 && selectedStudent.gameData!.vitaminas.hierro < 80"
+                         [class.low]="selectedStudent.gameData!.vitaminas.hierro < 60"></div>
+                  </div>
+                  <span class="vitamin-value">{{selectedStudent.gameData!.vitaminas.hierro}}%</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+          <mat-card-header>
+            <mat-card-title>Distribución de Macronutrientes</mat-card-title>
+            <span class="data-source">Datos del Reto 7 Días</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <svg viewBox="0 0 200 200" class="donut-chart">
+                <!-- Proteínas -->
+                <circle cx="100" cy="100" r="60" class="donut-segment protein"
+                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData.macronutrientes.proteinas) + ' 300'"/>
+                <!-- Carbohidratos -->
+                <circle cx="100" cy="100" r="60" class="donut-segment carbs"
+                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData.macronutrientes.carbohidratos) + ' 300'"
+                        [attr.stroke-dashoffset]="-getCircleSegment(selectedStudent.gameData.macronutrientes.proteinas)"/>
+                <!-- Grasas -->
+                <circle cx="100" cy="100" r="60" class="donut-segment fat"
+                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData.macronutrientes.grasas) + ' 300'"
+                        [attr.stroke-dashoffset]="-(getCircleSegment(selectedStudent.gameData.macronutrientes.proteinas) + getCircleSegment(selectedStudent.gameData.macronutrientes.carbohidratos))"/>
+                
+                <text x="100" y="105" class="donut-center">100%</text>
+              </svg>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <span class="legend-color protein-color"></span>
+                  <span>Proteínas {{selectedStudent.gameData.macronutrientes.proteinas}}%</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color carbs-color"></span>
+                  <span>Carbohidratos {{selectedStudent.gameData.macronutrientes.carbohidratos}}%</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color fat-color"></span>
+                  <span>Grasas {{selectedStudent.gameData.macronutrientes.grasas}}%</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Gráfico 3: Etapa de Cambio (Coach Exprés) -->
+        <mat-card class="chart-card" *ngIf="selectedStudent.gameData">
+          <mat-card-header>
+            <mat-card-title>Etapa de Cambio Conductual</mat-card-title>
+            <span class="data-source">Datos del Coach Exprés</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <div class="stage-indicator">
+                <div class="stage-circle" [class.active]="selectedStudent.gameData.coachExpres.etapaActual === 'Pre-contemplación'">
+                  <span class="stage-number">1</span>
+                  <p>Pre-contemplación</p>
+                </div>
+                <div class="stage-connector" [class.active]="['Contemplación', 'Preparación', 'Acción', 'Mantenimiento'].includes(selectedStudent.gameData.coachExpres.etapaActual)"></div>
+                <div class="stage-circle" [class.active]="selectedStudent.gameData.coachExpres.etapaActual === 'Contemplación'">
+                  <span class="stage-number">2</span>
+                  <p>Contemplación</p>
+                </div>
+                <div class="stage-connector" [class.active]="['Preparación', 'Acción', 'Mantenimiento'].includes(selectedStudent.gameData.coachExpres.etapaActual)"></div>
+                <div class="stage-circle" [class.active]="selectedStudent.gameData.coachExpres.etapaActual === 'Preparación'">
+                  <span class="stage-number">3</span>
+                  <p>Preparación</p>
+                </div>
+                <div class="stage-connector" [class.active]="['Acción', 'Mantenimiento'].includes(selectedStudent.gameData.coachExpres.etapaActual)"></div>
+                <div class="stage-circle" [class.active]="selectedStudent.gameData.coachExpres.etapaActual === 'Acción'">
+                  <span class="stage-number">4</span>
+                  <p>Acción</p>
+                </div>
+                <div class="stage-connector" [class.active]="selectedStudent.gameData.coachExpres.etapaActual === 'Mantenimiento'"></div>
+                <div class="stage-circle" [class.active]="selectedStudent.gameData.coachExpres.etapaActual === 'Mantenimiento'">
+                  <span class="stage-number">5</span>
+                  <p>Mantenimiento</p>
+                </div>
+              </div>
+              <div class="motivation-score">
+                <mat-icon>psychology</mat-icon>
+                <div>
+                  <strong>Motivación: {{selectedStudent.gameData.coachExpres.puntajeMotivacion}}/5.0</strong>
+                  <p>Disposición al cambio: {{selectedStudent.gameData.coachExpres.disposicionCambio}}/5</p>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Tabla: Frutas y Verduras -->
+        <mat-card class="chart-card table-card" *ngIf="selectedStudent.gameData">
+          <mat-card-header>
+            <mat-card-title>Consumo de Grupos Alimenticios</mat-card-title>
+            <span class="data-source">Datos del Reto 7 Días</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="data-table">
+              <div class="table-row">
+                <span class="food-label">Frutas:</span>
+                <div class="color-bar green-bar" [style.width.%]="(selectedStudent.gameData.reto7Dias.alimentosPorGrupo.frutas / 7) * 100"></div>
+                <span>{{selectedStudent.gameData.reto7Dias.alimentosPorGrupo.frutas}}</span>
+              </div>
+              <div class="table-row">
+                <span class="food-label">Verduras:</span>
+                <div class="color-bar green-bar" [style.width.%]="(selectedStudent.gameData.reto7Dias.alimentosPorGrupo.verduras / 7) * 100"></div>
+                <span>{{selectedStudent.gameData.reto7Dias.alimentosPorGrupo.verduras}}</span>
+              </div>
+              <div class="table-row">
+                <span class="food-label">Lácteos:</span>
+                <div class="color-bar yellow-bar" [style.width.%]="(selectedStudent.gameData.reto7Dias.alimentosPorGrupo.lacteos / 7) * 100"></div>
+                <span>{{selectedStudent.gameData.reto7Dias.alimentosPorGrupo.lacteos}}</span>
+              </div>
+              <div class="table-row">
+                <span class="food-label">Dulces:</span>
+                <div class="color-bar red-bar" [style.width.%]="(selectedStudent.gameData.reto7Dias.alimentosPorGrupo.dulces / 7) * 100"></div>
+                <span>{{selectedStudent.gameData.reto7Dias.alimentosPorGrupo.dulces}}</span>
+              </div>
+            </div>
+            <p class="table-footer">Promedio en 7 días</p>
+          </mat-card-content>
+        </mat-card>="table-row">
                 <div class="color-bar red-bar"></div>
                 <span>1</span>
               </div>
@@ -270,55 +536,104 @@
         </mat-card>
 
         <!-- Gráfico 5: Ingesta Semanal de Agua -->
-        <mat-card class="chart-card">
+        <mat-card class="chart-card" *ngIf="selectedStudent.gameData">
           <mat-card-header>
-            <mat-card-title>Ingesta Semanal de Agua Diaries</mat-card-title>
+            <mat-card-title>Registro de Emociones al Comer</mat-card-title>
+            <span class="data-source">Datos del Reto 7 Días</span>
           </mat-card-header>
           <mat-card-content>
             <div class="chart-container">
-              <svg viewBox="0 0 350 200" class="bar-chart">
-                <!-- Barras -->
-                <rect x="40" y="140" width="30" height="40" class="bar blue-bar"/>
-                <rect x="85" y="100" width="30" height="80" class="bar blue-bar"/>
-                <rect x="130" y="120" width="30" height="60" class="bar blue-bar"/>
-                <rect x="175" y="110" width="30" height="70" class="bar blue-bar"/>
-                <rect x="220" y="60" width="30" height="120" class="bar blue-bar"/>
-                <rect x="265" y="90" width="30" height="90" class="bar blue-bar"/>
-                <rect x="310" y="100" width="30" height="80" class="bar blue-bar"/>
-                
-                <!-- Etiquetas -->
-                <text x="10" y="180" class="chart-label">4</text>
-                <text x="10" y="140" class="chart-label">6</text>
-                <text x="10" y="100" class="chart-label">25</text>
-              </svg>
+              <div class="emotion-bars">
+                <div class="emotion-item">
+                  <span class="emotion-emoji">😊</span>
+                  <div class="emotion-bar-bg">
+                    <div class="emotion-bar happy" [style.width.%]="(selectedStudent.gameData.reto7Dias.emocionesAlComer.feliz / 21) * 100"></div>
+                  </div>
+                  <span class="emotion-count">{{selectedStudent.gameData.reto7Dias.emocionesAlComer.feliz}}</span>
+                </div>
+                <div class="emotion-item">
+                  <span class="emotion-emoji">😐</span>
+                  <div class="emotion-bar-bg">
+                    <div class="emotion-bar normal" [style.width.%]="(selectedStudent.gameData.reto7Dias.emocionesAlComer.normal / 21) * 100"></div>
+                  </div>
+                  <span class="emotion-count">{{selectedStudent.gameData.reto7Dias.emocionesAlComer.normal}}</span>
+                </div>
+                <div class="emotion-item">
+                  <span class="emotion-emoji">😢</span>
+                  <div class="emotion-bar-bg">
+                    <div class="emotion-bar sad" [style.width.%]="(selectedStudent.gameData.reto7Dias.emocionesAlComer.triste / 21) * 100"></div>
+                  </div>
+                  <span class="emotion-count">{{selectedStudent.gameData.reto7Dias.emocionesAlComer.triste}}</span>
+                </div>
+                <div class="emotion-item">
+                  <span class="emotion-emoji">😰</span>
+                  <div class="emotion-bar-bg">
+                    <div class="emotion-bar stressed" [style.width.%]="(selectedStudent.gameData.reto7Dias.emocionesAlComer.estresado / 21) * 100"></div>
+                  </div>
+                  <span class="emotion-count">{{selectedStudent.gameData.reto7Dias.emocionesAlComer.estresado}}</span>
+                </div>
+                <div class="emotion-item">
+                  <span class="emotion-emoji">😬</span>
+                  <div class="emotion-bar-bg">
+                    <div class="emotion-bar anxious" [style.width.%]="(selectedStudent.gameData.reto7Dias.emocionesAlComer.ansioso / 21) * 100"></div>
+                  </div>
+                  <span class="emotion-count">{{selectedStudent.gameData.reto7Dias.emocionesAlComer.ansioso}}</span>
+                </div>
+              </div>
             </div>
           </mat-card-content>
         </mat-card>
 
         <!-- Gráfico 6: Concentración Vitaminas y Minerales -->
-        <mat-card class="chart-card">
+        <mat-card class="chart-card" *ngIf="selectedStudent.gameData">
           <mat-card-header>
             <mat-card-title>Concentración Vitaminas y Minerales</mat-card-title>
+            <span class="data-source">Calculado del Reto 7 Días</span>
           </mat-card-header>
           <mat-card-content>
             <div class="chart-container">
-              <svg viewBox="0 0 200 200" class="radar-chart">
-                <!-- Polígono de datos -->
-                <polygon points="100,50 150,80 130,150 70,150 50,80"
-                         class="radar-area"/>
-                
-                <!-- Líneas guía -->
-                <line x1="100" y1="100" x2="100" y2="30" class="radar-guide"/>
-                <line x1="100" y1="100" x2="170" y2="70" class="radar-guide"/>
-                <line x1="100" y1="100" x2="150" y2="170" class="radar-guide"/>
-                <line x1="100" y1="100" x2="50" y2="170" class="radar-guide"/>
-                <line x1="100" y1="100" x2="30" y2="70" class="radar-guide"/>
-                
-                <!-- Etiquetas -->
-                <text x="100" y="20" class="radar-label" text-anchor="middle">Vitamina A</text>
-                <text x="180" y="75" class="radar-label">Calcio</text>
-                <text x="100" y="195" class="radar-label" text-anchor="middle">Vitamina A</text>
-              </svg>
+              <div class="vitamin-bars">
+                <div class="vitamin-item">
+                  <span class="vitamin-label">Vitamina A</span>
+                  <div class="vitamin-bar-container">
+                    <div class="vitamin-bar" [style.width.%]="selectedStudent.gameData.vitaminas.vitaminaA"
+                         [class.good]="selectedStudent.gameData.vitaminas.vitaminaA >= 80"
+                         [class.medium]="selectedStudent.gameData.vitaminas.vitaminaA >= 60 && selectedStudent.gameData.vitaminas.vitaminaA < 80"
+                         [class.low]="selectedStudent.gameData.vitaminas.vitaminaA < 60"></div>
+                  </div>
+                  <span class="vitamin-value">{{selectedStudent.gameData.vitaminas.vitaminaA}}%</span>
+                </div>
+                <div class="vitamin-item">
+                  <span class="vitamin-label">Vitamina C</span>
+                  <div class="vitamin-bar-container">
+                    <div class="vitamin-bar" [style.width.%]="selectedStudent.gameData.vitaminas.vitaminaC"
+                         [class.good]="selectedStudent.gameData.vitaminas.vitaminaC >= 80"
+                         [class.medium]="selectedStudent.gameData.vitaminas.vitaminaC >= 60 && selectedStudent.gameData.vitaminas.vitaminaC < 80"
+                         [class.low]="selectedStudent.gameData.vitaminas.vitaminaC < 60"></div>
+                  </div>
+                  <span class="vitamin-value">{{selectedStudent.gameData.vitaminas.vitaminaC}}%</span>
+                </div>
+                <div class="vitamin-item">
+                  <span class="vitamin-label">Calcio</span>
+                  <div class="vitamin-bar-container">
+                    <div class="vitamin-bar" [style.width.%]="selectedStudent.gameData.vitaminas.calcio"
+                         [class.good]="selectedStudent.gameData.vitaminas.calcio >= 80"
+                         [class.medium]="selectedStudent.gameData.vitaminas.calcio >= 60 && selectedStudent.gameData.vitaminas.calcio < 80"
+                         [class.low]="selectedStudent.gameData.vitaminas.calcio < 60"></div>
+                  </div>
+                  <span class="vitamin-value">{{selectedStudent.gameData.vitaminas.calcio}}%</span>
+                </div>
+                <div class="vitamin-item">
+                  <span class="vitamin-label">Hierro</span>
+                  <div class="vitamin-bar-container">
+                    <div class="vitamin-bar" [style.width.%]="selectedStudent.gameData.vitaminas.hierro"
+                         [class.good]="selectedStudent.gameData.vitaminas.hierro >= 80"
+                         [class.medium]="selectedStudent.gameData.vitaminas.hierro >= 60 && selectedStudent.gameData.vitaminas.hierro < 80"
+                         [class.low]="selectedStudent.gameData.vitaminas.hierro < 60"></div>
+                  </div>
+                  <span class="vitamin-value">{{selectedStudent.gameData.vitaminas.hierro}}%</span>
+                </div>
+              </div>
             </div>
           </mat-card-content>
         </mat-card>
