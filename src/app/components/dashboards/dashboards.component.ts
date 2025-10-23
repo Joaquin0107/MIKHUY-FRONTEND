@@ -34,7 +34,7 @@ interface GameData {
     temasDebiles: string[];
     ultimoJuego: string;
   };
-  
+
   // Datos del Reto 7 Días
   reto7Dias: {
     diasCompletados: number;
@@ -55,7 +55,7 @@ interface GameData {
     };
     caloriasDiarias: number[];
   };
-  
+
   // Datos del Coach Exprés
   coachExpres: {
     etapaActual: string;
@@ -63,14 +63,14 @@ interface GameData {
     respuestas: number[];
     disposicionCambio: number; // 1-5
   };
-  
+
   // Datos nutricionales calculados
   macronutrientes: {
     proteinas: number;
     carbohidratos: number;
     grasas: number;
   };
-  
+
   vitaminas: {
     vitaminaA: number;
     vitaminaC: number;
@@ -99,7 +99,7 @@ interface GameData {
   styleUrls: ['./dashboards.component.css']
 })
 export class DashboardsComponent implements OnInit {
-  
+
   notificationCount = 5;
   searchQuery = '';
   selectedStudent: Student | null = null;
@@ -403,7 +403,7 @@ export class DashboardsComponent implements OnInit {
     if (!this.searchQuery.trim()) {
       this.filteredStudents = [...this.students];
     } else {
-      this.filteredStudents = this.students.filter(s => 
+      this.filteredStudents = this.students.filter(s =>
         `${s.nombre} ${s.apellido}`.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         s.grado.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
@@ -416,12 +416,12 @@ export class DashboardsComponent implements OnInit {
 
   descargarReporte(): void {
     if (!this.selectedStudent || !this.selectedStudent.gameData) return;
-    
+
     const data = this.selectedStudent.gameData;
     const student = this.selectedStudent;
-    
+
     console.log('Generando reporte con datos de juegos:', data);
-    
+
     // Crear resumen del reporte
     const resumen = `
 REPORTE NUTRICIONAL - ${student.nombre} ${student.apellido}
@@ -475,9 +475,9 @@ RECOMENDACIONES:
 ---------------
 ${this.generarRecomendaciones(data)}
     `;
-    
+
     alert(`Generando reporte PDF de ${student.nombre} ${student.apellido}...\n\n${resumen}`);
-    
+
     // En producción, aquí se generaría el PDF con una librería como jsPDF
     setTimeout(() => {
       alert('Reporte descargado exitosamente');
@@ -486,7 +486,7 @@ ${this.generarRecomendaciones(data)}
 
   generarRecomendaciones(data: GameData): string {
     const recomendaciones: string[] = [];
-    
+
     // Basado en Desafío Nutrimental
     if (data.nutrimental.porcentajeAciertos < 70) {
       recomendaciones.push('- Reforzar conocimientos nutricionales básicos');
@@ -494,7 +494,7 @@ ${this.generarRecomendaciones(data)}
     if (data.nutrimental.temasDebiles.length > 0) {
       recomendaciones.push(`- Estudiar más sobre: ${data.nutrimental.temasDebiles.join(', ')}`);
     }
-    
+
     // Basado en Reto 7 Días
     if (data.reto7Dias.alimentosPorGrupo.frutas < 3) {
       recomendaciones.push('- Aumentar consumo de frutas (mínimo 3 porciones/día)');
@@ -505,7 +505,7 @@ ${this.generarRecomendaciones(data)}
     if (data.reto7Dias.alimentosPorGrupo.dulces > 2) {
       recomendaciones.push('- Reducir consumo de dulces y azúcares añadidos');
     }
-    
+
     // Basado en Coach Exprés
     if (data.coachExpres.etapaActual === 'Pre-contemplación') {
       recomendaciones.push('- Trabajar en la concientización sobre hábitos saludables');
@@ -513,7 +513,7 @@ ${this.generarRecomendaciones(data)}
     if (data.coachExpres.disposicionCambio < 3) {
       recomendaciones.push('- Motivar y acompañar en el proceso de cambio');
     }
-    
+
     // Basado en macronutrientes
     if (data.macronutrientes.proteinas < 25) {
       recomendaciones.push('- Aumentar consumo de proteínas');
@@ -521,7 +521,7 @@ ${this.generarRecomendaciones(data)}
     if (data.macronutrientes.carbohidratos > 55) {
       recomendaciones.push('- Balancear consumo de carbohidratos');
     }
-    
+
     return recomendaciones.length > 0 ? recomendaciones.join('\n') : '- El estudiante mantiene buenos hábitos alimenticios. Continuar con el seguimiento.';
   }
 
@@ -556,7 +556,7 @@ ${this.generarRecomendaciones(data)}
   }
 
   getAvatarUrl(student: Student): string {
-    return student.avatar || 'assets/images/default-avatar.png';
+    return student.avatar || 'assets/images/maria   .png';
   }
 
   onAvatarError(event: Event): void {
@@ -572,7 +572,7 @@ ${this.generarRecomendaciones(data)}
   // Obtener datos para tabla de frutas y verduras
   getFrutasVerdurasData(): any[] {
     if (!this.selectedStudent?.gameData) return [];
-    
+
     const data = this.selectedStudent.gameData.reto7Dias.alimentosPorGrupo;
     return [
       { value: data.frutas, color: 'green' },
@@ -608,17 +608,17 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
         <mat-icon>email</mat-icon>
         Enviar Reporte por Correo
       </h2>
-      
+
       <mat-dialog-content>
         <p class="student-info">
           Reporte de: <strong>{{data.student.nombre}} {{data.student.apellido}}</strong>
         </p>
-        
+
         <form [formGroup]="emailForm">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Correo del destinatario</mat-label>
-            <input matInput 
-                   type="email" 
+            <input matInput
+                   type="email"
                    placeholder="padre@ejemplo.com"
                    formControlName="email">
             <mat-icon matPrefix>email</mat-icon>
@@ -632,14 +632,14 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Asunto</mat-label>
-            <input matInput 
+            <input matInput
                    formControlName="subject">
             <mat-icon matPrefix>subject</mat-icon>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Mensaje (opcional)</mat-label>
-            <textarea matInput 
+            <textarea matInput
                       rows="4"
                       formControlName="message"
                       placeholder="Agregue un mensaje personalizado..."></textarea>
@@ -651,10 +651,10 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
           <span>Se adjuntará el reporte en PDF</span>
         </div>
       </mat-dialog-content>
-      
+
       <mat-dialog-actions align="end">
         <button mat-button (click)="cancelar()">Cancelar</button>
-        <button mat-raised-button 
+        <button mat-raised-button
                 color="primary"
                 [disabled]="!emailForm.valid"
                 (click)="enviar()">

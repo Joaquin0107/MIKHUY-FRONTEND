@@ -5,7 +5,7 @@
       <button mat-icon-button class="back-btn" (click)="goBack()">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <img src="assets/images/mikhuy-logo.png" alt="MIKHUY Logo" class="header-logo">
+      <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="header-logo">
     </div>
 
     <div class="header-center">
@@ -51,26 +51,26 @@
 
   <!-- Main Content -->
   <div class="dashboards-content">
-    
+
     <!-- Sidebar con lista de estudiantes -->
     <div class="sidebar">
       <!-- Search -->
       <div class="search-box">
         <mat-icon>search</mat-icon>
-        <input type="text" 
-               placeholder="Buscar nombre" 
+        <input type="text"
+               placeholder="Buscar nombre"
                [value]="searchQuery"
                (input)="searchQuery=$any($event.target).value; searchStudents()">
       </div>
 
       <!-- Student List -->
       <mat-list class="student-list">
-        <mat-list-item *ngFor="let student of filteredStudents" 
+        <mat-list-item *ngFor="let student of filteredStudents"
                        [class.active]="selectedStudent?.id === student.id"
                        (click)="selectStudent(student)">
           <div class="student-item">
             <div class="student-avatar">
-              <img [src]="getAvatarUrl(student)" 
+              <img [src]="getAvatarUrl(student)"
                    [alt]="student.nombre"
                    (error)="onAvatarError($event)">
               <mat-icon *ngIf="!student.avatar">account_circle</mat-icon>
@@ -86,12 +86,12 @@
 
     <!-- Dashboard Content -->
     <div class="dashboard-main" *ngIf="selectedStudent">
-      
+
       <!-- Student Profile Card -->
       <mat-card class="profile-summary">
         <div class="profile-content">
           <div class="profile-avatar">
-            <img [src]="getAvatarUrl(selectedStudent)" 
+            <img [src]="getAvatarUrl(selectedStudent)"
                  [alt]="selectedStudent.nombre"
                  (error)="onAvatarError($event)">
             <mat-icon *ngIf="!selectedStudent.avatar">account_circle</mat-icon>
@@ -134,7 +134,7 @@
 
       <!-- Charts Grid -->
       <div class="charts-grid">
-        
+
         <!-- Gráfico 1: Conocimiento Nutricional -->
         <mat-card class="chart-card" *ngIf="selectedStudent && selectedStudent.gameData">
           <mat-card-header>
@@ -210,7 +210,7 @@
                 <circle cx="100" cy="100" r="60" class="donut-segment fat"
                         [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData!.macronutrientes.grasas) + ' 300'"
                         [attr.stroke-dashoffset]="-(getCircleSegment(selectedStudent.gameData!.macronutrientes.proteinas) + getCircleSegment(selectedStudent.gameData!.macronutrientes.carbohidratos))"/>
-                
+
                 <text x="100" y="105" class="donut-center">100%</text>
               </svg>
               <div class="chart-legend">
@@ -411,6 +411,7 @@
             </div>
           </mat-card-content>
         </mat-card>
+        <mat-card>
           <mat-card-header>
             <mat-card-title>Distribución de Macronutrientes</mat-card-title>
             <span class="data-source">Datos del Reto 7 Días</span>
@@ -420,30 +421,30 @@
               <svg viewBox="0 0 200 200" class="donut-chart">
                 <!-- Proteínas -->
                 <circle cx="100" cy="100" r="60" class="donut-segment protein"
-                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData.macronutrientes.proteinas) + ' 300'"/>
+                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData?.macronutrientes?.proteinas ?? 0) + ' 300'"/>
                 <!-- Carbohidratos -->
                 <circle cx="100" cy="100" r="60" class="donut-segment carbs"
-                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData.macronutrientes.carbohidratos) + ' 300'"
-                        [attr.stroke-dashoffset]="-getCircleSegment(selectedStudent.gameData.macronutrientes.proteinas)"/>
+                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData?.macronutrientes?.carbohidratos ?? 0) + ' 300'"
+                        [attr.stroke-dashoffset]="-getCircleSegment(selectedStudent.gameData?.macronutrientes?.proteinas ?? 0)"/>
                 <!-- Grasas -->
                 <circle cx="100" cy="100" r="60" class="donut-segment fat"
-                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData.macronutrientes.grasas) + ' 300'"
-                        [attr.stroke-dashoffset]="-(getCircleSegment(selectedStudent.gameData.macronutrientes.proteinas) + getCircleSegment(selectedStudent.gameData.macronutrientes.carbohidratos))"/>
-                
+                        [attr.stroke-dasharray]="getCircleSegment(selectedStudent.gameData?.macronutrientes?.grasas ?? 0) + ' 300'"
+                        [attr.stroke-dashoffset]="-(getCircleSegment(selectedStudent.gameData?.macronutrientes?.proteinas ?? 0) + getCircleSegment(selectedStudent.gameData?.macronutrientes?.carbohidratos ?? 0))"/>
+
                 <text x="100" y="105" class="donut-center">100%</text>
               </svg>
               <div class="chart-legend">
                 <div class="legend-item">
                   <span class="legend-color protein-color"></span>
-                  <span>Proteínas {{selectedStudent.gameData.macronutrientes.proteinas}}%</span>
+                  <span>Proteínas {{selectedStudent.gameData?.macronutrientes?.proteinas}}%</span>
                 </div>
                 <div class="legend-item">
                   <span class="legend-color carbs-color"></span>
-                  <span>Carbohidratos {{selectedStudent.gameData.macronutrientes.carbohidratos}}%</span>
+                  <span>Carbohidratos {{selectedStudent.gameData?.macronutrientes?.carbohidratos}}%</span>
                 </div>
                 <div class="legend-item">
                   <span class="legend-color fat-color"></span>
-                  <span>Grasas {{selectedStudent.gameData.macronutrientes.grasas}}%</span>
+                  <span>Grasas {{selectedStudent.gameData?.macronutrientes?.grasas}}%</span>
                 </div>
               </div>
             </div>
@@ -525,15 +526,8 @@
               </div>
             </div>
             <p class="table-footer">Promedio en 7 días</p>
-          </mat-card-content>
-        </mat-card>="table-row">
-                <div class="color-bar red-bar"></div>
-                <span>1</span>
-              </div>
-            </div>
-            <p class="table-footer">Azúcares Añadidos</p>
-          </mat-card-content>
-        </mat-card>
+            </mat-card-content>
+            </mat-card>
 
         <!-- Gráfico 5: Ingesta Semanal de Agua -->
         <mat-card class="chart-card" *ngIf="selectedStudent.gameData">
