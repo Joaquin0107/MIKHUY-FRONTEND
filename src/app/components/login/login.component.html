@@ -1,4 +1,4 @@
-<div class="login-container">
+<div class="login-container"> 
   <!-- Imágen - Lado izquierdo -->
   <div class="image-section">
     <img src="assets/images/login.png" alt="Alimentación saludable" class="login-image">
@@ -7,7 +7,7 @@
   <!-- Formulario login - Lado derecho -->
   <div class="form-section">
     <!-- Botón de regreso -->
-    <button mat-icon-button class="back-btn" (click)="goBack()">
+    <button mat-icon-button class="back-btn" type="button" (click)="goBack()">
       <mat-icon>arrow_back</mat-icon>
     </button>
 
@@ -18,16 +18,19 @@
       </div>
 
       <!-- Formulario -->
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" autocomplete="off">
         <!-- Campo de Usuario/Email -->
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Usuario</mat-label>
-          <input matInput 
-                 type="email" 
-                 placeholder="Usuario o Correo electrónico"
-                 formControlName="username">
+          <mat-label>Correo electrónico</mat-label>
+          <input
+            matInput
+            type="email"
+            placeholder="Ingresa tu correo"
+            formControlName="username"
+            autocomplete="email"
+          >
           <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
-            El usuario es requerido
+            El correo es requerido
           </mat-error>
           <mat-error *ngIf="loginForm.get('username')?.hasError('email')">
             Ingresa un correo válido
@@ -37,15 +40,21 @@
         <!-- Campo de contraseña -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Contraseña</mat-label>
-          <input matInput 
-                 [type]="hidePassword ? 'password' : 'text'"
-                 placeholder="Contraseña"
-                 formControlName="password">
-          <button mat-icon-button 
-                  matSuffix 
-                  type="button"
-                  (click)="togglePasswordVisibility()">
-            <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+          <input
+            matInput
+            [type]="hidePassword ? 'password' : 'text'"
+            placeholder="Contraseña"
+            formControlName="password"
+            autocomplete="current-password"
+          >
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="togglePasswordVisibility()"
+            aria-label="Mostrar u ocultar contraseña"
+          >
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
           <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
             La contraseña es requerida
@@ -66,10 +75,13 @@
         </div>
 
         <!-- Botón de ingreso -->
-        <button mat-raised-button 
-                type="submit" 
-                class="submit-btn"
-                [disabled]="!loginForm.valid">
+        <button
+          mat-raised-button
+          color="primary"
+          type="submit"
+          class="submit-btn"
+          [disabled]="loginForm.invalid"
+        >
           Ingresar
         </button>
 
