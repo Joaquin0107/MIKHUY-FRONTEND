@@ -1,0 +1,28 @@
+import { Injectable } from '@angular/core';
+import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+
+@Injectable({ providedIn: 'root' })
+export class AuthGuard implements CanActivate {
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    const isLoggedIn = this.authService.isLoggedIn();
+    const user = this.authService.getCurrentUser();
+
+    if (!isLoggedIn || !user) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
+      return false;
+    }
+
+    const expectedRole = route.data['role'] as string;
+    if (expectedRole && user.rol !== expectedRole) {
+      alert('No tienes permisos para acceder a esta página.');
+      this.router.navigate(['/home']);
+      return false;
+    }
+
+    return true;
+  }
+}
