@@ -6,62 +6,37 @@ import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
 import { LandingAlumnosComponent } from './components/landing-alumnos/landing-alumnos.component';
 import { LandingProfesoresComponent } from './components/landing-profesores/landing-profesores.component';
-import { Routes } from '@angular/router';
 import { PerfilComponent } from './components/perfil/perfil.component';
+import { Routes } from '@angular/router';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'home',
-    pathMatch: 'full',
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: 'home', component: HomeComponent, title: 'MIKHUY - Inicio' },
+  { path: 'login', component: LoginComponent, title: 'MIKHUY - Iniciar Sesión' },
+  { path: 'registro', component: RegistroComponent, title: 'MIKHUY - Registro' },
+
+  // 🔒 Rutas protegidas por rol
+  { 
+    path: 'landing-alumnos', 
+    component: LandingAlumnosComponent, 
+    canActivate: [AuthGuard],
+    data: { role: 'student' },
+    title: 'MIKHUY - Portal Alumnos' 
   },
-  {
-    path: 'home',
-    component: HomeComponent,
-    title: 'MIKHUY - Inicio',
+  { 
+    path: 'landing-profesores', 
+    component: LandingProfesoresComponent, 
+    canActivate: [AuthGuard],
+    data: { role: 'teacher' },
+    title: 'MIKHUY - Portal Profesores' 
   },
-  {
-    path: 'login',
-    component: LoginComponent,
-    title: 'MIKHUY - Iniciar Sesión',
-  },
-  {
-    path: 'landing-alumnos',
-    component: LandingAlumnosComponent,
-    title: 'MIKHUY - Portal Alumnos',
-  },
-  {
-    path: 'landing-profesores',
-    component: LandingProfesoresComponent,
-    title: 'MIKHUY - Portal Profesores',
-  },
-  {
-    path: 'registro',
-    component: RegistroComponent,
-    title: 'MIKHUY - Registro',
-  },
-  {
-    path: 'juegos',
-    component: JuegosComponent,
-    title: 'MIKHUY - Juegos',
-  },
-  {
-    path: 'beneficios',
-    component: BeneficiosComponent,
-    title: 'MIKHUY - Beneficios',
-  },
-  {
-    path: 'perfil',
-    component: PerfilComponent,
-    title: 'MIKHUY - Mi Perfil',
-  },
-  {
-    path: 'dashboards',
-    component: DashboardsComponent,
-    title: 'MIKHUY - Dashboards',
-  },
-  {
-    path: '**',
-    redirectTo: 'home',
-  },
+
+  // 🔒 Rutas protegidas generales
+  { path: 'juegos', component: JuegosComponent, canActivate: [AuthGuard], title: 'MIKHUY - Juegos' },
+  { path: 'beneficios', component: BeneficiosComponent, canActivate: [AuthGuard], title: 'MIKHUY - Beneficios' },
+  { path: 'perfil', component: PerfilComponent, canActivate: [AuthGuard], title: 'MIKHUY - Mi Perfil' },
+  { path: 'dashboards', component: DashboardsComponent, canActivate: [AuthGuard], title: 'MIKHUY - Dashboards' },
+
+  { path: '**', redirectTo: 'home' },
 ];
