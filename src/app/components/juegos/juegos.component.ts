@@ -95,7 +95,7 @@ export class JuegosComponent implements OnInit {
       'Ejercicio': 'assets/images/ejercicio.jpg',
       'Bienestar': 'assets/images/bienestar.jpg',
     };
-    return imageMap[categoria] || 'assets/images/placeholder-game.jpg';
+    return imageMap[categoria] || 'assets/images/reto7.png';
   }
 
   getProgressPercent(juego: JuegoResponse): number {

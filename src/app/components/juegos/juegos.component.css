@@ -6,6 +6,7 @@
   font-family: 'Poppins', sans-serif;
 }
 
+/* Header */
 .juegos-header {
   display: flex;
   align-items: center;
@@ -58,6 +59,7 @@
   justify-content: flex-end;
 }
 
+/* Botón beneficios */
 .benefits-btn {
   height: 48px !important;
   padding: 0 1.5rem !important;
@@ -81,6 +83,7 @@
   margin-right: 0.5rem;
 }
 
+/* Puntos */
 .points-display {
   display: flex;
   align-items: center;
@@ -112,6 +115,7 @@
   letter-spacing: 0.5px;
 }
 
+/* Icon buttons */
 .icon-btn {
   background: white;
   border: 2px solid #f0f0f0;
@@ -131,6 +135,7 @@
   color: #48A3F3;
 }
 
+/* Menú notificaciones */
 .notification-menu {
   min-width: 320px;
   max-width: 400px;
@@ -176,6 +181,30 @@
   margin: 0;
 }
 
+/* Estado vacío (404 / sin progreso) */
+.empty-state {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: #666;
+}
+.empty-state mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #48A3F3;
+}
+.empty-state h2 {
+  margin: 0.25rem 0 0;
+  color: #333;
+}
+.empty-state p {
+  margin: 0;
+}
+
+/* Grid de juegos */
 .games-grid {
   max-width: 1400px;
   margin: 0 auto;
@@ -281,7 +310,7 @@ mat-card-actions button mat-icon {
   margin-right: 0.5rem;
 }
 
-/* Floating Chatbot Button */
+/* Botón flotante Chatbot */
 .chatbot-fab {
   position: fixed;
   bottom: 2rem;
@@ -316,6 +345,7 @@ mat-card-actions button mat-icon {
   }
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   .games-grid {
     grid-template-columns: 1fr;

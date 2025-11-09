@@ -88,7 +88,6 @@ export class LoginComponent implements OnInit {
           // 🔹 Redirección según el rol
           if (rol === 'student') {
             this.router.navigate(['/landing-alumnos']);
-            this.router.navigate(['/juegos']);
           } else if (rol === 'teacher') {
             this.router.navigate(['/landing-profesores']);
           } else {

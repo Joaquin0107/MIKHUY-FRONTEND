@@ -8,16 +8,20 @@ export class AuthGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-    const isLoggedIn = this.authService.isLoggedIn();
-    const user = this.authService.getCurrentUser();
+    const token = this.authService.getToken?.() || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
-    if (!isLoggedIn || !user) {
+    // ✅ Solo bloquea si realmente NO hay token
+    if (!token) {
       this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
       return false;
     }
 
+    // ⚙️ Si hay token, el usuario se considera logueado
+    const user = this.authService.getCurrentUser?.();
     const expectedRole = route.data['role'] as string;
-    if (expectedRole && user.rol !== expectedRole) {
+
+    // Verifica rol solo si el usuario existe y hay restricción de rol
+    if (expectedRole && user && user.rol !== expectedRole) {
       alert('No tienes permisos para acceder a esta página.');
       this.router.navigate(['/home']);
       return false;
