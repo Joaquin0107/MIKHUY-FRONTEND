@@ -143,7 +143,7 @@ export class JuegosComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/landing-alumnos']);
   }
 
   onImageError(event: any): void {
