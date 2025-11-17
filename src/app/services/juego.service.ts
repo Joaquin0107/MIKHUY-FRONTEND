@@ -1,3 +1,4 @@
+// src/app/services/juego.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -19,7 +20,6 @@ export interface JuegoResponse {
   puntosMaximos: number;
   activo: boolean;
   fechaCreacion: string;
-  // Campos de progreso
   progresoId?: string;
   nivelActual?: number;
   puntosGanados?: number;
@@ -27,7 +27,6 @@ export interface JuegoResponse {
   ultimaJugada?: string;
   completado?: boolean;
   porcentajeCompletado?: number;
-  // Para frontend
   image?: string;
   title?: string;
   subtitle?: string;
@@ -35,37 +34,27 @@ export interface JuegoResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class JuegosService {
   private apiUrl = `${environment.apiUrl}/juegos`;
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtener headers con token de autorización
-   */
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('authToken'); // Usamos authToken como en tu AuthService
+    const token = localStorage.getItem('authToken');
     return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     });
   }
 
-  /**
-   * Obtener todos los juegos activos
-   */
   getAllActive(): Observable<ApiResponse<JuegoResponse[]>> {
-    return this.http.get<ApiResponse<JuegoResponse[]>>(
-      this.apiUrl,
-      { headers: this.getHeaders() }
-    );
+    return this.http.get<ApiResponse<JuegoResponse[]>>(this.apiUrl, {
+      headers: this.getHeaders(),
+    });
   }
 
-  /**
-   * Obtener juegos con el progreso del estudiante actual
-   */
   getMisJuegos(): Observable<ApiResponse<JuegoResponse[]>> {
     return this.http.get<ApiResponse<JuegoResponse[]>>(
       `${this.apiUrl}/mi-progreso`,
@@ -73,23 +62,25 @@ export class JuegosService {
     );
   }
 
-  /**
-   * Obtener un juego por ID
-   */
   getById(id: string): Observable<ApiResponse<JuegoResponse>> {
-    return this.http.get<ApiResponse<JuegoResponse>>(
-      `${this.apiUrl}/${id}`,
-      { headers: this.getHeaders() }
-    );
+    return this.http.get<ApiResponse<JuegoResponse>>(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders(),
+    });
   }
 
-  /**
-   * Obtener juegos por categoría
-   */
   getByCategoria(categoria: string): Observable<ApiResponse<JuegoResponse[]>> {
     return this.http.get<ApiResponse<JuegoResponse[]>>(
       `${this.apiUrl}/categoria/${categoria}`,
       { headers: this.getHeaders() }
     );
+  }
+
+  getRankingPorJuego(juegoId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${juegoId}/ranking`, {
+      headers: this.getHeaders(),
+    });
+  }
+  getTotalPuntos(juegos: JuegoResponse[]): number {
+    return juegos.reduce((total, j) => total + (j.puntosGanados || 0), 0);
   }
 }

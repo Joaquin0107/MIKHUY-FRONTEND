@@ -31,7 +31,7 @@ export const routes: Routes = [
   },
 
   // 🔒 Rutas protegidas generales
-  { path: 'juegos', component: JuegosComponent, canActivate: [AuthGuard], title: 'MIKHUY - Juegos' },
+  { path: 'juegos', component: JuegosComponent, canActivate: [AuthGuard], data:{role:'student'}, title: 'MIKHUY - Juegos' },
   { path: 'beneficios', component: BeneficiosComponent, canActivate: [AuthGuard], title: 'MIKHUY - Beneficios' },
   { path: 'perfil', component: PerfilComponent, canActivate: [AuthGuard], title: 'MIKHUY - Mi Perfil' },
   { path: 'dashboards', component: DashboardsComponent, canActivate: [AuthGuard], title: 'MIKHUY - Dashboards' },

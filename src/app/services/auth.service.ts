@@ -1,3 +1,4 @@
+// src/app/services/auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -6,7 +7,7 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private baseUrl = `${environment.apiUrl}/api/auth`;
-  private tokenKey = 'token';
+  private tokenKey = 'authToken';
   private userKey = 'currentUser';
 
   constructor(private http: HttpClient) {}
@@ -16,16 +17,13 @@ export class AuthService {
     return this.http.post(`${this.baseUrl}/login`, data);
   }
 
-  register(data: any): Observable<any> {
-    return this.http.post(`${this.baseUrl}/register`, data);
-  }
-
   // --- Token y usuario ---
   saveToken(token: string) {
-    localStorage.setItem('authToken', token);
+    localStorage.setItem(this.tokenKey, token);
   }
+
   getToken(): string | null {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem(this.tokenKey);
   }
 
   saveUser(user: any): void {

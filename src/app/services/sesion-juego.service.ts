@@ -9,7 +9,7 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-// Request Interfaces
+// Request Interfaces (igual que tenías)
 export interface IniciarSesionRequest {
   juegoId: string;
   nivel: number;
@@ -52,7 +52,6 @@ export interface GuardarCoachRespuestaRequest {
   respuestaValor: number;
 }
 
-// Response Interface
 export interface SesionJuegoResponse {
   id: string;
   progresoId: string;
@@ -74,20 +73,15 @@ export class SesionJuegoService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtener headers con token de autorización
-   */
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    // Usar siempre la misma key 'authToken'
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     });
   }
 
-  /**
-   * Iniciar una nueva sesión de juego
-   */
   iniciarSesion(request: IniciarSesionRequest): Observable<ApiResponse<SesionJuegoResponse>> {
     return this.http.post<ApiResponse<SesionJuegoResponse>>(
       `${this.apiUrl}/iniciar`,
@@ -96,9 +90,6 @@ export class SesionJuegoService {
     );
   }
 
-  /**
-   * Finalizar sesión de juego
-   */
   finalizarSesion(request: FinalizarSesionRequest): Observable<ApiResponse<SesionJuegoResponse>> {
     return this.http.put<ApiResponse<SesionJuegoResponse>>(
       `${this.apiUrl}/finalizar`,
@@ -107,9 +98,6 @@ export class SesionJuegoService {
     );
   }
 
-  /**
-   * Guardar respuesta de Desafío Nutrimental
-   */
   guardarRespuestaNutrimental(request: GuardarNutrimentalRespuestaRequest): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.apiUrl}/nutrimental/respuesta`,
@@ -118,9 +106,6 @@ export class SesionJuegoService {
     );
   }
 
-  /**
-   * Guardar registro de Reto 7 Días
-   */
   guardarRegistroReto7Dias(request: GuardarReto7DiasRegistroRequest): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.apiUrl}/reto7dias/registro`,
@@ -129,9 +114,6 @@ export class SesionJuegoService {
     );
   }
 
-  /**
-   * Guardar respuesta de Coach Exprés
-   */
   guardarRespuestaCoach(request: GuardarCoachRespuestaRequest): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.apiUrl}/coach/respuesta`,
@@ -140,9 +122,6 @@ export class SesionJuegoService {
     );
   }
 
-  /**
-   * Obtener mis sesiones
-   */
   getMisSesiones(): Observable<ApiResponse<SesionJuegoResponse[]>> {
     return this.http.get<ApiResponse<SesionJuegoResponse[]>>(
       `${this.apiUrl}/mis-sesiones`,
