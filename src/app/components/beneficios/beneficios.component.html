@@ -72,11 +72,17 @@
     </div>
   </div>
 
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p>Cargando beneficios...</p>
+  </div>
+
   <!-- Beneficios Grid -->
-  <div class="beneficios-grid">
+  <div class="beneficios-grid" *ngIf="!isLoading">
     <mat-card *ngFor="let beneficio of filteredBeneficios" class="beneficio-card">
       <div class="card-image">
-        <img [src]="beneficio.imagen" [alt]="beneficio.nombre" (error)="onImageError($event)">
+        <img [src]="beneficio.imagenUrl" [alt]="beneficio.nombre" (error)="onImageError($event)">
         <div class="stock-badge" *ngIf="beneficio.stock && beneficio.stock <= 5">
           ¡Solo {{beneficio.stock}}!
         </div>
@@ -85,7 +91,7 @@
       <mat-card-content>
         <h3>{{beneficio.nombre}}</h3>
         <div class="puntos-info">
-          <span class="puntos">{{beneficio.puntos}}pts</span>
+          <span class="puntos">{{beneficio.puntosRequeridos}}pts</span>
         </div>
       </mat-card-content>
 
@@ -102,7 +108,7 @@
   </div>
 
   <!-- Empty state -->
-  <div class="empty-state" *ngIf="filteredBeneficios.length === 0">
+  <div class="empty-state" *ngIf="!isLoading && filteredBeneficios.length === 0">
     <mat-icon>search_off</mat-icon>
     <p>No se encontraron beneficios</p>
   </div>

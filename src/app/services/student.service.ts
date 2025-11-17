@@ -1,8 +1,8 @@
-// src/app/services/student.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { Estudiante } from '../models/estudiante.model';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -48,14 +48,18 @@ export class StudentService {
    * Obtener puntos actuales del estudiante desde el servidor
    */
   getMisPuntos(): Observable<ApiResponse<number>> {
-    return this.http.get<ApiResponse<number>>(`${this.apiUrl}/mis-puntos`).pipe(
-      tap(response => {
-        if (response.success && response.data !== undefined) {
-          this.actualizarPuntos(response.data);
-        }
-      })
-    );
+return this.http.get<ApiResponse<number>>(`${this.apiUrl}/mis-puntos`).pipe(
+  tap(response => {
+    if (response.success && response.data !== undefined) {
+      this.actualizarPuntos(response.data);
+    }
+  })
+);
   }
+
+  getMiPerfil(): Observable<Estudiante> {
+  return this.http.get<Estudiante>(`${this.apiUrl}/mi-perfil`);
+}
 
   /**
    * Obtener notificaciones del estudiante
