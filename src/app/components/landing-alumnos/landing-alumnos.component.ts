@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
+import { StudentService } from '../../services/student.service';
 
 @Component({
   selector: 'app-landing-alumnos',
@@ -14,28 +15,44 @@ import { Router } from '@angular/router';
     MatButtonModule,
     MatIconModule,
     MatBadgeModule,
-    MatMenuModule
+    MatMenuModule,
   ],
   templateUrl: './landing-alumnos.component.html',
-  styleUrls: ['./landing-alumnos.component.css']
+  styleUrls: ['./landing-alumnos.component.css'],
 })
 export class LandingAlumnosComponent {
   notificationCount = 0; // Cambiará según notificaciones reales
   notifications: any[] = []; // Array de notificaciones
-  studentPoints = 1250; // Puntos acumulados del alumno
+  studentPoints = 0; // Puntos acumulados del alumno
 
-  constructor(private router: Router) {
-    // Simular carga de notificaciones (luego vendrá del backend)
+  constructor(private router: Router, private studentService: StudentService) {
     this.loadNotifications();
+    this.loadPuntos();
   }
 
   loadNotifications(): void {
-    // Aquí se cargarán las notificaciones reales desde el backend
-    // Por ahora está vacío para mostrar "No tienes notificaciones"
-    this.notifications = [];
-    this.notificationCount = this.notifications.length;
+    this.studentService.getMisNotificaciones().subscribe({
+      next: (res) => {
+        this.notifications = res?.data || [];
+        this.notificationCount = this.notifications.length;
+      },
+      error: () => {
+        this.notifications = [];
+        this.notificationCount = 0;
+      },
+    });
   }
 
+  loadPuntos(): void {
+    this.studentService.getMisPuntos().subscribe({
+      next: (res) => {
+        this.studentPoints = res?.data ?? 0;
+      },
+      error: () => {
+        this.studentPoints = 0;
+      },
+    });
+  }
   navigateToGames(): void {
     this.router.navigate(['/juegos']);
   }

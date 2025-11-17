@@ -12,15 +12,15 @@ export class StudentService {
   constructor(private http: HttpClient) {}
 
   getMisPuntos(): Observable<any> {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem('authToken');
+
     if (!token) {
       throw new Error('No hay token de autenticación');
     }
 
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     });
 
     return this.http.get<any>(`${this.apiUrl}/puntos`, { headers });
@@ -29,10 +29,22 @@ export class StudentService {
   getMiPerfil(): Observable<any> {
     const token = localStorage.getItem('token');
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     });
 
     return this.http.get<any>(`${this.apiUrl}/perfil`, { headers });
+  }
+
+  getMisNotificaciones(): Observable<any> {
+    const token = localStorage.getItem('authToken');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    return this.http.get<any>(`${environment.apiUrl}/notificaciones`, {
+      headers,
+    });
   }
 }
