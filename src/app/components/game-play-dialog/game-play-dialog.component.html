@@ -1,0 +1,223 @@
+<div class="game-dialog">
+  <!-- HEADER -->
+  <div class="game-header">
+    <h2>{{ gameData.juego.nombre }}</h2>
+    <button mat-icon-button (click)="abandonar()" class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- PANTALLA INICIAL -->
+  <div class="game-info" *ngIf="!gameStarted">
+    <mat-card>
+      <mat-card-content>
+        <p class="game-description">{{ gameData.juego.descripcion }}</p>
+        <div class="level-info">
+          <p><strong>Nivel a jugar:</strong> {{ nivelActual }}</p>
+          <p><strong>Puntos actuales:</strong> {{ gameData.juego.puntosGanados }}</p>
+          <p><strong>Puntos por nivel:</strong> {{ gameData.juego.puntosPorNivel }}</p>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="iniciarJuego()">
+          <mat-icon>play_arrow</mat-icon>
+          Comenzar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- ÁREA DE JUEGO -->
+  <div class="game-content" *ngIf="gameStarted && !gameEnded">
+    <div class="game-controls">
+      <div class="timer">
+        <mat-icon>timer</mat-icon>
+        <span>{{ tiempoFormateado }}</span>
+      </div>
+      <div class="score">
+        <mat-icon>stars</mat-icon>
+        <span>{{ puntosGanadosEnSesion }} pts</span>
+      </div>
+    </div>
+
+    <!-- DESAFÍO NUTRIMENTAL -->
+    <div *ngIf="esNutrimental()" class="nutrimental-game">
+      <mat-card class="question-card">
+        <mat-card-header>
+          <mat-card-title>Pregunta {{ preguntaActual + 1 }} de {{ totalPreguntas }}</mat-card-title>
+          <mat-card-subtitle>{{ preguntaNutrimental?.tema }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <h3 class="question-text">{{ preguntaNutrimental?.pregunta }}</h3>
+
+          <mat-radio-group [(ngModel)]="respuestaSeleccionada" class="options-group">
+            <mat-radio-button *ngFor="let opcion of preguntaNutrimental?.opciones; let i = index"
+              [value]="i" [disabled]="respuestaEnviada" class="option-button">
+              {{ opcion }}
+            </mat-radio-button>
+          </mat-radio-group>
+
+          <div *ngIf="respuestaEnviada" class="feedback"
+            [class.correct]="esRespuestaCorrecta" [class.incorrect]="!esRespuestaCorrecta">
+            <mat-icon>{{ esRespuestaCorrecta ? 'check_circle' : 'cancel' }}</mat-icon>
+            <p>{{ esRespuestaCorrecta ? '¡Correcto!' : 'Incorrecto' }}</p>
+            <p class="explanation">{{ preguntaNutrimental?.explicacion }}</p>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="enviarRespuestaNutrimental()"
+            [disabled]="respuestaSeleccionada === null || respuestaEnviada">
+            Responder
+          </button>
+          <button *ngIf="respuestaEnviada" mat-raised-button color="accent" (click)="siguientePregunta()">
+            Siguiente
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- RETO 7 DÍAS -->
+    <div *ngIf="esReto7Dias()" class="reto7dias-game">
+      <mat-card class="diary-card">
+        <mat-card-header>
+          <mat-card-title>Día {{ diaActual }} - {{ momentoDiaActual }}</mat-card-title>
+          <mat-card-subtitle>Registro {{ registrosGuardados + 1 }} de {{ totalRegistros }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <h3>Registra tus alimentos consumidos:</h3>
+
+          <div class="food-groups">
+            <div class="food-item">
+              <label>🍎 Frutas:</label>
+              <input type="number" [(ngModel)]="alimentosFrutas" min="0" max="10" />
+            </div>
+            <div class="food-item">
+              <label>🥗 Verduras:</label>
+              <input type="number" [(ngModel)]="alimentosVerduras" min="0" max="10" />
+            </div>
+            <div class="food-item">
+              <label>🍗 Proteínas:</label>
+              <input type="number" [(ngModel)]="alimentosProteinas" min="0" max="10" />
+            </div>
+            <div class="food-item">
+              <label>🍞 Carbohidratos:</label>
+              <input type="number" [(ngModel)]="alimentosCarbohidratos" min="0" max="10" />
+            </div>
+            <div class="food-item">
+              <label>🥛 Lácteos:</label>
+              <input type="number" [(ngModel)]="alimentosLacteos" min="0" max="10" />
+            </div>
+            <div class="food-item">
+              <label>🍰 Dulces:</label>
+              <input type="number" [(ngModel)]="alimentosDulces" min="0" max="10" />
+            </div>
+          </div>
+
+          <div class="emotions">
+            <h4>¿Cómo te sientes?</h4>
+            <mat-radio-group [(ngModel)]="emocionSeleccionada">
+              <mat-radio-button value="feliz">😊 Feliz</mat-radio-button>
+              <mat-radio-button value="normal">😐 Normal</mat-radio-button>
+              <mat-radio-button value="triste">😢 Triste</mat-radio-button>
+              <mat-radio-button value="estresado">😰 Estresado</mat-radio-button>
+              <mat-radio-button value="ansioso">😟 Ansioso</mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <div class="notes">
+            <label>Notas adicionales:</label>
+            <textarea [(ngModel)]="notasReto" rows="3" placeholder="Escribe tus observaciones..."></textarea>
+          </div>
+
+          <div class="calories-estimate" *ngIf="calcularCalorias() > 0">
+            <p><strong>Calorías estimadas:</strong> {{ calcularCalorias() }} kcal</p>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="guardarRegistroReto()">
+            Guardar Registro
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- COACH EXPRÉS -->
+    <div *ngIf="esCoachExpres()" class="coach-game">
+      <mat-card class="coach-card">
+        <mat-card-header>
+          <mat-card-title>Pregunta {{ preguntaCoachActual + 1 }} de {{ totalPreguntasCoach }}</mat-card-title>
+          <mat-card-subtitle>{{ preguntaCoach?.etapa }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <h3 class="question-text">{{ preguntaCoach?.pregunta }}</h3>
+
+          <div class="scale-group">
+            <mat-radio-group [(ngModel)]="respuestaCoach" class="scale-options">
+              <mat-radio-button *ngFor="let valor of [1, 2, 3, 4, 5]" [value]="valor" class="scale-option">
+                {{ valor }}
+              </mat-radio-button>
+            </mat-radio-group>
+            <div class="scale-labels">
+              <span>Totalmente en desacuerdo</span>
+              <span>Totalmente de acuerdo</span>
+            </div>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="enviarRespuestaCoach()"
+            [disabled]="respuestaCoach === null">
+            {{ preguntaCoachActual < totalPreguntasCoach - 1 ? 'Siguiente' : 'Finalizar' }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- RESUMEN FINAL -->
+  <div class="game-summary" *ngIf="gameEnded">
+    <mat-card class="summary-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon class="success-icon">check_circle</mat-icon>
+          ¡Nivel Completado!
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="summary-stats">
+          <div class="stat">
+            <mat-icon>timer</mat-icon>
+            <div>
+              <span class="label">Tiempo</span>
+              <span class="value">{{ tiempoFormateado }}</span>
+            </div>
+          </div>
+          <div class="stat">
+            <mat-icon>stars</mat-icon>
+            <div>
+              <span class="label">Puntos Ganados</span>
+              <span class="value">{{ puntosGanadosEnSesion }}</span>
+            </div>
+          </div>
+          <div class="stat" *ngIf="!esUltimoNivel()">
+            <mat-icon>emoji_events</mat-icon>
+            <div>
+              <span class="label">Nuevo Nivel</span>
+              <span class="value">{{ nivelActual + 1 }}</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-raised-button color="primary" (click)="continuar()">
+          Continuar
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" *ngIf="loading">
+    <mat-icon class="spinner">refresh</mat-icon>
+    <p>{{ loadingMessage }}</p>
+  </div>
+</div>

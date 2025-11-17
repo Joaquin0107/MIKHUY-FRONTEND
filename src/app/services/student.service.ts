@@ -1,50 +1,138 @@
+// src/app/services/student.service.ts
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
+export interface Notificacion {
+  id: string;
+  titulo: string;
+  mensaje: string;
+  fecha: string;
+  leida: boolean;
+  tipo?: string;
+  icon?: string;
+  title?: string;
+  time?: string;
+}
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class StudentService {
   private apiUrl = `${environment.apiUrl}/estudiantes`;
 
-  constructor(private http: HttpClient) {}
+  // BehaviorSubject para mantener los puntos sincronizados
+  private puntosSubject = new BehaviorSubject<number>(0);
+  public puntos$ = this.puntosSubject.asObservable();
 
-  getMisPuntos(): Observable<any> {
-    const token = localStorage.getItem('authToken');
+  // BehaviorSubject para notificaciones
+  private notificacionesSubject = new BehaviorSubject<Notificacion[]>([]);
+  public notificaciones$ = this.notificacionesSubject.asObservable();
 
-    if (!token) {
-      throw new Error('No hay token de autenticación');
+  constructor(private http: HttpClient) {
+    // Cargar puntos iniciales desde localStorage si existen
+    const puntosGuardados = localStorage.getItem('studentPoints');
+    if (puntosGuardados) {
+      this.puntosSubject.next(parseInt(puntosGuardados));
     }
-
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
-
-    return this.http.get<any>(`${this.apiUrl}/puntos`, { headers });
   }
 
-  getMiPerfil(): Observable<any> {
-    const token = localStorage.getItem('token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
-
-    return this.http.get<any>(`${this.apiUrl}/perfil`, { headers });
+  /**
+   * Obtener puntos actuales del estudiante desde el servidor
+   */
+  getMisPuntos(): Observable<ApiResponse<number>> {
+    return this.http.get<ApiResponse<number>>(`${this.apiUrl}/mis-puntos`).pipe(
+      tap(response => {
+        if (response.success && response.data !== undefined) {
+          this.actualizarPuntos(response.data);
+        }
+      })
+    );
   }
 
-  getMisNotificaciones(): Observable<any> {
-    const token = localStorage.getItem('authToken');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    });
+  /**
+   * Obtener notificaciones del estudiante
+   */
+  getMisNotificaciones(): Observable<ApiResponse<Notificacion[]>> {
+    return this.http.get<ApiResponse<Notificacion[]>>(`${this.apiUrl}/mis-notificaciones`).pipe(
+      tap(response => {
+        if (response.success && response.data) {
+          this.notificacionesSubject.next(response.data);
+        }
+      })
+    );
+  }
 
-    return this.http.get<any>(`${environment.apiUrl}/notificaciones`, {
-      headers,
+  /**
+   * Actualizar puntos localmente y en el BehaviorSubject
+   */
+  actualizarPuntos(puntos: number): void {
+    this.puntosSubject.next(puntos);
+    localStorage.setItem('studentPoints', puntos.toString());
+  }
+
+  /**
+   * Sumar puntos a los actuales (útil después de completar un juego)
+   */
+  sumarPuntos(puntosGanados: number): void {
+    const puntosActuales = this.puntosSubject.value;
+    const nuevosPuntos = puntosActuales + puntosGanados;
+    this.actualizarPuntos(nuevosPuntos);
+  }
+
+  /**
+   * Obtener puntos actuales (valor sincrónico)
+   */
+  getPuntosActuales(): number {
+    return this.puntosSubject.value;
+  }
+
+  /**
+   * Refrescar puntos desde el servidor
+   */
+  refrescarPuntos(): void {
+    this.getMisPuntos().subscribe({
+      next: (response) => {
+        console.log('Puntos actualizados desde el servidor:', response.data);
+      },
+      error: (err) => {
+        console.error('Error al refrescar puntos:', err);
+      }
     });
+  }
+
+  /**
+   * Marcar notificación como leída
+   */
+  marcarNotificacionLeida(notificacionId: string): Observable<ApiResponse<void>> {
+    return this.http.put<ApiResponse<void>>(
+      `${this.apiUrl}/notificaciones/${notificacionId}/leer`,
+      {}
+    ).pipe(
+      tap(response => {
+        if (response.success) {
+          const notificaciones = this.notificacionesSubject.value.map(n =>
+            n.id === notificacionId ? { ...n, leida: true } : n
+          );
+          this.notificacionesSubject.next(notificaciones);
+        }
+      })
+    );
+  }
+
+  /**
+   * Limpiar datos (útil para logout)
+   */
+  limpiarDatos(): void {
+    this.puntosSubject.next(0);
+    this.notificacionesSubject.next([]);
+    localStorage.removeItem('studentPoints');
   }
 }
