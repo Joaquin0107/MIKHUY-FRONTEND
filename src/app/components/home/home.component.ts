@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
 })
 export class HomeComponent {
   constructor(private router: Router){}
-    navigateToLogin(role: 'student' | 'teacher'):void {
+    navigateToLogin(role: 'student' | 'teacher' | 'admin'):void {
       this.router.navigate(['/login'],{queryParams:{role}});
     }
 }

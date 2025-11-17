@@ -21,18 +21,21 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  height: 100vh; /* Asegura que ocupe toda la pantalla */
 }
+
 
 .image-wrapper {
   flex: 1;
   position: relative;
   overflow: hidden;
+  height: 50%; /* Divide el espacio entre estudiantes y profesores */
 }
 
 .section-image {
-  width: 900px;
-  height: 380px;
-  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Escala sin deformar */
   transition: transform 0.5s ease;
 }
 
@@ -78,14 +81,14 @@
 /* Sección de Logo */
 .logo-section {
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.2rem; /* antes era 1rem */
+  padding: 0.2rem 0;     /* puedes ajustar según lo que veas en pantalla */
 }
 
 .logo-img {
-  width: 200px;
-  height: 200px;
+  width: 120px; 
+  height: 120px;
   object-fit: contain;
-
   animation: bounceIn 1s ease-out;
 }
 
@@ -189,6 +192,15 @@
   border-color: #3d8fd9 !important;
 }
 
+.admin-btn {
+  background: linear-gradient(135deg, #ff9800 0%, #ffc107 100%) !important;
+  color: white !important;
+}
+
+.admin-btn:hover {
+  border-color: #ff9800 !important;
+}
+
 /* Características */
 .features {
   display: flex;
@@ -254,7 +266,19 @@
 
   .image-section {
     flex-direction: row;
-    min-height: 250px;
+    height: auto; /* Permite que se adapte al contenido */
+    min-height: unset;
+  }
+
+  .image-wrapper {
+    flex: 1;
+    height: auto;
+  }
+
+  .section-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
   }
 
   .content-section {
@@ -268,7 +292,17 @@
 
 @media (max-width: 576px) {
   .image-section {
-    min-height: 200px;
+    flex-direction: column;
+  }
+
+  .image-wrapper {
+    height: 200px; /* Altura fija para móviles */
+  }
+
+  .section-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .features {

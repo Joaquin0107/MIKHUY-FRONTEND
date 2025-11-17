@@ -22,7 +22,7 @@ export class AuthService {
 
   // --- Token y usuario ---
   saveToken(token: string) {
-    localStorage.setItem('authToken', token); // mismo nombre que en JuegosComponent
+    localStorage.setItem('authToken', token);
   }
   getToken(): string | null {
     return localStorage.getItem('authToken');

@@ -66,44 +66,49 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.loginForm.invalid) {
-      alert('Por favor completa los campos correctamente.');
-      return;
-    }
-
-    const loginData: LoginRequest = {
-      email: this.loginForm.value.username,
-      password: this.loginForm.value.password,
-    };
-
-    this.authService.login(loginData).subscribe({
-      next: (res) => {
-        if (res?.success && res.data?.token) {
-          const rol = res.data.user?.rol;
-
-          // 🔹 Guardar sesión en AuthService (ya lo hace internamente)
-          this.authService.saveToken(res.data.token);
-          this.authService.saveUser(res.data.user);
-
-          // 🔹 Redirección según el rol
-          if (rol === 'student') {
-            this.router.navigate(['/landing-alumnos']);
-          } else if (rol === 'teacher') {
-            this.router.navigate(['/landing-profesores']);
-          } else {
-            this.router.navigate(['/dashboards']);
-          }
-        } else {
-          alert(res.message || 'Credenciales inválidas. Inténtalo nuevamente.');
-        }
-      },
-      error: (err) => {
-        console.error('Error en login:', err);
-        alert('Error en el inicio de sesión. Verifica tus credenciales.');
-      },
-    });
+  if (this.loginForm.invalid) {
+    alert('Por favor completa los campos correctamente.');
+    return;
   }
 
+  const loginData: LoginRequest = {
+    email: this.loginForm.value.username,
+    password: this.loginForm.value.password,
+  };
+
+  this.authService.login(loginData).subscribe({
+    next: (res) => {
+      if (res?.success && res.data?.token) {
+        const rol = res.data.user?.rol;
+
+        // 🔒 Validar que el rol del usuario coincida con el rol esperado por la pantalla
+        if (rol !== this.userRole) {
+          alert(`Este usuario pertenece al rol "${rol}" y no puede ingresar desde el login de "${this.userRole}".`);
+          return;
+        }
+
+        // ✅ Guardar sesión
+        this.authService.saveToken(res.data.token);
+        this.authService.saveUser(res.data.user);
+
+        // ✅ Redirigir según rol
+        if (rol === 'student') {
+          this.router.navigate(['/landing-alumnos']);
+        } else if (rol === 'teacher') {
+          this.router.navigate(['/landing-profesores']);
+        } else {
+          this.router.navigate(['/dashboards']);
+        }
+      } else {
+        alert(res.message || 'Credenciales inválidas. Inténtalo nuevamente.');
+      }
+    },
+    error: (err) => {
+      console.error('Error en login:', err);
+      alert('Error en el inicio de sesión. Verifica tus credenciales.');
+    },
+  });
+}
   goBack(): void {
     this.router.navigate(['/']);
   }
@@ -127,6 +132,48 @@ export class LoginComponent implements OnInit {
     });
   }
 }
+@Component({
+  selector: 'access-denied-dialog',
+  standalone: true,
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatIconModule],
+  template: `
+    <div class="dialog-container">
+      <h2 mat-dialog-title>
+        <mat-icon color="warn">block</mat-icon> Acceso Denegado
+      </h2>
+      <mat-dialog-content>
+        <p>{{ message }}</p>
+      </mat-dialog-content>
+      <mat-dialog-actions align="end">
+        <button mat-button mat-dialog-close>Cerrar</button>
+      </mat-dialog-actions>
+    </div>
+  `,
+  styles: [`
+    .dialog-container {
+      font-family: 'Poppins', sans-serif;
+      padding: 24px;
+      max-width: 400px;
+    }
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #d32f2f;
+      font-weight: 600;
+      margin: 0;
+    }
+    p {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #444;
+    }
+  `]
+})
+export class AccessDeniedDialog {
+  constructor(@Inject(MAT_DIALOG_DATA) public message: string) {}
+}
+
 
 @Component({
   selector: 'forgot-password-dialog',

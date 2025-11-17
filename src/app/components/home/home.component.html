@@ -30,6 +30,7 @@
           class="logo-img"
         />
         <h1 class="app-name">MIKHUY</h1>
+        <br>
         <p class="tagline">Aprende, Juega y Crece Saludable</p>
       </div>
 
@@ -67,6 +68,22 @@
           </div>
         </button>
       </div>
+      <button
+  mat-raised-button
+  class="role-btn admin-btn"
+  matRipple
+  (click)="navigateToLogin('admin')"
+>
+  <div class="btn-content">
+    <mat-icon class="btn-icon">admin_panel_settings</mat-icon>
+    <div class="btn-text">
+      <h2>Administrador</h2>
+      <p>Panel de gestión</p>
+    </div>
+    <mat-icon class="btn-arrow">arrow_forward</mat-icon>
+  </div>
+</button>
+<br><br>
 
       <!-- Características -->
       <div class="features">

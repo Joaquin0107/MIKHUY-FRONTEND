@@ -1,7 +1,6 @@
 import { DashboardsComponent } from './components/dashboards/dashboards.component';
 import { BeneficiosComponent } from './components/beneficios/beneficios.component';
 import { JuegosComponent } from './components/juegos/juegos.component';
-import { RegistroComponent } from './components/registro/registro.component';
 import { HomeComponent } from './components/home/home.component';
 import { LoginComponent } from './components/login/login.component';
 import { LandingAlumnosComponent } from './components/landing-alumnos/landing-alumnos.component';
@@ -14,7 +13,6 @@ export const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'home', component: HomeComponent, title: 'MIKHUY - Inicio' },
   { path: 'login', component: LoginComponent, title: 'MIKHUY - Iniciar Sesión' },
-  { path: 'registro', component: RegistroComponent, title: 'MIKHUY - Registro' },
 
   // 🔒 Rutas protegidas por rol
   { 
