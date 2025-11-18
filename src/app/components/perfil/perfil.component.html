@@ -120,7 +120,7 @@
             <div class="stat-item">
               <mat-icon>stars</mat-icon>
               <span class="stat-value">{{stats.puntosGanados}}</span>
-              <span class="stat-label">Puntos</span>
+              <span class="stat-label">Historial de Puntos</span>
             </div>
             <div class="stat-item">
               <mat-icon>card_giftcard</mat-icon>
@@ -187,15 +187,6 @@
                   </mat-error>
                   <mat-error *ngIf="perfilForm.get('email')?.hasError('email')">
                     Ingresa un correo válido
-                  </mat-error>
-                </mat-form-field>
-
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Teléfono (opcional)</mat-label>
-                  <input matInput type="tel" formControlName="telefono" placeholder="987654321">
-                  <mat-icon matPrefix>phone</mat-icon>
-                  <mat-error *ngIf="perfilForm.get('telefono')?.hasError('pattern')">
-                    Ingresa 9 dígitos
                   </mat-error>
                 </mat-form-field>
 
@@ -309,86 +300,106 @@
             </div>
           </mat-tab>
 
-          <!-- Seguridad -->
-          <mat-tab label="Seguridad">
-            <div class="tab-content">
-              <form [formGroup]="seguridadForm">
-                
-                <div class="section-title">
-                  <mat-icon>lock</mat-icon>
-                  <h3>Cambiar Contraseña</h3>
-                </div>
+          <!-- ========================================
+     SECCIÓN DE SEGURIDAD - CAMBIAR CONTRASEÑA
+     ======================================== -->
+<mat-tab label="Seguridad">
+  <div class="tab-content">
+    <form [formGroup]="seguridadForm" (ngSubmit)="cambiarContrasena()">
+      <h3>Cambiar Contraseña</h3>
 
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Contraseña Actual</mat-label>
-                  <input matInput 
-                         [type]="hideCurrentPassword ? 'password' : 'text'"
-                         formControlName="oldPassword">
-                  <mat-icon matPrefix>lock</mat-icon>
-                  <button mat-icon-button 
-                          matSuffix 
-                          type="button"
-                          (click)="hideCurrentPassword = !hideCurrentPassword">
-                    <mat-icon>{{hideCurrentPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                  </button>
-                  <mat-error>La contraseña actual es requerida</mat-error>
-                </mat-form-field>
+      <!-- Contraseña Actual -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Contraseña Actual</mat-label>
+        <input 
+          matInput 
+          [type]="hideCurrentPassword ? 'password' : 'text'"
+          formControlName="currentPassword"
+          placeholder="Ingresa tu contraseña actual"
+          required>
+        <button 
+          mat-icon-button 
+          matSuffix 
+          type="button"
+          (click)="hideCurrentPassword = !hideCurrentPassword"
+          [attr.aria-label]="'Hide password'"
+          [attr.aria-pressed]="hideCurrentPassword">
+          <mat-icon>{{hideCurrentPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+        <mat-error *ngIf="seguridadForm.get('currentPassword')?.hasError('required')">
+          La contraseña actual es requerida
+        </mat-error>
+      </mat-form-field>
 
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Nueva Contraseña</mat-label>
-                  <input matInput 
-                         [type]="hideNewPassword ? 'password' : 'text'"
-                         formControlName="newPassword">
-                  <mat-icon matPrefix>lock_outline</mat-icon>
-                  <button mat-icon-button 
-                          matSuffix 
-                          type="button"
-                          (click)="hideNewPassword = !hideNewPassword">
-                    <mat-icon>{{hideNewPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                  </button>
-                  <mat-error *ngIf="seguridadForm.get('newPassword')?.hasError('required')">
-                    La nueva contraseña es requerida
-                  </mat-error>
-                  <mat-error *ngIf="seguridadForm.get('newPassword')?.hasError('minlength')">
-                    Mínimo 6 caracteres
-                  </mat-error>
-                </mat-form-field>
+      <!-- Nueva Contraseña -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nueva Contraseña</mat-label>
+        <input 
+          matInput 
+          [type]="hideNewPassword ? 'password' : 'text'"
+          formControlName="newPassword"
+          placeholder="Mínimo 6 caracteres"
+          required>
+        <button 
+          mat-icon-button 
+          matSuffix 
+          type="button"
+          (click)="hideNewPassword = !hideNewPassword"
+          [attr.aria-label]="'Hide password'"
+          [attr.aria-pressed]="hideNewPassword">
+          <mat-icon>{{hideNewPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+        <mat-error *ngIf="seguridadForm.get('newPassword')?.hasError('required')">
+          La nueva contraseña es requerida
+        </mat-error>
+        <mat-error *ngIf="seguridadForm.get('newPassword')?.hasError('minlength')">
+          Mínimo 6 caracteres
+        </mat-error>
+      </mat-form-field>
 
-                <mat-form-field appearance="outline" class="full-width">
-                  <mat-label>Confirmar Nueva Contraseña</mat-label>
-                  <input matInput 
-                         [type]="hideConfirmPassword ? 'password' : 'text'"
-                         formControlName="confirmPassword">
-                  <mat-icon matPrefix>lock_reset</mat-icon>
-                  <button mat-icon-button 
-                          matSuffix 
-                          type="button"
-                          (click)="hideConfirmPassword = !hideConfirmPassword">
-                    <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-                  </button>
-                  <mat-error *ngIf="seguridadForm.hasError('passwordMismatch')">
-                    Las contraseñas no coinciden
-                  </mat-error>
-                </mat-form-field>
+      <!-- Confirmar Contraseña -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Confirmar Nueva Contraseña</mat-label>
+        <input 
+          matInput 
+          [type]="hideConfirmPassword ? 'password' : 'text'"
+          formControlName="confirmPassword"
+          placeholder="Repite la nueva contraseña"
+          required>
+        <button 
+          mat-icon-button 
+          matSuffix 
+          type="button"
+          (click)="hideConfirmPassword = !hideConfirmPassword"
+          [attr.aria-label]="'Hide password'"
+          [attr.aria-pressed]="hideConfirmPassword">
+          <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+        </button>
+        <mat-error *ngIf="seguridadForm.get('confirmPassword')?.hasError('required')">
+          Debes confirmar la contraseña
+        </mat-error>
+      </mat-form-field>
 
-                <div class="security-info">
-                  <mat-icon>info</mat-icon>
-                  <p>Tu contraseña debe tener al menos 6 caracteres y ser diferente a contraseñas anteriores.</p>
-                </div>
+      <!-- Error de contraseñas no coinciden -->
+      <mat-error *ngIf="seguridadForm.hasError('passwordMismatch') && seguridadForm.get('confirmPassword')?.touched" 
+                 class="password-mismatch-error">
+        Las contraseñas no coinciden
+      </mat-error>
 
-                <div class="form-actions">
-                  <button mat-raised-button 
-                          color="primary" 
-                          (click)="cambiarContrasena()" 
-                          [disabled]="!seguridadForm.valid || loading">
-                    <mat-icon>security</mat-icon>
-                    {{loading ? 'Cambiando...' : 'Cambiar Contraseña'}}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </mat-tab>
-
+      <!-- Botones de acción -->
+      <div class="form-actions">
+        <button 
+          mat-raised-button 
+          color="primary" 
+          type="submit"
+          [disabled]="!seguridadForm.valid || loading">
+          <mat-icon>lock</mat-icon>
+          {{ loading ? 'Guardando...' : 'Cambiar Contraseña' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</mat-tab>
         </mat-tab-group>
       </mat-card>
 
