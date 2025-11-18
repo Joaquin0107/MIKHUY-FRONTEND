@@ -459,6 +459,64 @@
   font-size: 1rem !important;
 }
 
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+}
+
+.loading-container p {
+  color: #666;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Stats loading */
+.stats-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+/* Three columns layout for health data */
+.three-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+/* Form field adjustments */
+mat-form-field {
+  width: 100%;
+}
+
+/* Button disabled state */
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+/* Error messages */
+mat-error {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Input number adjustments */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 968px) {
   .stats-grid {
@@ -526,4 +584,42 @@
     bottom: 1.5rem;
     right: 1.5rem;
   }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .three-columns {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .loading-container {
+    min-height: 300px;
+  }
+}
+
+/* Material overrides for better UX */
+::ng-deep .mat-mdc-form-field-error {
+  font-size: 0.85rem !important;
+}
+
+::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  min-height: 20px;
+}
+
+/* Success/Error snackbar styles (if not in global styles) */
+::ng-deep .snackbar-success {
+  background-color: #4caf50 !important;
+}
+
+::ng-deep .snackbar-success .mat-mdc-snack-bar-label {
+  color: white !important;
+}
+
+::ng-deep .snackbar-error {
+  background-color: #f44336 !important;
+}
+
+::ng-deep .snackbar-error .mat-mdc-snack-bar-label {
+  color: white !important;
 }

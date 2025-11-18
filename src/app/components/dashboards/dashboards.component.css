@@ -463,6 +463,8 @@
   border-radius: 16px !important;
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 1rem;
   transition: all 0.3s;
   background: white !important;

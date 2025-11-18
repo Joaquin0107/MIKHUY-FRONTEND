@@ -56,8 +56,14 @@
     </div>
   </header>
 
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner></mat-spinner>
+    <p>Cargando...</p>
+  </div>
+
   <!-- Main Content -->
-  <div class="perfil-content">
+  <div class="perfil-content" *ngIf="!loading">
     <div class="content-wrapper">
       
       <!-- Profile Card -->
@@ -105,7 +111,7 @@
         <!-- Stats (Solo para estudiantes) -->
         <div class="stats-section" *ngIf="userRole === 'student'">
           <mat-divider></mat-divider>
-          <div class="stats-grid">
+          <div class="stats-grid" *ngIf="!loadingStats">
             <div class="stat-item">
               <mat-icon>sports_esports</mat-icon>
               <span class="stat-value">{{stats.juegoCompletados}}</span>
@@ -126,6 +132,9 @@
               <span class="stat-value">{{stats.diasActivo}}</span>
               <span class="stat-label">Días</span>
             </div>
+          </div>
+          <div class="stats-loading" *ngIf="loadingStats">
+            <mat-spinner diameter="40"></mat-spinner>
           </div>
         </div>
       </mat-card>
@@ -152,6 +161,9 @@
                     <mat-error *ngIf="perfilForm.get('firstName')?.hasError('required')">
                       El nombre es requerido
                     </mat-error>
+                    <mat-error *ngIf="perfilForm.get('firstName')?.hasError('minlength')">
+                      Mínimo 2 caracteres
+                    </mat-error>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="half-width">
@@ -160,6 +172,9 @@
                     <mat-error *ngIf="perfilForm.get('lastName')?.hasError('required')">
                       El apellido es requerido
                     </mat-error>
+                    <mat-error *ngIf="perfilForm.get('lastName')?.hasError('minlength')">
+                      Mínimo 2 caracteres
+                    </mat-error>
                   </mat-form-field>
                 </div>
 
@@ -167,6 +182,9 @@
                   <mat-label>Correo Electrónico</mat-label>
                   <input matInput type="email" formControlName="email">
                   <mat-icon matPrefix>email</mat-icon>
+                  <mat-error *ngIf="perfilForm.get('email')?.hasError('required')">
+                    El correo es requerido
+                  </mat-error>
                   <mat-error *ngIf="perfilForm.get('email')?.hasError('email')">
                     Ingresa un correo válido
                   </mat-error>
@@ -180,6 +198,52 @@
                     Ingresa 9 dígitos
                   </mat-error>
                 </mat-form-field>
+
+                <!-- Datos de Salud (Solo Estudiantes) -->
+                <ng-container *ngIf="userRole === 'student'">
+                  <div class="section-title">
+                    <mat-icon>favorite</mat-icon>
+                    <h3>Datos de Salud</h3>
+                  </div>
+
+                  <div class="form-row three-columns">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Edad (años)</mat-label>
+                      <input matInput type="number" formControlName="edad" placeholder="15">
+                      <mat-icon matPrefix>cake</mat-icon>
+                      <mat-error *ngIf="perfilForm.get('edad')?.hasError('min')">
+                        Edad mínima: 5 años
+                      </mat-error>
+                      <mat-error *ngIf="perfilForm.get('edad')?.hasError('max')">
+                        Edad máxima: 100 años
+                      </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Peso (kg)</mat-label>
+                      <input matInput type="number" formControlName="peso" placeholder="60">
+                      <mat-icon matPrefix>monitor_weight</mat-icon>
+                      <mat-error *ngIf="perfilForm.get('peso')?.hasError('min')">
+                        Peso mínimo: 20 kg
+                      </mat-error>
+                      <mat-error *ngIf="perfilForm.get('peso')?.hasError('max')">
+                        Peso máximo: 200 kg
+                      </mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Talla (cm)</mat-label>
+                      <input matInput type="number" formControlName="talla" placeholder="160">
+                      <mat-icon matPrefix>height</mat-icon>
+                      <mat-error *ngIf="perfilForm.get('talla')?.hasError('min')">
+                        Talla mínima: 100 cm
+                      </mat-error>
+                      <mat-error *ngIf="perfilForm.get('talla')?.hasError('max')">
+                        Talla máxima: 250 cm
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </ng-container>
 
                 <!-- Datos Académicos (Estudiantes) -->
                 <ng-container *ngIf="userRole === 'student'">
@@ -233,9 +297,12 @@
                 </ng-container>
 
                 <div class="form-actions">
-                  <button mat-raised-button color="primary" (click)="guardarPerfil()" [disabled]="!perfilForm.valid">
+                  <button mat-raised-button 
+                          color="primary" 
+                          (click)="guardarPerfil()" 
+                          [disabled]="!perfilForm.valid || loading">
                     <mat-icon>save</mat-icon>
-                    Guardar Cambios
+                    {{loading ? 'Guardando...' : 'Guardar Cambios'}}
                   </button>
                 </div>
               </form>
@@ -256,7 +323,7 @@
                   <mat-label>Contraseña Actual</mat-label>
                   <input matInput 
                          [type]="hideCurrentPassword ? 'password' : 'text'"
-                         formControlName="currentPassword">
+                         formControlName="oldPassword">
                   <mat-icon matPrefix>lock</mat-icon>
                   <button mat-icon-button 
                           matSuffix 
@@ -279,6 +346,9 @@
                           (click)="hideNewPassword = !hideNewPassword">
                     <mat-icon>{{hideNewPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
                   </button>
+                  <mat-error *ngIf="seguridadForm.get('newPassword')?.hasError('required')">
+                    La nueva contraseña es requerida
+                  </mat-error>
                   <mat-error *ngIf="seguridadForm.get('newPassword')?.hasError('minlength')">
                     Mínimo 6 caracteres
                   </mat-error>
@@ -307,9 +377,12 @@
                 </div>
 
                 <div class="form-actions">
-                  <button mat-raised-button color="primary" (click)="cambiarContrasena()" [disabled]="!seguridadForm.valid">
+                  <button mat-raised-button 
+                          color="primary" 
+                          (click)="cambiarContrasena()" 
+                          [disabled]="!seguridadForm.valid || loading">
                     <mat-icon>security</mat-icon>
-                    Cambiar Contraseña
+                    {{loading ? 'Cambiando...' : 'Cambiar Contraseña'}}
                   </button>
                 </div>
               </form>

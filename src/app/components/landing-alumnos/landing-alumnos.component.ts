@@ -107,8 +107,8 @@ export class LandingAlumnosComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.studentService.limpiarDatos();
-    this.authService.logout();
+    console.log('Logout');
+    this.router.navigate(['/']);
   }
 
   /**

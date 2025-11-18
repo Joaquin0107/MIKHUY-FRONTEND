@@ -2,3 +2,31 @@
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/* Estilos para Snackbar de éxito */
+.snackbar-success {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.snackbar-success .mat-mdc-snack-bar-label {
+  color: white !important;
+}
+
+.snackbar-success .mat-mdc-button {
+  color: white !important;
+}
+
+/* Estilos para Snackbar de error */
+.snackbar-error {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+
+.snackbar-error .mat-mdc-snack-bar-label {
+  color: white !important;
+}
+
+.snackbar-error .mat-mdc-button {
+  color: white !important;
+}

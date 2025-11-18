@@ -10,22 +10,32 @@ import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  MatDialogModule,
+  MatDialog,
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { Router } from '@angular/router';
-import { 
-  DashboardService, 
+import {
+  DashboardService,
   DashboardEstudianteResponse,
   EstudianteResponse,
-  JuegoResponse
+  JuegoResponse,
 } from '../../services/dashboard.service';
 import { StudentService } from '../../services/student.service';
 import { AuthService } from '../../services/auth.service';
 
-import jsPDF from 'jsPDF';
+import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 interface Student {
@@ -60,23 +70,23 @@ interface Student {
     MatProgressSpinnerModule,
     MatTooltipModule,
     ReactiveFormsModule,
-    MatSnackBarModule
+    MatSnackBarModule,
   ],
   templateUrl: './dashboards.component.html',
-  styleUrls: ['./dashboards.component.css']
+  styleUrls: ['./dashboards.component.css'],
 })
 export class DashboardsComponent implements OnInit {
   notificationCount = 0;
   searchQuery = '';
   selectedStudent: Student | null = null;
-  
+
   students: Student[] = [];
   filteredStudents: Student[] = [];
-  
+
   dashboardData: DashboardEstudianteResponse | null = null;
   loading = true;
   error: string | null = null;
-  
+
   currentUser: any = null;
   isTeacher = false;
   isGeneratingPDF = false;
@@ -95,11 +105,12 @@ export class DashboardsComponent implements OnInit {
     this.loadExternalScripts();
 
     // Obtener usuario actual desde localStorage
-    this.currentUser = this.authService.getCurrentUser?.() || 
-                      JSON.parse(localStorage.getItem('currentUser') || '{}');
-    
+    this.currentUser =
+      this.authService.getCurrentUser?.() ||
+      JSON.parse(localStorage.getItem('currentUser') || '{}');
+
     this.isTeacher = this.currentUser?.rol === 'teacher';
-    
+
     if (this.isTeacher) {
       this.loadAllStudents();
     } else {
@@ -114,14 +125,16 @@ export class DashboardsComponent implements OnInit {
     // Cargar html2canvas
     if (!(window as any).html2canvas) {
       const html2canvasScript = document.createElement('script');
-      html2canvasScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      html2canvasScript.src =
+        'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
       document.head.appendChild(html2canvasScript);
     }
 
     // Cargar jsPDF
     if (!(window as any).jspdf) {
       const jspdfScript = document.createElement('script');
-      jspdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      jspdfScript.src =
+        'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
       document.head.appendChild(jspdfScript);
     }
   }
@@ -137,10 +150,13 @@ export class DashboardsComponent implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.dashboardData = response.data;
-          this.notificationCount = response.data.estadisticas.notificacionesNoLeidas;
-          
-          this.selectedStudent = this.mapEstudianteToStudent(response.data.estudiante);
-          
+          this.notificationCount =
+            response.data.estadisticas.notificacionesNoLeidas;
+
+          this.selectedStudent = this.mapEstudianteToStudent(
+            response.data.estudiante
+          );
+
           this.loading = false;
         } else {
           this.error = response.message || 'Error al cargar el dashboard';
@@ -149,9 +165,10 @@ export class DashboardsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error cargando dashboard:', err);
-        this.error = 'Error al cargar el dashboard. Por favor, intenta de nuevo.';
+        this.error =
+          'Error al cargar el dashboard. Por favor, intenta de nuevo.';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -165,7 +182,7 @@ export class DashboardsComponent implements OnInit {
     this.studentService.getAll().subscribe({
       next: (response) => {
         if (response.success && response.data) {
-          this.students = response.data.map(est => ({
+          this.students = response.data.map((est) => ({
             id: est.id,
             nombre: est.nombres,
             apellido: est.apellidos,
@@ -175,11 +192,11 @@ export class DashboardsComponent implements OnInit {
             talla: est.talla ? `${est.talla}m` : 'N/A',
             peso: est.peso ? `${est.peso}kg` : 'N/A',
             avatar: est.avatarUrl,
-            puntosAcumulados: est.puntosAcumulados
+            puntosAcumulados: est.puntosAcumulados,
           }));
-          
+
           this.filteredStudents = [...this.students];
-          
+
           if (this.students.length > 0) {
             this.selectStudent(this.students[0]);
           } else {
@@ -193,9 +210,10 @@ export class DashboardsComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error cargando estudiantes:', err);
-        this.error = 'Error al cargar estudiantes. Por favor, intenta de nuevo.';
+        this.error =
+          'Error al cargar estudiantes. Por favor, intenta de nuevo.';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -205,14 +223,15 @@ export class DashboardsComponent implements OnInit {
   selectStudent(student: Student): void {
     this.selectedStudent = student;
     this.loading = true;
-    
+
     this.dashboardService.getDashboardEstudiante(student.id).subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.dashboardData = response.data;
           this.loading = false;
         } else {
-          this.error = response.message || 'Error al cargar datos del estudiante';
+          this.error =
+            response.message || 'Error al cargar datos del estudiante';
           this.loading = false;
         }
       },
@@ -220,7 +239,7 @@ export class DashboardsComponent implements OnInit {
         console.error('Error cargando dashboard del estudiante:', err);
         this.error = 'Error al cargar datos del estudiante.';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -232,10 +251,11 @@ export class DashboardsComponent implements OnInit {
       this.filteredStudents = [...this.students];
     } else {
       const query = this.searchQuery.toLowerCase();
-      this.filteredStudents = this.students.filter(s =>
-        `${s.nombre} ${s.apellido}`.toLowerCase().includes(query) ||
-        s.grado.toLowerCase().includes(query) ||
-        s.seccion.toLowerCase().includes(query)
+      this.filteredStudents = this.students.filter(
+        (s) =>
+          `${s.nombre} ${s.apellido}`.toLowerCase().includes(query) ||
+          s.grado.toLowerCase().includes(query) ||
+          s.seccion.toLowerCase().includes(query)
       );
     }
   }
@@ -245,7 +265,9 @@ export class DashboardsComponent implements OnInit {
    */
   async descargarReporte(): Promise<void> {
     if (!this.selectedStudent || !this.dashboardData) {
-      this.snackBar.open('No hay datos para generar el reporte', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('No hay datos para generar el reporte', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -256,7 +278,6 @@ export class DashboardsComponent implements OnInit {
       // Esperar a que las librerías estén disponibles
       await this.waitForLibraries();
 
-      const { jsPDF } = (window as any).jspdf;
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -265,12 +286,12 @@ export class DashboardsComponent implements OnInit {
       // PORTADA
       pdf.setFillColor(72, 163, 243);
       pdf.rect(0, 0, pageWidth, 60, 'F');
-      
+
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(28);
       pdf.setFont('helvetica', 'bold');
       pdf.text('REPORTE NUTRICIONAL', pageWidth / 2, 30, { align: 'center' });
-      
+
       pdf.setFontSize(16);
       pdf.setFont('helvetica', 'normal');
       pdf.text('Plataforma MIKHUY', pageWidth / 2, 45, { align: 'center' });
@@ -280,39 +301,59 @@ export class DashboardsComponent implements OnInit {
       pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(20);
       pdf.setFont('helvetica', 'bold');
-      pdf.text(`${this.selectedStudent.nombre} ${this.selectedStudent.apellido}`, 20, yPosition);
+      pdf.text(
+        `${this.selectedStudent.nombre} ${this.selectedStudent.apellido}`,
+        20,
+        yPosition
+      );
 
       yPosition += 10;
       pdf.setFontSize(11);
       pdf.setFont('helvetica', 'normal');
       pdf.text(`Edad: ${this.selectedStudent.edad} años`, 20, yPosition);
-      pdf.text(`Grado: ${this.selectedStudent.grado} - Sección ${this.selectedStudent.seccion}`, 80, yPosition);
+      pdf.text(
+        `Grado: ${this.selectedStudent.grado} - Sección ${this.selectedStudent.seccion}`,
+        80,
+        yPosition
+      );
       pdf.text(`Talla: ${this.selectedStudent.talla}`, 150, yPosition);
-      
+
       yPosition += 6;
       pdf.text(`Peso: ${this.selectedStudent.peso}`, 20, yPosition);
-      pdf.text(`Puntos Acumulados: ${this.dashboardData.estudiante.puntosAcumulados}`, 80, yPosition);
+      pdf.text(
+        `Puntos Acumulados: ${this.dashboardData.estudiante.puntosAcumulados}`,
+        80,
+        yPosition
+      );
 
       // ESTADÍSTICAS GENERALES
       yPosition += 15;
       pdf.setFillColor(232, 245, 253);
       pdf.rect(15, yPosition - 5, pageWidth - 30, 25, 'F');
-      
+
       pdf.setFontSize(14);
       pdf.setFont('helvetica', 'bold');
       pdf.text('Estadísticas Generales', 20, yPosition);
-      
+
       yPosition += 8;
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
-      
+
       const stats = this.dashboardData.estadisticas;
-      pdf.text(`🏆 Puntos Ganados: ${stats.puntosGanados}`, 20, yPosition);
-      pdf.text(`🎮 Juegos Completados: ${stats.juegosCompletados}`, 80, yPosition);
-      
+      pdf.text(`[PG] Puntos Ganados: ${stats.puntosGanados}`, 20, yPosition);
+      pdf.text(
+        `[JC] Juegos Completados: ${stats.juegosCompletados}`,
+        80,
+        yPosition
+      );
+
       yPosition += 6;
-      pdf.text(`⏱ Total Sesiones: ${stats.totalSesiones}`, 20, yPosition);
-      pdf.text(`📊 Posición Ranking: #${stats.posicionRanking} de ${stats.totalEstudiantes}`, 80, yPosition);
+      pdf.text(`[TS] Total Sesiones: ${stats.totalSesiones}`, 20, yPosition);
+      pdf.text(
+        `[RK] Posición Ranking: #${stats.posicionRanking} de ${stats.totalEstudiantes}`,
+        80,
+        yPosition
+      );
 
       // NUEVA PÁGINA PARA GRÁFICAS
       pdf.addPage();
@@ -321,27 +362,45 @@ export class DashboardsComponent implements OnInit {
       pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
       pdf.text('Análisis de Progreso por Juegos', 20, yPosition);
-      
+
       yPosition += 15;
 
       // GRÁFICA 1: Conocimiento Nutricional (Desafío Nutrimental)
       const nutrimental = this.getJuegoData('Desafío Nutrimental');
       if (nutrimental) {
-        await this.addGameChartToPDF(pdf, nutrimental, yPosition, 'Desafío Nutrimental', '🎓');
+        await this.addGameChartToPDF(
+          pdf,
+          nutrimental,
+          yPosition,
+          'Desafío Nutrimental',
+          '🎓'
+        );
         yPosition += 45;
       }
 
       // GRÁFICA 2: Reto 7 Días
       const reto7dias = this.getJuegoData('Reto 7 Días');
       if (reto7dias) {
-        await this.addGameChartToPDF(pdf, reto7dias, yPosition, 'Reto 7 Días', '🍽️');
+        await this.addGameChartToPDF(
+          pdf,
+          reto7dias,
+          yPosition,
+          'Reto 7 Días',
+          '🍽️'
+        );
         yPosition += 45;
       }
 
       // GRÁFICA 3: Coach Exprés
       const coach = this.getJuegoData('Coach Exprés');
       if (coach) {
-        await this.addGameChartToPDF(pdf, coach, yPosition, 'Coach Exprés', '🧠');
+        await this.addGameChartToPDF(
+          pdf,
+          coach,
+          yPosition,
+          'Coach Exprés',
+          '🧠'
+        );
         yPosition += 45;
       }
 
@@ -352,7 +411,7 @@ export class DashboardsComponent implements OnInit {
       pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
       pdf.text('Análisis Nutricional', 20, yPosition);
-      
+
       yPosition += 15;
 
       // GRÁFICA 4: Distribución de Macronutrientes
@@ -374,7 +433,7 @@ export class DashboardsComponent implements OnInit {
       pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
       pdf.text('Comparativa de Juegos', 20, yPosition);
-      
+
       yPosition += 15;
 
       // GRÁFICA 6: Comparativa General
@@ -387,11 +446,11 @@ export class DashboardsComponent implements OnInit {
       pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
       pdf.text('Recomendaciones y Conclusiones', 20, yPosition);
-      
+
       yPosition += 15;
       pdf.setFontSize(11);
       pdf.setFont('helvetica', 'normal');
-      
+
       const recomendaciones = this.generarRecomendaciones();
       const splitText = pdf.splitTextToSize(recomendaciones, pageWidth - 40);
       pdf.text(splitText, 20, yPosition);
@@ -403,7 +462,9 @@ export class DashboardsComponent implements OnInit {
         pdf.setFontSize(8);
         pdf.setTextColor(150, 150, 150);
         pdf.text(
-          `Generado el ${new Date().toLocaleDateString('es-ES')} - Página ${i} de ${totalPages}`,
+          `Generado el ${new Date().toLocaleDateString(
+            'es-ES'
+          )} - Página ${i} de ${totalPages}`,
           pageWidth / 2,
           pageHeight - 10,
           { align: 'center' }
@@ -411,15 +472,20 @@ export class DashboardsComponent implements OnInit {
       }
 
       // GUARDAR PDF
-      const fileName = `Reporte_${this.selectedStudent.nombre}_${this.selectedStudent.apellido}_${Date.now()}.pdf`;
+      const fileName = `Reporte_${this.selectedStudent.nombre}_${
+        this.selectedStudent.apellido
+      }_${Date.now()}.pdf`;
       pdf.save(fileName);
 
-      this.snackBar.open('✅ Reporte PDF generado exitosamente', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('✅ Reporte PDF generado exitosamente', 'Cerrar', {
+        duration: 3000,
+      });
       this.isGeneratingPDF = false;
-
     } catch (error) {
       console.error('Error generando PDF:', error);
-      this.snackBar.open('❌ Error al generar el reporte PDF', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('❌ Error al generar el reporte PDF', 'Cerrar', {
+        duration: 3000,
+      });
       this.isGeneratingPDF = false;
     }
   }
@@ -427,7 +493,13 @@ export class DashboardsComponent implements OnInit {
   /**
    * Agregar gráfica de juego al PDF
    */
-  private async addGameChartToPDF(pdf: any, juego: JuegoResponse, yPos: number, titulo: string, emoji: string): Promise<void> {
+  private async addGameChartToPDF(
+    pdf: any,
+    juego: JuegoResponse,
+    yPos: number,
+    titulo: string,
+    emoji: string
+  ): Promise<void> {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const progreso = this.calcularPorcentajeProgreso(juego);
 
@@ -440,7 +512,11 @@ export class DashboardsComponent implements OnInit {
 
     pdf.setFontSize(9);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(`Nivel ${juego.nivelActual || 0}/${juego.maxNiveles}`, 20, yPos + 10);
+    pdf.text(
+      `Nivel ${juego.nivelActual || 0}/${juego.maxNiveles}`,
+      20,
+      yPos + 10
+    );
     pdf.text(`${juego.puntosGanados || 0} puntos`, 60, yPos + 10);
     pdf.text(`Jugado ${juego.vecesJugado || 0} veces`, 100, yPos + 10);
 
@@ -464,7 +540,11 @@ export class DashboardsComponent implements OnInit {
 
     pdf.setFontSize(8);
     pdf.setFont('helvetica', 'normal');
-    pdf.text(juego.completado ? '✓ Completado' : '⏳ En progreso', 20, yPos + 32);
+    pdf.text(
+      juego.completado ? '✓ Completado' : '⏳ En progreso',
+      20,
+      yPos + 32
+    );
   }
 
   /**
@@ -490,20 +570,42 @@ export class DashboardsComponent implements OnInit {
 
     // Proteínas
     pdf.setFillColor(66, 133, 244);
-    pdf.rect(70, startY, (analisis.proteinasPorcentaje / 100) * maxWidth, barHeight, 'F');
+    pdf.rect(
+      70,
+      startY,
+      (analisis.proteinasPorcentaje / 100) * maxWidth,
+      barHeight,
+      'F'
+    );
     pdf.setFontSize(10);
     pdf.text('Proteínas:', 20, startY + 8);
     pdf.text(`${analisis.proteinasPorcentaje}%`, pageWidth - 30, startY + 8);
 
     // Carbohidratos
     pdf.setFillColor(123, 198, 126);
-    pdf.rect(70, startY + 18, (analisis.carbohidratosPorcentaje / 100) * maxWidth, barHeight, 'F');
+    pdf.rect(
+      70,
+      startY + 18,
+      (analisis.carbohidratosPorcentaje / 100) * maxWidth,
+      barHeight,
+      'F'
+    );
     pdf.text('Carbohidratos:', 20, startY + 26);
-    pdf.text(`${analisis.carbohidratosPorcentaje}%`, pageWidth - 30, startY + 26);
+    pdf.text(
+      `${analisis.carbohidratosPorcentaje}%`,
+      pageWidth - 30,
+      startY + 26
+    );
 
     // Grasas
     pdf.setFillColor(255, 183, 77);
-    pdf.rect(70, startY + 36, (analisis.grasasPorcentaje / 100) * maxWidth, barHeight, 'F');
+    pdf.rect(
+      70,
+      startY + 36,
+      (analisis.grasasPorcentaje / 100) * maxWidth,
+      barHeight,
+      'F'
+    );
     pdf.text('Grasas:', 20, startY + 44);
     pdf.text(`${analisis.grasasPorcentaje}%`, pageWidth - 30, startY + 44);
   }
@@ -515,7 +617,13 @@ export class DashboardsComponent implements OnInit {
     if (!this.dashboardData?.ultimoAnalisis?.etapaCambio) return;
 
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const etapas = ['Pre-contemplación', 'Contemplación', 'Preparación', 'Acción', 'Mantenimiento'];
+    const etapas = [
+      'Pre-contemplación',
+      'Contemplación',
+      'Preparación',
+      'Acción',
+      'Mantenimiento',
+    ];
     const etapaActual = this.dashboardData.ultimoAnalisis.etapaCambio;
 
     pdf.setFillColor(227, 242, 253);
@@ -527,12 +635,12 @@ export class DashboardsComponent implements OnInit {
 
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
-    
+
     const circleY = yPos + 20;
     const spacing = (pageWidth - 40) / etapas.length;
 
     etapas.forEach((etapa, index) => {
-      const x = 20 + (index * spacing) + spacing / 2;
+      const x = 20 + index * spacing + spacing / 2;
       const isActive = etapa === etapaActual;
 
       if (isActive) {
@@ -565,7 +673,7 @@ export class DashboardsComponent implements OnInit {
 
     this.dashboardData?.juegos.forEach((juego, index) => {
       const progreso = this.calcularPorcentajeProgreso(juego);
-      const y = yPos + (index * 18);
+      const y = yPos + index * 18;
 
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
@@ -575,7 +683,9 @@ export class DashboardsComponent implements OnInit {
       pdf.rect(80, y, maxWidth, 8, 'F');
 
       const fillWidth = (progreso / 100) * maxWidth;
-      const rgb = juego.completado ? {r: 123, g: 198, b: 126} : {r: 72, g: 163, b: 243};
+      const rgb = juego.completado
+        ? { r: 123, g: 198, b: 126 }
+        : { r: 72, g: 163, b: 243 };
       pdf.setFillColor(rgb.r, rgb.g, rgb.b);
       pdf.rect(80, y, fillWidth, 8, 'F');
 
@@ -594,20 +704,24 @@ export class DashboardsComponent implements OnInit {
     let recomendaciones = 'RECOMENDACIONES:\n\n';
 
     if (stats.juegosCompletados < 3) {
-      recomendaciones += '• Se recomienda completar todos los juegos para obtener una evaluación nutricional completa.\n\n';
+      recomendaciones +=
+        '• Se recomienda completar todos los juegos para obtener una evaluación nutricional completa.\n\n';
     }
 
     if (stats.puntosGanados < 1000) {
-      recomendaciones += '• Aumentar la participación en las actividades para mejorar el conocimiento nutricional.\n\n';
+      recomendaciones +=
+        '• Aumentar la participación en las actividades para mejorar el conocimiento nutricional.\n\n';
     }
 
     if (this.dashboardData.ultimoAnalisis) {
-      recomendaciones += '• El estudiante ha completado la evaluación nutricional. Se recomienda seguimiento periódico.\n\n';
+      recomendaciones +=
+        '• El estudiante ha completado la evaluación nutricional. Se recomienda seguimiento periódico.\n\n';
     }
 
     recomendaciones += 'CONCLUSIONES:\n\n';
     recomendaciones += `El estudiante ha acumulado ${stats.puntosAcumulados} puntos y se encuentra en la posición #${stats.posicionRanking} del ranking. `;
-    recomendaciones += 'Continúe motivando al estudiante a participar activamente en las actividades de la plataforma.';
+    recomendaciones +=
+      'Continúe motivando al estudiante a participar activamente en las actividades de la plataforma.';
 
     return recomendaciones;
   }
@@ -631,13 +745,15 @@ export class DashboardsComponent implements OnInit {
   /**
    * Convertir hex a RGB
    */
-  private hexToRgb(hex: string): {r: number, g: number, b: number} {
+  private hexToRgb(hex: string): { r: number; g: number; b: number } {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : {r: 0, g: 0, b: 0};
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : { r: 0, g: 0, b: 0 };
   }
 
   // ========================================================
@@ -646,10 +762,12 @@ export class DashboardsComponent implements OnInit {
 
   getJuegoData(nombreJuego: string): JuegoResponse | null {
     if (!this.dashboardData || !this.dashboardData.juegos) return null;
-    
-    return this.dashboardData.juegos.find(j => 
-      j.nombre.toLowerCase().includes(nombreJuego.toLowerCase())
-    ) || null;
+
+    return (
+      this.dashboardData.juegos.find((j) =>
+        j.nombre.toLowerCase().includes(nombreJuego.toLowerCase())
+      ) || null
+    );
   }
 
   calcularPorcentajeProgreso(juego: JuegoResponse): number {
@@ -672,11 +790,19 @@ export class DashboardsComponent implements OnInit {
 
   isStageActiveOrPast(etapa: string): boolean {
     if (!this.dashboardData?.ultimoAnalisis?.etapaCambio) return false;
-    
-    const etapas = ['Pre-contemplación', 'Contemplación', 'Preparación', 'Acción', 'Mantenimiento'];
-    const etapaActualIndex = etapas.indexOf(this.dashboardData.ultimoAnalisis.etapaCambio);
+
+    const etapas = [
+      'Pre-contemplación',
+      'Contemplación',
+      'Preparación',
+      'Acción',
+      'Mantenimiento',
+    ];
+    const etapaActualIndex = etapas.indexOf(
+      this.dashboardData.ultimoAnalisis.etapaCambio
+    );
     const etapaComparar = etapas.indexOf(etapa);
-    
+
     return etapaComparar <= etapaActualIndex;
   }
 
@@ -689,19 +815,25 @@ export class DashboardsComponent implements OnInit {
    */
   enviarCorreo(): void {
     if (!this.selectedStudent) {
-      this.snackBar.open('No hay estudiante seleccionado', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('No hay estudiante seleccionado', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
 
     const dialogRef = this.dialog.open(EmailDialog, {
       width: '500px',
-      data: { student: this.selectedStudent }
+      data: { student: this.selectedStudent },
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         console.log('📧 Enviando correo:', result);
-        this.snackBar.open(`✅ Correo enviado exitosamente a ${result.email}`, 'Cerrar', { duration: 3000 });
+        this.snackBar.open(
+          `✅ Correo enviado exitosamente a ${result.email}`,
+          'Cerrar',
+          { duration: 3000 }
+        );
       }
     });
   }
@@ -717,18 +849,20 @@ export class DashboardsComponent implements OnInit {
       talla: estudiante.talla ? `${estudiante.talla}m` : 'N/A',
       peso: estudiante.peso ? `${estudiante.peso}kg` : 'N/A',
       avatar: estudiante.avatarUrl,
-      puntosAcumulados: estudiante.puntosAcumulados
+      puntosAcumulados: estudiante.puntosAcumulados,
     };
   }
 
   formatearTiempo(segundos: number): string {
     if (!segundos || segundos === 0) return '00:00:00';
-    
+
     const horas = Math.floor(segundos / 3600);
     const minutos = Math.floor((segundos % 3600) / 60);
     const segs = segundos % 60;
-    
-    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segs.toString().padStart(2, '0')}`;
+
+    return `${horas.toString().padStart(2, '0')}:${minutos
+      .toString()
+      .padStart(2, '0')}:${segs.toString().padStart(2, '0')}`;
   }
 
   getAvatarUrl(student: Student): string {
@@ -773,7 +907,7 @@ export class DashboardsComponent implements OnInit {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatIconModule
+    MatIconModule,
   ],
   template: `
     <div class="email-dialog">
@@ -784,16 +918,19 @@ export class DashboardsComponent implements OnInit {
 
       <mat-dialog-content>
         <p class="student-info">
-          Reporte de: <strong>{{data.student.nombre}} {{data.student.apellido}}</strong>
+          Reporte de:
+          <strong>{{ data.student.nombre }} {{ data.student.apellido }}</strong>
         </p>
 
         <form [formGroup]="emailForm">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Correo del destinatario</mat-label>
-            <input matInput
-                   type="email"
-                   placeholder="padre@ejemplo.com"
-                   formControlName="email">
+            <input
+              matInput
+              type="email"
+              placeholder="padre@ejemplo.com"
+              formControlName="email"
+            />
             <mat-icon matPrefix>email</mat-icon>
             <mat-error *ngIf="emailForm.get('email')?.hasError('required')">
               El correo es requerido
@@ -805,16 +942,18 @@ export class DashboardsComponent implements OnInit {
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Asunto</mat-label>
-            <input matInput formControlName="subject">
+            <input matInput formControlName="subject" />
             <mat-icon matPrefix>subject</mat-icon>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Mensaje (opcional)</mat-label>
-            <textarea matInput
-                      rows="4"
-                      formControlName="message"
-                      placeholder="Agregue un mensaje personalizado..."></textarea>
+            <textarea
+              matInput
+              rows="4"
+              formControlName="message"
+              placeholder="Agregue un mensaje personalizado..."
+            ></textarea>
           </mat-form-field>
         </form>
 
@@ -826,66 +965,70 @@ export class DashboardsComponent implements OnInit {
 
       <mat-dialog-actions align="end">
         <button mat-button (click)="cancelar()">Cancelar</button>
-        <button mat-raised-button
-                color="primary"
-                [disabled]="!emailForm.valid"
-                (click)="enviar()">
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="!emailForm.valid"
+          (click)="enviar()"
+        >
           <mat-icon>send</mat-icon>
           Enviar
         </button>
       </mat-dialog-actions>
     </div>
   `,
-  styles: [`
-    .email-dialog {
-      font-family: 'Poppins', sans-serif;
-    }
+  styles: [
+    `
+      .email-dialog {
+        font-family: 'Poppins', sans-serif;
+      }
 
-    h2 {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #48A3F3;
-      font-weight: 600;
-      margin: 0;
-    }
+      h2 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #48a3f3;
+        font-weight: 600;
+        margin: 0;
+      }
 
-    .student-info {
-      color: #666;
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      background: #f8f9fa;
-      border-radius: 8px;
-    }
+      .student-info {
+        color: #666;
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+      }
 
-    .full-width {
-      width: 100%;
-      margin-bottom: 1rem;
-    }
+      .full-width {
+        width: 100%;
+        margin-bottom: 1rem;
+      }
 
-    .attach-info {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem;
-      background: #e3f2fd;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      color: #666;
-    }
+      .attach-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: #e3f2fd;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: #666;
+      }
 
-    mat-dialog-content {
-      padding: 1rem 0;
-      overflow: visible;
-    }
+      mat-dialog-content {
+        padding: 1rem 0;
+        overflow: visible;
+      }
 
-    mat-dialog-actions button mat-icon {
-      margin-right: 0.5rem;
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
-    }
-  `]
+      mat-dialog-actions button mat-icon {
+        margin-right: 0.5rem;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    `,
+  ],
 })
 export class EmailDialog implements OnInit {
   emailForm!: FormGroup;
@@ -899,8 +1042,11 @@ export class EmailDialog implements OnInit {
   ngOnInit(): void {
     this.emailForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      subject: [`Reporte Nutricional - ${this.data.student.nombre} ${this.data.student.apellido}`, Validators.required],
-      message: ['']
+      subject: [
+        `Reporte Nutricional - ${this.data.student.nombre} ${this.data.student.apellido}`,
+        Validators.required,
+      ],
+      message: [''],
     });
   }
 
