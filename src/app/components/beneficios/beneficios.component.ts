@@ -260,7 +260,7 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    sessionStorage.clear();
+    localStorage.clear();
     this.router.navigate(['/']);
   }
 

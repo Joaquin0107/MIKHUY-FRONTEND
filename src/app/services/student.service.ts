@@ -48,7 +48,7 @@ export class StudentService {
    * Obtener puntos actuales del estudiante desde el servidor
    */
   getMisPuntos(): Observable<ApiResponse<number>> {
-return this.http.get<ApiResponse<number>>(`${this.apiUrl}/mis-puntos`).pipe(
+return this.http.get<ApiResponse<number>>(`${this.apiUrl}/puntos`).pipe(
   tap(response => {
     if (response.success && response.data !== undefined) {
       this.actualizarPuntos(response.data);
@@ -58,7 +58,7 @@ return this.http.get<ApiResponse<number>>(`${this.apiUrl}/mis-puntos`).pipe(
   }
 
   getMiPerfil(): Observable<Estudiante> {
-  return this.http.get<Estudiante>(`${this.apiUrl}/mi-perfil`);
+  return this.http.get<Estudiante>(`${this.apiUrl}/perfil`);
 }
 
   /**

@@ -200,7 +200,7 @@ export class JuegosComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    this.studentService.limpiarDatos();
-    this.authService.logout();
+    localStorage.clear();
+    this.router.navigate(['/']);
   }
 }
