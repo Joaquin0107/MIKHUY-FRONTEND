@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { Estudiante } from '../models/estudiante.model';
@@ -20,6 +20,41 @@ export interface Notificacion {
   icon?: string;
   title?: string;
   time?: string;
+}
+
+export interface RankingResponse {
+  ranking: StudentRanking[];
+  totalEstudiantes: number;
+  miPosicion: StudentRanking | null;
+}
+
+export interface StudentRanking {
+  posicion: number;
+  estudianteId: string;
+  nombre: string;
+  grado: string;
+  seccion: string;
+  puntosAcumulados: number;
+  avatarUrl?: string;
+  esTop3: boolean;
+  esMiPosicion: boolean;
+  juegosCompletados: number;
+}
+
+export interface StudentListResponse {
+  id: string;
+  usuarioId: string;
+  email: string;
+  nombres: string;
+  apellidos: string;
+  nombreCompleto: string;
+  edad: number;
+  grado: string;
+  seccion: string;
+  talla?: number;
+  peso?: number;
+  puntosAcumulados: number;
+  avatarUrl?: string;
 }
 
 @Injectable({
@@ -45,21 +80,34 @@ export class StudentService {
   }
 
   /**
+   * Método privado para obtener headers con token
+   */
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken') || 
+                  sessionStorage.getItem('authToken');
+    
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
+  /**
    * Obtener puntos actuales del estudiante desde el servidor
    */
   getMisPuntos(): Observable<ApiResponse<number>> {
-return this.http.get<ApiResponse<number>>(`${this.apiUrl}/puntos`).pipe(
-  tap(response => {
-    if (response.success && response.data !== undefined) {
-      this.actualizarPuntos(response.data);
-    }
-  })
-);
+    return this.http.get<ApiResponse<number>>(`${this.apiUrl}/puntos`).pipe(
+      tap(response => {
+        if (response.success && response.data !== undefined) {
+          this.actualizarPuntos(response.data);
+        }
+      })
+    );
   }
 
   getMiPerfil(): Observable<Estudiante> {
-  return this.http.get<Estudiante>(`${this.apiUrl}/perfil`);
-}
+    return this.http.get<Estudiante>(`${this.apiUrl}/perfil`);
+  }
 
   /**
    * Obtener notificaciones del estudiante
@@ -138,5 +186,64 @@ return this.http.get<ApiResponse<number>>(`${this.apiUrl}/puntos`).pipe(
     this.puntosSubject.next(0);
     this.notificacionesSubject.next([]);
     localStorage.removeItem('studentPoints');
+  }
+
+  // ========================================================
+  // MÉTODOS PARA DASHBOARD (PROFESORES)
+  // ========================================================
+
+  /**
+   * Obtener todos los estudiantes (para profesores)
+   * GET /api/estudiantes
+   */
+  getAll(): Observable<ApiResponse<StudentListResponse[]>> {
+    return this.http.get<ApiResponse<StudentListResponse[]>>(
+      this.apiUrl,  // ✅ CAMBIADO: this.baseUrl → this.apiUrl
+      { headers: this.getHeaders() }
+    );
+  }
+
+  /**
+   * Obtener estudiantes por grado
+   * GET /api/estudiantes/grado/{grado}
+   */
+  getByGrado(grado: string): Observable<ApiResponse<StudentListResponse[]>> {
+    return this.http.get<ApiResponse<StudentListResponse[]>>(
+      `${this.apiUrl}/grado/${grado}`,  // ✅ CAMBIADO: this.baseUrl → this.apiUrl
+      { headers: this.getHeaders() }
+    );
+  }
+
+  /**
+   * Obtener estudiantes por grado y sección
+   * GET /api/estudiantes/grado/{grado}/seccion/{seccion}
+   */
+  getByGradoAndSeccion(grado: string, seccion: string): Observable<ApiResponse<StudentListResponse[]>> {
+    return this.http.get<ApiResponse<StudentListResponse[]>>(
+      `${this.apiUrl}/grado/${grado}/seccion/${seccion}`,  // ✅ CAMBIADO: this.baseUrl → this.apiUrl
+      { headers: this.getHeaders() }
+    );
+  }
+
+  /**
+   * Obtener ranking completo
+   * GET /api/estudiantes/ranking
+   */
+  getRanking(): Observable<ApiResponse<RankingResponse>> {
+    return this.http.get<ApiResponse<RankingResponse>>(
+      `${this.apiUrl}/ranking`,  // ✅ CAMBIADO: this.baseUrl → this.apiUrl
+      { headers: this.getHeaders() }
+    );
+  }
+
+  /**
+   * Obtener estadísticas de un estudiante
+   * GET /api/estudiantes/{id}/estadisticas
+   */
+  getEstadisticas(estudianteId: string): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(
+      `${this.apiUrl}/${estudianteId}/estadisticas`,  // ✅ CAMBIADO: this.baseUrl → this.apiUrl
+      { headers: this.getHeaders() }
+    );
   }
 }

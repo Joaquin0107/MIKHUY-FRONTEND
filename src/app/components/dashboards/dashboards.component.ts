@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
@@ -9,8 +10,23 @@ import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { 
+  DashboardService, 
+  DashboardEstudianteResponse,
+  EstudianteResponse,
+  JuegoResponse
+} from '../../services/dashboard.service';
+import { StudentService } from '../../services/student.service';
+import { AuthService } from '../../services/auth.service';
+
+import jsPDF from 'jsPDF';
+import html2canvas from 'html2canvas';
 
 interface Student {
   id: string;
@@ -22,61 +38,7 @@ interface Student {
   talla: string;
   peso: string;
   avatar?: string;
-  gameData?: GameData;
-}
-
-interface GameData {
-  // Datos del Desafío Nutrimental
-  nutrimental: {
-    nivelActual: number;
-    puntosGanados: number;
-    porcentajeAciertos: number;
-    temasDebiles: string[];
-    ultimoJuego: string;
-  };
-
-  // Datos del Reto 7 Días
-  reto7Dias: {
-    diasCompletados: number;
-    alimentosPorGrupo: {
-      frutas: number;
-      verduras: number;
-      proteinas: number;
-      carbohidratos: number;
-      lacteos: number;
-      dulces: number;
-    };
-    emocionesAlComer: {
-      feliz: number;
-      normal: number;
-      triste: number;
-      estresado: number;
-      ansioso: number;
-    };
-    caloriasDiarias: number[];
-  };
-
-  // Datos del Coach Exprés
-  coachExpres: {
-    etapaActual: string;
-    puntajeMotivacion: number;
-    respuestas: number[];
-    disposicionCambio: number; // 1-5
-  };
-
-  // Datos nutricionales calculados
-  macronutrientes: {
-    proteinas: number;
-    carbohidratos: number;
-    grasas: number;
-  };
-
-  vitaminas: {
-    vitaminaA: number;
-    vitaminaC: number;
-    calcio: number;
-    hierro: number;
-  };
+  puntosAcumulados?: number;
 }
 
 @Component({
@@ -84,6 +46,7 @@ interface GameData {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
@@ -93,440 +56,642 @@ interface GameData {
     MatDividerModule,
     MatFormFieldModule,
     MatInputModule,
-    MatDialogModule
+    MatDialogModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    ReactiveFormsModule,
+    MatSnackBarModule
   ],
   templateUrl: './dashboards.component.html',
   styleUrls: ['./dashboards.component.css']
 })
 export class DashboardsComponent implements OnInit {
-
-  notificationCount = 5;
+  notificationCount = 0;
   searchQuery = '';
   selectedStudent: Student | null = null;
-
-  // Lista de estudiantes con datos de juegos
-  students: Student[] = [
-    {
-      id: '1',
-      nombre: 'María',
-      apellido: 'García López',
-      edad: 12,
-      grado: '5to',
-      seccion: 'A',
-      talla: '1.52m',
-      peso: '45kg',
-      avatar: 'assets/images/avatar-maria.jpg',
-      gameData: {
-        nutrimental: {
-          nivelActual: 5,
-          puntosGanados: 450,
-          porcentajeAciertos: 85,
-          temasDebiles: ['Vitaminas', 'Minerales'],
-          ultimoJuego: 'Hace 2 días'
-        },
-        reto7Dias: {
-          diasCompletados: 7,
-          alimentosPorGrupo: {
-            frutas: 5,
-            verduras: 5,
-            proteinas: 4,
-            carbohidratos: 6,
-            lacteos: 3,
-            dulces: 1
-          },
-          emocionesAlComer: {
-            feliz: 12,
-            normal: 8,
-            triste: 1,
-            estresado: 0,
-            ansioso: 0
-          },
-          caloriasDiarias: [1180, 1220, 1150, 1280, 1100, 1240, 1190]
-        },
-        coachExpres: {
-          etapaActual: 'Acción',
-          puntajeMotivacion: 4.2,
-          respuestas: [4, 5, 4, 4, 3, 5, 4, 4],
-          disposicionCambio: 4
-        },
-        macronutrientes: {
-          proteinas: 30,
-          carbohidratos: 50,
-          grasas: 20
-        },
-        vitaminas: {
-          vitaminaA: 85,
-          vitaminaC: 90,
-          calcio: 75,
-          hierro: 80
-        }
-      }
-    },
-    {
-      id: '2',
-      nombre: 'Carlos',
-      apellido: 'Mendoza Silva',
-      edad: 13,
-      grado: '5to',
-      seccion: 'A',
-      talla: '1.58m',
-      peso: '52kg',
-      gameData: {
-        nutrimental: {
-          nivelActual: 3,
-          puntosGanados: 280,
-          porcentajeAciertos: 65,
-          temasDebiles: ['Grupos Alimenticios', 'Porciones'],
-          ultimoJuego: 'Hace 1 día'
-        },
-        reto7Dias: {
-          diasCompletados: 5,
-          alimentosPorGrupo: {
-            frutas: 3,
-            verduras: 2,
-            proteinas: 5,
-            carbohidratos: 8,
-            lacteos: 2,
-            dulces: 3
-          },
-          emocionesAlComer: {
-            feliz: 8,
-            normal: 6,
-            triste: 2,
-            estresado: 3,
-            ansioso: 1
-          },
-          caloriasDiarias: [1350, 1480, 1290, 1520, 1400, 0, 0]
-        },
-        coachExpres: {
-          etapaActual: 'Contemplación',
-          puntajeMotivacion: 3.1,
-          respuestas: [3, 3, 2, 4, 3, 3, 2, 3],
-          disposicionCambio: 3
-        },
-        macronutrientes: {
-          proteinas: 25,
-          carbohidratos: 55,
-          grasas: 20
-        },
-        vitaminas: {
-          vitaminaA: 60,
-          vitaminaC: 65,
-          calcio: 70,
-          hierro: 68
-        }
-      }
-    },
-    {
-      id: '3',
-      nombre: 'Ana',
-      apellido: 'Rodríguez Torres',
-      edad: 12,
-      grado: '5to',
-      seccion: 'B',
-      talla: '1.50m',
-      peso: '43kg',
-      gameData: {
-        nutrimental: {
-          nivelActual: 7,
-          puntosGanados: 620,
-          porcentajeAciertos: 92,
-          temasDebiles: [],
-          ultimoJuego: 'Hace 3 horas'
-        },
-        reto7Dias: {
-          diasCompletados: 7,
-          alimentosPorGrupo: {
-            frutas: 6,
-            verduras: 6,
-            proteinas: 5,
-            carbohidratos: 5,
-            lacteos: 4,
-            dulces: 0
-          },
-          emocionesAlComer: {
-            feliz: 15,
-            normal: 6,
-            triste: 0,
-            estresado: 0,
-            ansioso: 0
-          },
-          caloriasDiarias: [1200, 1180, 1220, 1190, 1210, 1200, 1205]
-        },
-        coachExpres: {
-          etapaActual: 'Mantenimiento',
-          puntajeMotivacion: 4.8,
-          respuestas: [5, 5, 5, 4, 5, 5, 5, 4],
-          disposicionCambio: 5
-        },
-        macronutrientes: {
-          proteinas: 28,
-          carbohidratos: 52,
-          grasas: 20
-        },
-        vitaminas: {
-          vitaminaA: 95,
-          vitaminaC: 98,
-          calcio: 92,
-          hierro: 90
-        }
-      }
-    },
-    {
-      id: '4',
-      nombre: 'Luis',
-      apellido: 'Torres Ramírez',
-      edad: 14,
-      grado: '6to',
-      seccion: 'A',
-      talla: '1.65m',
-      peso: '58kg',
-      gameData: {
-        nutrimental: {
-          nivelActual: 2,
-          puntosGanados: 180,
-          porcentajeAciertos: 55,
-          temasDebiles: ['Nutrición', 'Calorías', 'Vitaminas'],
-          ultimoJuego: 'Hace 5 días'
-        },
-        reto7Dias: {
-          diasCompletados: 3,
-          alimentosPorGrupo: {
-            frutas: 2,
-            verduras: 1,
-            proteinas: 6,
-            carbohidratos: 9,
-            lacteos: 1,
-            dulces: 4
-          },
-          emocionesAlComer: {
-            feliz: 5,
-            normal: 7,
-            triste: 3,
-            estresado: 4,
-            ansioso: 2
-          },
-          caloriasDiarias: [1520, 1680, 1450, 0, 0, 0, 0]
-        },
-        coachExpres: {
-          etapaActual: 'Pre-contemplación',
-          puntajeMotivacion: 2.3,
-          respuestas: [2, 2, 3, 2, 2, 3, 2, 2],
-          disposicionCambio: 2
-        },
-        macronutrientes: {
-          proteinas: 22,
-          carbohidratos: 58,
-          grasas: 20
-        },
-        vitaminas: {
-          vitaminaA: 45,
-          vitaminaC: 50,
-          calcio: 55,
-          hierro: 52
-        }
-      }
-    },
-    {
-      id: '5',
-      nombre: 'Sofia',
-      apellido: 'Vargas Flores',
-      edad: 13,
-      grado: '6to',
-      seccion: 'B',
-      talla: '1.55m',
-      peso: '48kg',
-      gameData: {
-        nutrimental: {
-          nivelActual: 6,
-          puntosGanados: 530,
-          porcentajeAciertos: 88,
-          temasDebiles: ['Porciones'],
-          ultimoJuego: 'Hace 1 día'
-        },
-        reto7Dias: {
-          diasCompletados: 7,
-          alimentosPorGrupo: {
-            frutas: 5,
-            verduras: 4,
-            proteinas: 4,
-            carbohidratos: 6,
-            lacteos: 3,
-            dulces: 2
-          },
-          emocionesAlComer: {
-            feliz: 11,
-            normal: 9,
-            triste: 1,
-            estresado: 0,
-            ansioso: 0
-          },
-          caloriasDiarias: [1210, 1190, 1230, 1200, 1250, 1180, 1220]
-        },
-        coachExpres: {
-          etapaActual: 'Acción',
-          puntajeMotivacion: 4.0,
-          respuestas: [4, 4, 4, 4, 3, 4, 5, 4],
-          disposicionCambio: 4
-        },
-        macronutrientes: {
-          proteinas: 29,
-          carbohidratos: 51,
-          grasas: 20
-        },
-        vitaminas: {
-          vitaminaA: 82,
-          vitaminaC: 85,
-          calcio: 80,
-          hierro: 78
-        }
-      }
-    }
-  ];
-
+  
+  students: Student[] = [];
   filteredStudents: Student[] = [];
+  
+  dashboardData: DashboardEstudianteResponse | null = null;
+  loading = true;
+  error: string | null = null;
+  
+  currentUser: any = null;
+  isTeacher = false;
+  isGeneratingPDF = false;
 
   constructor(
     private router: Router,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private dashboardService: DashboardService,
+    private studentService: StudentService,
+    private authService: AuthService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
-    this.filteredStudents = [...this.students];
-    // Seleccionar primer estudiante por defecto
-    if (this.students.length > 0) {
-      this.selectStudent(this.students[0]);
+    // Cargar jsPDF y html2canvas dinámicamente
+    this.loadExternalScripts();
+
+    // Obtener usuario actual desde localStorage
+    this.currentUser = this.authService.getCurrentUser?.() || 
+                      JSON.parse(localStorage.getItem('currentUser') || '{}');
+    
+    this.isTeacher = this.currentUser?.rol === 'teacher';
+    
+    if (this.isTeacher) {
+      this.loadAllStudents();
+    } else {
+      this.loadMyDashboard();
     }
   }
 
+  /**
+   * Cargar scripts externos para PDF
+   */
+  private loadExternalScripts(): void {
+    // Cargar html2canvas
+    if (!(window as any).html2canvas) {
+      const html2canvasScript = document.createElement('script');
+      html2canvasScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      document.head.appendChild(html2canvasScript);
+    }
+
+    // Cargar jsPDF
+    if (!(window as any).jspdf) {
+      const jspdfScript = document.createElement('script');
+      jspdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      document.head.appendChild(jspdfScript);
+    }
+  }
+
+  /**
+   * Cargar mi dashboard (estudiante)
+   */
+  loadMyDashboard(): void {
+    this.loading = true;
+    this.error = null;
+
+    this.dashboardService.getMiDashboard().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.dashboardData = response.data;
+          this.notificationCount = response.data.estadisticas.notificacionesNoLeidas;
+          
+          this.selectedStudent = this.mapEstudianteToStudent(response.data.estudiante);
+          
+          this.loading = false;
+        } else {
+          this.error = response.message || 'Error al cargar el dashboard';
+          this.loading = false;
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando dashboard:', err);
+        this.error = 'Error al cargar el dashboard. Por favor, intenta de nuevo.';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Cargar todos los estudiantes (profesor)
+   */
+  loadAllStudents(): void {
+    this.loading = true;
+    this.error = null;
+
+    this.studentService.getAll().subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.students = response.data.map(est => ({
+            id: est.id,
+            nombre: est.nombres,
+            apellido: est.apellidos,
+            edad: est.edad,
+            grado: est.grado,
+            seccion: est.seccion,
+            talla: est.talla ? `${est.talla}m` : 'N/A',
+            peso: est.peso ? `${est.peso}kg` : 'N/A',
+            avatar: est.avatarUrl,
+            puntosAcumulados: est.puntosAcumulados
+          }));
+          
+          this.filteredStudents = [...this.students];
+          
+          if (this.students.length > 0) {
+            this.selectStudent(this.students[0]);
+          } else {
+            this.loading = false;
+            this.error = 'No hay estudiantes registrados';
+          }
+        } else {
+          this.error = response.message || 'Error al cargar estudiantes';
+          this.loading = false;
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando estudiantes:', err);
+        this.error = 'Error al cargar estudiantes. Por favor, intenta de nuevo.';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Seleccionar un estudiante
+   */
+  selectStudent(student: Student): void {
+    this.selectedStudent = student;
+    this.loading = true;
+    
+    this.dashboardService.getDashboardEstudiante(student.id).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.dashboardData = response.data;
+          this.loading = false;
+        } else {
+          this.error = response.message || 'Error al cargar datos del estudiante';
+          this.loading = false;
+        }
+      },
+      error: (err) => {
+        console.error('Error cargando dashboard del estudiante:', err);
+        this.error = 'Error al cargar datos del estudiante.';
+        this.loading = false;
+      }
+    });
+  }
+
+  /**
+   * Buscar estudiantes
+   */
   searchStudents(): void {
     if (!this.searchQuery.trim()) {
       this.filteredStudents = [...this.students];
     } else {
+      const query = this.searchQuery.toLowerCase();
       this.filteredStudents = this.students.filter(s =>
-        `${s.nombre} ${s.apellido}`.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        s.grado.toLowerCase().includes(this.searchQuery.toLowerCase())
+        `${s.nombre} ${s.apellido}`.toLowerCase().includes(query) ||
+        s.grado.toLowerCase().includes(query) ||
+        s.seccion.toLowerCase().includes(query)
       );
     }
   }
 
-  selectStudent(student: Student): void {
-    this.selectedStudent = student;
+  /**
+   * GENERAR REPORTE PDF CON GRÁFICAS
+   */
+  async descargarReporte(): Promise<void> {
+    if (!this.selectedStudent || !this.dashboardData) {
+      this.snackBar.open('No hay datos para generar el reporte', 'Cerrar', { duration: 3000 });
+      return;
+    }
+
+    this.isGeneratingPDF = true;
+    this.snackBar.open('Generando reporte PDF...', '', { duration: 2000 });
+
+    try {
+      // Esperar a que las librerías estén disponibles
+      await this.waitForLibraries();
+
+      const { jsPDF } = (window as any).jspdf;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      let yPosition = 20;
+
+      // PORTADA
+      pdf.setFillColor(72, 163, 243);
+      pdf.rect(0, 0, pageWidth, 60, 'F');
+      
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(28);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('REPORTE NUTRICIONAL', pageWidth / 2, 30, { align: 'center' });
+      
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Plataforma MIKHUY', pageWidth / 2, 45, { align: 'center' });
+
+      // DATOS DEL ESTUDIANTE
+      yPosition = 80;
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${this.selectedStudent.nombre} ${this.selectedStudent.apellido}`, 20, yPosition);
+
+      yPosition += 10;
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Edad: ${this.selectedStudent.edad} años`, 20, yPosition);
+      pdf.text(`Grado: ${this.selectedStudent.grado} - Sección ${this.selectedStudent.seccion}`, 80, yPosition);
+      pdf.text(`Talla: ${this.selectedStudent.talla}`, 150, yPosition);
+      
+      yPosition += 6;
+      pdf.text(`Peso: ${this.selectedStudent.peso}`, 20, yPosition);
+      pdf.text(`Puntos Acumulados: ${this.dashboardData.estudiante.puntosAcumulados}`, 80, yPosition);
+
+      // ESTADÍSTICAS GENERALES
+      yPosition += 15;
+      pdf.setFillColor(232, 245, 253);
+      pdf.rect(15, yPosition - 5, pageWidth - 30, 25, 'F');
+      
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Estadísticas Generales', 20, yPosition);
+      
+      yPosition += 8;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      
+      const stats = this.dashboardData.estadisticas;
+      pdf.text(`🏆 Puntos Ganados: ${stats.puntosGanados}`, 20, yPosition);
+      pdf.text(`🎮 Juegos Completados: ${stats.juegosCompletados}`, 80, yPosition);
+      
+      yPosition += 6;
+      pdf.text(`⏱ Total Sesiones: ${stats.totalSesiones}`, 20, yPosition);
+      pdf.text(`📊 Posición Ranking: #${stats.posicionRanking} de ${stats.totalEstudiantes}`, 80, yPosition);
+
+      // NUEVA PÁGINA PARA GRÁFICAS
+      pdf.addPage();
+      yPosition = 20;
+
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Análisis de Progreso por Juegos', 20, yPosition);
+      
+      yPosition += 15;
+
+      // GRÁFICA 1: Conocimiento Nutricional (Desafío Nutrimental)
+      const nutrimental = this.getJuegoData('Desafío Nutrimental');
+      if (nutrimental) {
+        await this.addGameChartToPDF(pdf, nutrimental, yPosition, 'Desafío Nutrimental', '🎓');
+        yPosition += 45;
+      }
+
+      // GRÁFICA 2: Reto 7 Días
+      const reto7dias = this.getJuegoData('Reto 7 Días');
+      if (reto7dias) {
+        await this.addGameChartToPDF(pdf, reto7dias, yPosition, 'Reto 7 Días', '🍽️');
+        yPosition += 45;
+      }
+
+      // GRÁFICA 3: Coach Exprés
+      const coach = this.getJuegoData('Coach Exprés');
+      if (coach) {
+        await this.addGameChartToPDF(pdf, coach, yPosition, 'Coach Exprés', '🧠');
+        yPosition += 45;
+      }
+
+      // NUEVA PÁGINA PARA ANÁLISIS NUTRICIONAL
+      pdf.addPage();
+      yPosition = 20;
+
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Análisis Nutricional', 20, yPosition);
+      
+      yPosition += 15;
+
+      // GRÁFICA 4: Distribución de Macronutrientes
+      if (this.dashboardData.ultimoAnalisis) {
+        await this.addMacronutrientChart(pdf, yPosition);
+        yPosition += 80;
+      }
+
+      // GRÁFICA 5: Etapa de Cambio
+      if (this.dashboardData.ultimoAnalisis?.etapaCambio) {
+        await this.addStageChart(pdf, yPosition);
+        yPosition += 60;
+      }
+
+      // NUEVA PÁGINA PARA COMPARATIVA
+      pdf.addPage();
+      yPosition = 20;
+
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Comparativa de Juegos', 20, yPosition);
+      
+      yPosition += 15;
+
+      // GRÁFICA 6: Comparativa General
+      await this.addComparisonChart(pdf, yPosition);
+
+      // ÚLTIMA PÁGINA: RECOMENDACIONES
+      pdf.addPage();
+      yPosition = 20;
+
+      pdf.setFontSize(18);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Recomendaciones y Conclusiones', 20, yPosition);
+      
+      yPosition += 15;
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'normal');
+      
+      const recomendaciones = this.generarRecomendaciones();
+      const splitText = pdf.splitTextToSize(recomendaciones, pageWidth - 40);
+      pdf.text(splitText, 20, yPosition);
+
+      // PIE DE PÁGINA EN TODAS LAS PÁGINAS
+      const totalPages = pdf.internal.pages.length - 1;
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text(
+          `Generado el ${new Date().toLocaleDateString('es-ES')} - Página ${i} de ${totalPages}`,
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: 'center' }
+        );
+      }
+
+      // GUARDAR PDF
+      const fileName = `Reporte_${this.selectedStudent.nombre}_${this.selectedStudent.apellido}_${Date.now()}.pdf`;
+      pdf.save(fileName);
+
+      this.snackBar.open('✅ Reporte PDF generado exitosamente', 'Cerrar', { duration: 3000 });
+      this.isGeneratingPDF = false;
+
+    } catch (error) {
+      console.error('Error generando PDF:', error);
+      this.snackBar.open('❌ Error al generar el reporte PDF', 'Cerrar', { duration: 3000 });
+      this.isGeneratingPDF = false;
+    }
   }
 
-  descargarReporte(): void {
-    if (!this.selectedStudent || !this.selectedStudent.gameData) return;
+  /**
+   * Agregar gráfica de juego al PDF
+   */
+  private async addGameChartToPDF(pdf: any, juego: JuegoResponse, yPos: number, titulo: string, emoji: string): Promise<void> {
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const progreso = this.calcularPorcentajeProgreso(juego);
 
-    const data = this.selectedStudent.gameData;
-    const student = this.selectedStudent;
+    pdf.setFillColor(248, 249, 250);
+    pdf.rect(15, yPos - 5, pageWidth - 30, 40, 'F');
 
-    console.log('Generando reporte con datos de juegos:', data);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`${emoji} ${titulo}`, 20, yPos + 3);
 
-    // Crear resumen del reporte
-    const resumen = `
-REPORTE NUTRICIONAL - ${student.nombre} ${student.apellido}
-=========================================================
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(`Nivel ${juego.nivelActual || 0}/${juego.maxNiveles}`, 20, yPos + 10);
+    pdf.text(`${juego.puntosGanados || 0} puntos`, 60, yPos + 10);
+    pdf.text(`Jugado ${juego.vecesJugado || 0} veces`, 100, yPos + 10);
 
-DATOS GENERALES:
-- Edad: ${student.edad} años
-- Grado: ${student.grado} - Sección ${student.seccion}
-- Talla: ${student.talla} | Peso: ${student.peso}
+    // Barra de progreso
+    const barY = yPos + 17;
+    const barWidth = pageWidth - 40;
+    const barHeight = 8;
 
-RESULTADOS DE JUEGOS:
----------------------
+    pdf.setFillColor(224, 224, 224);
+    pdf.rect(20, barY, barWidth, barHeight, 'F');
 
-1. DESAFÍO NUTRIMENTAL (Test de Conocimientos):
-   - Nivel alcanzado: ${data.nutrimental.nivelActual}/10
-   - Puntos ganados: ${data.nutrimental.puntosGanados}
-   - Porcentaje de aciertos: ${data.nutrimental.porcentajeAciertos}%
-   - Temas a reforzar: ${data.nutrimental.temasDebiles.join(', ') || 'Ninguno'}
-   - Último juego: ${data.nutrimental.ultimoJuego}
+    const fillWidth = (progreso / 100) * barWidth;
+    const color = this.getColorByProgress(progreso);
+    const rgb = this.hexToRgb(color);
+    pdf.setFillColor(rgb.r, rgb.g, rgb.b);
+    pdf.rect(20, barY, fillWidth, barHeight, 'F');
 
-2. RETO 7 DÍAS (Registro Alimenticio):
-   - Días completados: ${data.reto7Dias.diasCompletados}/7
-   - Consumo por grupo:
-     * Frutas: ${data.reto7Dias.alimentosPorGrupo.frutas}
-     * Verduras: ${data.reto7Dias.alimentosPorGrupo.verduras}
-     * Proteínas: ${data.reto7Dias.alimentosPorGrupo.proteinas}
-     * Carbohidratos: ${data.reto7Dias.alimentosPorGrupo.carbohidratos}
-     * Lácteos: ${data.reto7Dias.alimentosPorGrupo.lacteos}
-     * Dulces: ${data.reto7Dias.alimentosPorGrupo.dulces}
-   - Promedio calorías: ${Math.round(data.reto7Dias.caloriasDiarias.reduce((a,b) => a+b, 0) / data.reto7Dias.diasCompletados)} kcal/día
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`${progreso}%`, pageWidth - 25, barY + 6);
 
-3. COACH EXPRÉS (Evaluación Psicológica):
-   - Etapa de cambio actual: ${data.coachExpres.etapaActual}
-   - Puntuación motivación: ${data.coachExpres.puntajeMotivacion}/5
-   - Disposición al cambio: ${data.coachExpres.disposicionCambio}/5
-
-ANÁLISIS NUTRICIONAL:
---------------------
-- Distribución de macronutrientes:
-  * Proteínas: ${data.macronutrientes.proteinas}%
-  * Carbohidratos: ${data.macronutrientes.carbohidratos}%
-  * Grasas: ${data.macronutrientes.grasas}%
-
-- Concentración de vitaminas/minerales:
-  * Vitamina A: ${data.vitaminas.vitaminaA}%
-  * Vitamina C: ${data.vitaminas.vitaminaC}%
-  * Calcio: ${data.vitaminas.calcio}%
-  * Hierro: ${data.vitaminas.hierro}%
-
-RECOMENDACIONES:
----------------
-${this.generarRecomendaciones(data)}
-    `;
-
-    alert(`Generando reporte PDF de ${student.nombre} ${student.apellido}...\n\n${resumen}`);
-
-    // En producción, aquí se generaría el PDF con una librería como jsPDF
-    setTimeout(() => {
-      alert('Reporte descargado exitosamente');
-    }, 1000);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(juego.completado ? '✓ Completado' : '⏳ En progreso', 20, yPos + 32);
   }
 
-  generarRecomendaciones(data: GameData): string {
-    const recomendaciones: string[] = [];
+  /**
+   * Agregar gráfica de macronutrientes
+   */
+  private async addMacronutrientChart(pdf: any, yPos: number): Promise<void> {
+    if (!this.dashboardData?.ultimoAnalisis) return;
 
-    // Basado en Desafío Nutrimental
-    if (data.nutrimental.porcentajeAciertos < 70) {
-      recomendaciones.push('- Reforzar conocimientos nutricionales básicos');
-    }
-    if (data.nutrimental.temasDebiles.length > 0) {
-      recomendaciones.push(`- Estudiar más sobre: ${data.nutrimental.temasDebiles.join(', ')}`);
-    }
+    const analisis = this.dashboardData.ultimoAnalisis;
+    const pageWidth = pdf.internal.pageSize.getWidth();
 
-    // Basado en Reto 7 Días
-    if (data.reto7Dias.alimentosPorGrupo.frutas < 3) {
-      recomendaciones.push('- Aumentar consumo de frutas (mínimo 3 porciones/día)');
-    }
-    if (data.reto7Dias.alimentosPorGrupo.verduras < 3) {
-      recomendaciones.push('- Incrementar consumo de verduras');
-    }
-    if (data.reto7Dias.alimentosPorGrupo.dulces > 2) {
-      recomendaciones.push('- Reducir consumo de dulces y azúcares añadidos');
-    }
+    pdf.setFillColor(248, 249, 250);
+    pdf.rect(15, yPos - 5, pageWidth - 30, 70, 'F');
 
-    // Basado en Coach Exprés
-    if (data.coachExpres.etapaActual === 'Pre-contemplación') {
-      recomendaciones.push('- Trabajar en la concientización sobre hábitos saludables');
-    }
-    if (data.coachExpres.disposicionCambio < 3) {
-      recomendaciones.push('- Motivar y acompañar en el proceso de cambio');
-    }
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Distribución de Macronutrientes', 20, yPos + 3);
 
-    // Basado en macronutrientes
-    if (data.macronutrientes.proteinas < 25) {
-      recomendaciones.push('- Aumentar consumo de proteínas');
-    }
-    if (data.macronutrientes.carbohidratos > 55) {
-      recomendaciones.push('- Balancear consumo de carbohidratos');
-    }
+    // Gráfica de barras horizontal
+    const startY = yPos + 15;
+    const barHeight = 12;
+    const maxWidth = pageWidth - 100;
 
-    return recomendaciones.length > 0 ? recomendaciones.join('\n') : '- El estudiante mantiene buenos hábitos alimenticios. Continuar con el seguimiento.';
+    // Proteínas
+    pdf.setFillColor(66, 133, 244);
+    pdf.rect(70, startY, (analisis.proteinasPorcentaje / 100) * maxWidth, barHeight, 'F');
+    pdf.setFontSize(10);
+    pdf.text('Proteínas:', 20, startY + 8);
+    pdf.text(`${analisis.proteinasPorcentaje}%`, pageWidth - 30, startY + 8);
+
+    // Carbohidratos
+    pdf.setFillColor(123, 198, 126);
+    pdf.rect(70, startY + 18, (analisis.carbohidratosPorcentaje / 100) * maxWidth, barHeight, 'F');
+    pdf.text('Carbohidratos:', 20, startY + 26);
+    pdf.text(`${analisis.carbohidratosPorcentaje}%`, pageWidth - 30, startY + 26);
+
+    // Grasas
+    pdf.setFillColor(255, 183, 77);
+    pdf.rect(70, startY + 36, (analisis.grasasPorcentaje / 100) * maxWidth, barHeight, 'F');
+    pdf.text('Grasas:', 20, startY + 44);
+    pdf.text(`${analisis.grasasPorcentaje}%`, pageWidth - 30, startY + 44);
   }
 
+  /**
+   * Agregar gráfica de etapas de cambio
+   */
+  private async addStageChart(pdf: any, yPos: number): Promise<void> {
+    if (!this.dashboardData?.ultimoAnalisis?.etapaCambio) return;
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const etapas = ['Pre-contemplación', 'Contemplación', 'Preparación', 'Acción', 'Mantenimiento'];
+    const etapaActual = this.dashboardData.ultimoAnalisis.etapaCambio;
+
+    pdf.setFillColor(227, 242, 253);
+    pdf.rect(15, yPos - 5, pageWidth - 30, 50, 'F');
+
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('Etapa de Cambio Conductual', 20, yPos + 3);
+
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    
+    const circleY = yPos + 20;
+    const spacing = (pageWidth - 40) / etapas.length;
+
+    etapas.forEach((etapa, index) => {
+      const x = 20 + (index * spacing) + spacing / 2;
+      const isActive = etapa === etapaActual;
+
+      if (isActive) {
+        pdf.setFillColor(72, 163, 243);
+        pdf.circle(x, circleY, 5, 'F');
+        pdf.setTextColor(72, 163, 243);
+      } else {
+        pdf.setFillColor(224, 224, 224);
+        pdf.circle(x, circleY, 4, 'F');
+        pdf.setTextColor(150, 150, 150);
+      }
+
+      pdf.setFontSize(7);
+      const splitEtapa = pdf.splitTextToSize(etapa, spacing - 5);
+      pdf.text(splitEtapa, x, circleY + 10, { align: 'center' });
+    });
+
+    pdf.setTextColor(0, 0, 0);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`Etapa Actual: ${etapaActual}`, 20, yPos + 40);
+  }
+
+  /**
+   * Agregar gráfica comparativa
+   */
+  private async addComparisonChart(pdf: any, yPos: number): Promise<void> {
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const maxWidth = pageWidth - 100;
+
+    this.dashboardData?.juegos.forEach((juego, index) => {
+      const progreso = this.calcularPorcentajeProgreso(juego);
+      const y = yPos + (index * 18);
+
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(juego.nombre, 20, y + 6);
+
+      pdf.setFillColor(224, 224, 224);
+      pdf.rect(80, y, maxWidth, 8, 'F');
+
+      const fillWidth = (progreso / 100) * maxWidth;
+      const rgb = juego.completado ? {r: 123, g: 198, b: 126} : {r: 72, g: 163, b: 243};
+      pdf.setFillColor(rgb.r, rgb.g, rgb.b);
+      pdf.rect(80, y, fillWidth, 8, 'F');
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`${progreso}%`, pageWidth - 25, y + 6);
+    });
+  }
+
+  /**
+   * Generar recomendaciones
+   */
+  private generarRecomendaciones(): string {
+    if (!this.dashboardData) return '';
+
+    const stats = this.dashboardData.estadisticas;
+    let recomendaciones = 'RECOMENDACIONES:\n\n';
+
+    if (stats.juegosCompletados < 3) {
+      recomendaciones += '• Se recomienda completar todos los juegos para obtener una evaluación nutricional completa.\n\n';
+    }
+
+    if (stats.puntosGanados < 1000) {
+      recomendaciones += '• Aumentar la participación en las actividades para mejorar el conocimiento nutricional.\n\n';
+    }
+
+    if (this.dashboardData.ultimoAnalisis) {
+      recomendaciones += '• El estudiante ha completado la evaluación nutricional. Se recomienda seguimiento periódico.\n\n';
+    }
+
+    recomendaciones += 'CONCLUSIONES:\n\n';
+    recomendaciones += `El estudiante ha acumulado ${stats.puntosAcumulados} puntos y se encuentra en la posición #${stats.posicionRanking} del ranking. `;
+    recomendaciones += 'Continúe motivando al estudiante a participar activamente en las actividades de la plataforma.';
+
+    return recomendaciones;
+  }
+
+  /**
+   * Esperar a que las librerías estén cargadas
+   */
+  private waitForLibraries(): Promise<void> {
+    return new Promise((resolve) => {
+      const checkLibraries = () => {
+        if ((window as any).jspdf && (window as any).html2canvas) {
+          resolve();
+        } else {
+          setTimeout(checkLibraries, 100);
+        }
+      };
+      checkLibraries();
+    });
+  }
+
+  /**
+   * Convertir hex a RGB
+   */
+  private hexToRgb(hex: string): {r: number, g: number, b: number} {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : {r: 0, g: 0, b: 0};
+  }
+
+  // ========================================================
+  // FUNCIONES PARA GRÁFICOS DE JUEGOS
+  // ========================================================
+
+  getJuegoData(nombreJuego: string): JuegoResponse | null {
+    if (!this.dashboardData || !this.dashboardData.juegos) return null;
+    
+    return this.dashboardData.juegos.find(j => 
+      j.nombre.toLowerCase().includes(nombreJuego.toLowerCase())
+    ) || null;
+  }
+
+  calcularPorcentajeProgreso(juego: JuegoResponse): number {
+    if (!juego || !juego.nivelActual || !juego.maxNiveles) return 0;
+    return Math.round((juego.nivelActual / juego.maxNiveles) * 100);
+  }
+
+  getColorByProgress(porcentaje: number): string {
+    if (porcentaje >= 80) return '#7BC67E';
+    if (porcentaje >= 60) return '#FFB74D';
+    return '#f44336';
+  }
+
+  getGameIcon(nombreJuego: string): string {
+    if (nombreJuego.includes('Nutrimental')) return 'school';
+    if (nombreJuego.includes('7 Días')) return 'restaurant';
+    if (nombreJuego.includes('Coach')) return 'psychology';
+    return 'sports_esports';
+  }
+
+  isStageActiveOrPast(etapa: string): boolean {
+    if (!this.dashboardData?.ultimoAnalisis?.etapaCambio) return false;
+    
+    const etapas = ['Pre-contemplación', 'Contemplación', 'Preparación', 'Acción', 'Mantenimiento'];
+    const etapaActualIndex = etapas.indexOf(this.dashboardData.ultimoAnalisis.etapaCambio);
+    const etapaComparar = etapas.indexOf(etapa);
+    
+    return etapaComparar <= etapaActualIndex;
+  }
+
+  getCircleSegment(percentage: number): number {
+    return (percentage / 100) * 377;
+  }
+
+  /**
+   * Enviar reporte por correo
+   */
   enviarCorreo(): void {
-    if (!this.selectedStudent) return;
+    if (!this.selectedStudent) {
+      this.snackBar.open('No hay estudiante seleccionado', 'Cerrar', { duration: 3000 });
+      return;
+    }
 
     const dialogRef = this.dialog.open(EmailDialog, {
       width: '500px',
@@ -535,28 +700,39 @@ ${this.generarRecomendaciones(data)}
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        console.log('Enviando correo a:', result);
-        alert(`Correo enviado exitosamente a ${result.email}`);
+        console.log('📧 Enviando correo:', result);
+        this.snackBar.open(`✅ Correo enviado exitosamente a ${result.email}`, 'Cerrar', { duration: 3000 });
       }
     });
   }
 
-  goBack(): void {
-    this.router.navigate(['/landing-profesores']);
+  private mapEstudianteToStudent(estudiante: EstudianteResponse): Student {
+    return {
+      id: estudiante.id,
+      nombre: estudiante.nombres,
+      apellido: estudiante.apellidos,
+      edad: estudiante.edad,
+      grado: estudiante.grado,
+      seccion: estudiante.seccion,
+      talla: estudiante.talla ? `${estudiante.talla}m` : 'N/A',
+      peso: estudiante.peso ? `${estudiante.peso}kg` : 'N/A',
+      avatar: estudiante.avatarUrl,
+      puntosAcumulados: estudiante.puntosAcumulados
+    };
   }
 
-  openProfile(): void {
-    this.router.navigate(['/perfil']);
-  }
-
-  logout(): void {
-    sessionStorage.clear();
-    console.log('Logout');
-    this.router.navigate(['/']);
+  formatearTiempo(segundos: number): string {
+    if (!segundos || segundos === 0) return '00:00:00';
+    
+    const horas = Math.floor(segundos / 3600);
+    const minutos = Math.floor((segundos % 3600) / 60);
+    const segs = segundos % 60;
+    
+    return `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}:${segs.toString().padStart(2, '0')}`;
   }
 
   getAvatarUrl(student: Student): string {
-    return student.avatar || 'assets/images/maria   .png';
+    return student.avatar || 'assets/images/default-avatar.png';
   }
 
   onAvatarError(event: Event): void {
@@ -564,32 +740,29 @@ ${this.generarRecomendaciones(data)}
     target.style.display = 'none';
   }
 
-  // Calcular segmentos del gráfico de dona
-  getCircleSegment(percentage: number): number {
-    return (percentage / 100) * 377; // 377 es la circunferencia aproximada
+  goBack(): void {
+    if (this.isTeacher) {
+      this.router.navigate(['/landing-profesores']);
+    } else {
+      this.router.navigate(['/landing-alumnos']);
+    }
   }
 
-  // Obtener datos para tabla de frutas y verduras
-  getFrutasVerdurasData(): any[] {
-    if (!this.selectedStudent?.gameData) return [];
+  openProfile(): void {
+    this.router.navigate(['/perfil']);
+  }
 
-    const data = this.selectedStudent.gameData.reto7Dias.alimentosPorGrupo;
-    return [
-      { value: data.frutas, color: 'green' },
-      { value: data.verduras, color: 'green' },
-      { value: data.lacteos, color: 'yellow' },
-      { value: data.dulces, color: 'red' }
-    ];
+  logout(): void {
+    this.authService.logout();
+    localStorage.clear();
+    sessionStorage.clear();
+    this.router.navigate(['/']);
   }
 }
 
 // ============================================
 // Email Dialog Component
 // ============================================
-import { Inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-
 @Component({
   selector: 'email-dialog',
   standalone: true,
@@ -632,8 +805,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Asunto</mat-label>
-            <input matInput
-                   formControlName="subject">
+            <input matInput formControlName="subject">
             <mat-icon matPrefix>subject</mat-icon>
           </mat-form-field>
 
@@ -678,10 +850,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       margin: 0;
     }
 
-    h2 mat-icon {
-      color: #48A3F3;
-    }
-
     .student-info {
       color: #666;
       margin-bottom: 1.5rem;
@@ -706,20 +874,9 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       color: #666;
     }
 
-    .attach-info mat-icon {
-      color: #48A3F3;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
-    }
-
     mat-dialog-content {
       padding: 1rem 0;
       overflow: visible;
-    }
-
-    mat-dialog-actions {
-      padding: 1rem 0 0;
     }
 
     mat-dialog-actions button mat-icon {
