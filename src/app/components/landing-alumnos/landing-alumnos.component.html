@@ -35,18 +35,7 @@
         <span class="points-value">{{ studentPoints }}</span>
       </div>
 
-      <button
-        mat-icon-button
-        class="icon-btn notifications-btn"
-        [matMenuTriggerFor]="notificationMenu"
-      >
-        <mat-icon
-          [matBadge]="notificationCount"
-          [matBadgeHidden]="notificationCount === 0"
-          matBadgeColor="warn"
-          >notifications</mat-icon
-        >
-      </button>
+    <!--Apartado de Notificaciones (a futuro)-->
 
       <mat-menu #notificationMenu="matMenu" class="notification-menu">
         <div class="notification-header">
