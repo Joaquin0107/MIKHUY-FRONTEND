@@ -40,6 +40,7 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   hidePassword = true;
   userRole: string = 'student';
+  loading = false;
 
   constructor(
     private fb: FormBuilder,
@@ -52,6 +53,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.userRole = params['role'] || 'student';
+      console.log('👤 Rol esperado:', this.userRole);
     });
 
     this.loginForm = this.fb.group({
@@ -66,49 +68,100 @@ export class LoginComponent implements OnInit {
   }
 
   onSubmit(): void {
-  if (this.loginForm.invalid) {
-    alert('Por favor completa los campos correctamente.');
-    return;
+    if (this.loginForm.invalid) {
+      alert('Por favor completa los campos correctamente.');
+      return;
+    }
+
+    this.loading = true;
+
+    const loginData: LoginRequest = {
+      email: this.loginForm.value.username,
+      password: this.loginForm.value.password,
+    };
+
+    console.log('🔐 Iniciando login para:', loginData.email);
+
+    this.authService.login(loginData).subscribe({
+      next: (res) => {
+        console.log('📦 Respuesta del servidor:', res);
+
+        if (res?.success && res.data?.token) {
+          const rol = res.data.user?.rol;
+          
+          console.log('✅ Login exitoso');
+          console.log('🎟️ Token recibido:', res.data.token ? '✓' : '✗');
+          console.log('👤 Usuario:', res.data.user);
+          console.log('🎭 Rol del usuario:', rol);
+
+          // 🔒 Validar que el rol del usuario coincida con el rol esperado por la pantalla
+          if (rol !== this.userRole) {
+            console.warn(`⚠️ Rol no coincide. Esperado: ${this.userRole}, Recibido: ${rol}`);
+            alert(`Este usuario pertenece al rol "${rol}" y no puede ingresar desde el login de "${this.userRole}".`);
+            this.loading = false;
+            return;
+          }
+
+          // ✅ Guardar token
+          this.authService.saveToken(res.data.token);
+          console.log('💾 Token guardado');
+
+          // Verificar que se guardó correctamente
+          const tokenGuardado = localStorage.getItem('authToken');
+          console.log('🔍 Verificación - Token en localStorage:', tokenGuardado ? '✓' : '✗');
+          
+          if (!tokenGuardado) {
+            console.error('❌ ERROR: El token NO se guardó en localStorage');
+            alert('Error al guardar la sesión. Intenta nuevamente.');
+            this.loading = false;
+            return;
+          }
+
+          // ✅ Guardar usuario
+          this.authService.saveUser(res.data.user);
+          console.log('💾 Usuario guardado');
+
+          // Verificar usuario guardado
+          const usuarioGuardado = localStorage.getItem('currentUser');
+          console.log('🔍 Verificación - Usuario en localStorage:', usuarioGuardado ? '✓' : '✗');
+
+          this.loading = false;
+
+          // ✅ Redirigir según rol
+          if (rol === 'student') {
+            console.log('➡️ Redirigiendo a landing-alumnos');
+            this.router.navigate(['/landing-alumnos']);
+          } else if (rol === 'teacher') {
+            console.log('➡️ Redirigiendo a landing-profesores');
+            this.router.navigate(['/landing-profesores']);
+          } else {
+            console.log('➡️ Redirigiendo a dashboards');
+            this.router.navigate(['/dashboards']);
+          }
+        } else {
+          console.error('❌ Respuesta sin token o sin success:', res);
+          alert(res.message || 'Credenciales inválidas. Inténtalo nuevamente.');
+          this.loading = false;
+        }
+      },
+      error: (err) => {
+        console.error('❌ Error en login:', err);
+        console.error('Status:', err.status);
+        console.error('Message:', err.error?.message);
+        console.error('Error completo:', err);
+        
+        if (err.status === 401) {
+          alert('Credenciales incorrectas. Verifica tu email y contraseña.');
+        } else if (err.status === 0) {
+          alert('No se pudo conectar con el servidor. Verifica tu conexión.');
+        } else {
+          alert('Error en el inicio de sesión. Verifica tus credenciales.');
+        }
+        this.loading = false;
+      },
+    });
   }
 
-  const loginData: LoginRequest = {
-    email: this.loginForm.value.username,
-    password: this.loginForm.value.password,
-  };
-
-  this.authService.login(loginData).subscribe({
-    next: (res) => {
-      if (res?.success && res.data?.token) {
-        const rol = res.data.user?.rol;
-
-        // 🔒 Validar que el rol del usuario coincida con el rol esperado por la pantalla
-        if (rol !== this.userRole) {
-          alert(`Este usuario pertenece al rol "${rol}" y no puede ingresar desde el login de "${this.userRole}".`);
-          return;
-        }
-
-        // ✅ Guardar sesión
-        this.authService.saveToken(res.data.token);
-        this.authService.saveUser(res.data.user);
-
-        // ✅ Redirigir según rol
-        if (rol === 'student') {
-          this.router.navigate(['/landing-alumnos']);
-        } else if (rol === 'teacher') {
-          this.router.navigate(['/landing-profesores']);
-        } else {
-          this.router.navigate(['/dashboards']);
-        }
-      } else {
-        alert(res.message || 'Credenciales inválidas. Inténtalo nuevamente.');
-      }
-    },
-    error: (err) => {
-      console.error('Error en login:', err);
-      alert('Error en el inicio de sesión. Verifica tus credenciales.');
-    },
-  });
-}
   goBack(): void {
     this.router.navigate(['/']);
   }
@@ -132,6 +185,7 @@ export class LoginComponent implements OnInit {
     });
   }
 }
+
 @Component({
   selector: 'access-denied-dialog',
   standalone: true,
@@ -173,7 +227,6 @@ export class LoginComponent implements OnInit {
 export class AccessDeniedDialog {
   constructor(@Inject(MAT_DIALOG_DATA) public message: string) {}
 }
-
 
 @Component({
   selector: 'forgot-password-dialog',

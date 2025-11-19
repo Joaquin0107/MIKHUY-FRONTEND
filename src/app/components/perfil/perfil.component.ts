@@ -14,7 +14,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { PerfilService, EstudianteResponse, EstadisticasEstudianteResponse } from '../../services/perfil.service';
+import { PerfilService, EstudianteResponse, UpdateProfileRequest } from '../../services/perfil.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -101,9 +101,13 @@ export class PerfilComponent implements OnInit {
       return;
     }
 
+    console.log('📡 Cargando perfil del estudiante...');
+    console.log('🎟️ Token en localStorage:', localStorage.getItem('authToken') ? '✓' : '✗');
+
     this.loading = true;
     this.perfilService.getMiPerfil().subscribe({
       next: (response) => {
+        console.log('✅ Perfil recibido:', response);
         if (response.success && response.data) {
           this.perfilData = response.data;
           this.studentPoints = response.data.puntosAcumulados || 0;
@@ -124,11 +128,27 @@ export class PerfilComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error cargando perfil:', error);
-        this.showMessage('Error al cargar el perfil', 'error');
+        console.error('❌ Error cargando perfil:', error);
+        console.error('Status:', error.status);
+        console.error('Message:', error.error?.message);
+        console.error('Headers enviados:', error.headers);
+        
+        if (error.status === 401) {
+          console.error('🚨 ERROR 401: Token inválido o expirado');
+          console.error('Token actual:', localStorage.getItem('authToken')?.substring(0, 20) + '...');
+          this.showMessage('Sesión expirada. Por favor inicia sesión nuevamente.', 'error');
+          
+          // Redirigir al login después de 2 segundos
+          setTimeout(() => {
+            this.authService.logout();
+            this.router.navigate(['/login']);
+          }, 2000);
+        } else {
+          this.showMessage('Error al cargar el perfil', 'error');
+          // Cargar datos mock en caso de error
+          this.loadMockData();
+        }
         this.loading = false;
-        // Cargar datos mock en caso de error
-        this.loadMockData();
       }
     });
   }
@@ -157,11 +177,15 @@ export class PerfilComponent implements OnInit {
   }
 
   populateForm(data: EstudianteResponse): void {
+    // ✅ Usar los nombres correctos de los campos del backend
     this.perfilForm.patchValue({
-      firstName: data.nombre,
-      lastName: data.apellido,
+      firstName: data.nombres,      // ✅ backend usa "nombres"
+      lastName: data.apellidos,     // ✅ backend usa "apellidos"
       email: data.email,
       telefono: data.telefono || '',
+      edad: data.edad || '',
+      peso: data.peso || '',
+      talla: data.talla || '',
       grado: data.grado || '5to',
       seccion: data.seccion || 'A'
     });
@@ -206,9 +230,9 @@ export class PerfilComponent implements OnInit {
       experiencia: ['']
     });
 
-    // Formulario de seguridad
+    // Formulario de seguridad - ✅ Nombres correctos
     this.seguridadForm = this.fb.group({
-      oldPassword: ['', Validators.required],
+      currentPassword: ['', Validators.required],     // ✅ Cambié oldPassword -> currentPassword
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required]
     }, { validators: this.passwordMatchValidator });
@@ -281,38 +305,76 @@ export class PerfilComponent implements OnInit {
       return;
     }
 
+    // ✅ Verificar token antes de enviar
+    const token = localStorage.getItem('authToken');
+    console.log('🔐 Token antes de actualizar:', token ? token.substring(0, 30) + '...' : 'NO HAY TOKEN');
+    
+    if (!token) {
+      this.showMessage('No hay sesión activa. Inicia sesión nuevamente.', 'error');
+      this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+      return;
+    }
+
     this.loading = true;
 
-    const updateData = {
-      nombre: this.perfilForm.value.firstName,
-      apellido: this.perfilForm.value.lastName,
+    // ✅ Usar la interfaz correcta del backend
+    const updateData: UpdateProfileRequest = {
+      nombres: this.perfilForm.value.firstName,
+      apellidos: this.perfilForm.value.lastName,
       email: this.perfilForm.value.email,
       telefono: this.perfilForm.value.telefono || undefined,
       grado: this.perfilForm.value.grado,
-      seccion: this.perfilForm.value.seccion
+      seccion: this.perfilForm.value.seccion,
+      edad: this.perfilForm.value.edad || undefined,
+      peso: this.perfilForm.value.peso || undefined,
+      talla: this.perfilForm.value.talla || undefined
     };
+
+    console.log('📝 Valores del formulario:', this.perfilForm.value);
+    console.log('📦 Datos a enviar (UpdateProfileRequest):', updateData);
 
     this.perfilService.updateMiPerfil(updateData).subscribe({
       next: (response) => {
+        console.log('✅ Respuesta del servidor:', response);
         if (response.success) {
           this.showMessage('Perfil actualizado exitosamente', 'success');
           
           // Actualizar datos locales
           const currentUser = this.authService.getCurrentUser();
           if (currentUser) {
-            currentUser.name = `${updateData.nombre} ${updateData.apellido}`;
+            currentUser.name = `${updateData.nombres} ${updateData.apellidos}`;
             currentUser.email = updateData.email;
             this.authService.saveUser(currentUser);
           }
+
+          // Recargar perfil actualizado
+          this.loadPerfilData();
         }
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error actualizando perfil:', error);
-        this.showMessage(
-          error.error?.message || 'Error al actualizar el perfil',
-          'error'
-        );
+        console.error('❌ Error actualizando perfil:', error);
+        console.error('❌ Status:', error.status);
+        console.error('❌ Error del servidor:', error.error);
+        console.error('❌ Mensaje:', error.error?.message);
+        console.error('❌ URL:', error.url);
+        
+        // Verificar si el token sigue existiendo después del error
+        const tokenDespues = localStorage.getItem('authToken');
+        console.error('🔐 Token después del error:', tokenDespues ? 'EXISTE' : 'SE PERDIÓ');
+        
+        if (error.status === 401) {
+          this.showMessage('Tu sesión ha expirado. Por favor inicia sesión nuevamente.', 'error');
+          setTimeout(() => {
+            this.authService.logout();
+            this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+          }, 2000);
+        } else {
+          this.showMessage(
+            error.error?.message || 'Error al actualizar el perfil',
+            'error'
+          );
+        }
         this.loading = false;
       }
     });
@@ -324,25 +386,41 @@ export class PerfilComponent implements OnInit {
       return;
     }
 
+    if (this.seguridadForm.errors?.['passwordMismatch']) {
+      this.showMessage('Las contraseñas no coinciden', 'error');
+      return;
+    }
+
     this.loading = true;
 
+    // ✅ Backend espera: oldPassword, newPassword, confirmPassword
     const passwordData = {
-      currentPassword: this.seguridadForm.value.currentPassword,
-      newPassword: this.seguridadForm.value.newPassword
+      oldPassword: this.seguridadForm.value.currentPassword,
+      newPassword: this.seguridadForm.value.newPassword,
+      confirmPassword: this.seguridadForm.value.confirmPassword
     };
 
-    this.perfilService.cambiarContrasena(passwordData).subscribe({
+    console.log('🔐 Cambiando contraseña...');
+
+    // ✅ Ahora usamos AuthService en lugar de PerfilService
+    this.authService.cambiarContrasena(passwordData).subscribe({
       next: (response) => {
+        console.log('✅ Contraseña cambiada:', response);
         if (response.success) {
           this.showMessage('Contraseña actualizada exitosamente', 'success');
           this.seguridadForm.reset();
+          
+          // Resetear estados de visibilidad
+          this.hideCurrentPassword = true;
+          this.hideNewPassword = true;
+          this.hideConfirmPassword = true;
         }
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error cambiando contraseña:', error);
+        console.error('❌ Error cambiando contraseña:', error);
         this.showMessage(
-          error.error?.message || 'Error al cambiar la contraseña',
+          error.error?.message || 'Error al cambiar la contraseña. Verifica tu contraseña actual.',
           'error'
         );
         this.loading = false;

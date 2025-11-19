@@ -73,59 +73,46 @@ export class SesionJuegoService {
 
   constructor(private http: HttpClient) {}
 
-  private getHeaders(): HttpHeaders {
-    // Usar siempre la misma key 'authToken'
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-  }
+  
 
-  iniciarSesion(request: IniciarSesionRequest): Observable<ApiResponse<SesionJuegoResponse>> {
-    return this.http.post<ApiResponse<SesionJuegoResponse>>(
-      `${this.apiUrl}/iniciar`,
-      request,
-      { headers: this.getHeaders() }
+iniciarSesion(request: IniciarSesionRequest): Observable<ApiResponse<SesionJuegoResponse>> {
+  return this.http.post<ApiResponse<SesionJuegoResponse>>(
+    `${this.apiUrl}/iniciar`,
+    request
     );
   }
 
-  finalizarSesion(request: FinalizarSesionRequest): Observable<ApiResponse<SesionJuegoResponse>> {
-    return this.http.put<ApiResponse<SesionJuegoResponse>>(
-      `${this.apiUrl}/finalizar`,
-      request,
-      { headers: this.getHeaders() }
+finalizarSesion(request: FinalizarSesionRequest): Observable<ApiResponse<SesionJuegoResponse>> {
+  return this.http.put<ApiResponse<SesionJuegoResponse>>(
+    `${this.apiUrl}/finalizar`,
+    request
     );
   }
 
   guardarRespuestaNutrimental(request: GuardarNutrimentalRespuestaRequest): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.apiUrl}/nutrimental/respuesta`,
-      request,
-      { headers: this.getHeaders() }
+      request
     );
   }
 
   guardarRegistroReto7Dias(request: GuardarReto7DiasRegistroRequest): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.apiUrl}/reto7dias/registro`,
-      request,
-      { headers: this.getHeaders() }
+      request
     );
   }
 
   guardarRespuestaCoach(request: GuardarCoachRespuestaRequest): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.apiUrl}/coach/respuesta`,
-      request,
-      { headers: this.getHeaders() }
+      request
     );
   }
 
   getMisSesiones(): Observable<ApiResponse<SesionJuegoResponse[]>> {
     return this.http.get<ApiResponse<SesionJuegoResponse[]>>(
       `${this.apiUrl}/mis-sesiones`,
-      { headers: this.getHeaders() }
     );
   }
 }
