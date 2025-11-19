@@ -16,6 +16,7 @@ import { JuegosService, JuegoResponse } from '../../services/juego.service';
 import { StudentService } from '../../services/student.service';
 import { GamePlayDialog } from '../game-play-dialog/game-play-dialog.component';
 import { RankingInlineDialog } from '../ranking-dialog/ranking-dialog.component';
+import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.component';
 @Component({
   selector: 'app-juegos',
   standalone: true,
@@ -28,6 +29,7 @@ import { RankingInlineDialog } from '../ranking-dialog/ranking-dialog.component'
     MatProgressBarModule,
     MatBadgeModule,
     MatMenuModule,
+    FloatingChatbotComponent
   ],
   templateUrl: './juegos.component.html',
   styleUrls: ['./juegos.component.css'],
@@ -183,9 +185,6 @@ export class JuegosComponent implements OnInit, OnDestroy {
     this.router.navigate(['/beneficios']);
   }
 
-  navigateToChatbot(): void {
-    this.router.navigate(['/chatbot']);
-  }
 
   openProfile(): void {
     this.router.navigate(['/perfil']);

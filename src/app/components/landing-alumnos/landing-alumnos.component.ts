@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { StudentService, Notificacion } from '../../services/student.service';
 import { AuthService } from '../../services/auth.service';
+import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.component';
 
 @Component({
   selector: 'app-landing-alumnos',
@@ -21,6 +22,7 @@ import { AuthService } from '../../services/auth.service';
     MatBadgeModule,
     MatMenuModule,
     MatTooltipModule,
+    FloatingChatbotComponent
   ],
   templateUrl: './landing-alumnos.component.html',
   styleUrls: ['./landing-alumnos.component.css'],
@@ -92,10 +94,6 @@ export class LandingAlumnosComponent implements OnInit, OnDestroy {
 
   navigateToBenefits(): void {
     this.router.navigate(['/beneficios']);
-  }
-
-  navigateToChatbot(): void {
-    this.router.navigate(['/chatbot']);
   }
 
   openNotifications(): void {

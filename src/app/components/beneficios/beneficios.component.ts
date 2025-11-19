@@ -31,6 +31,7 @@ import { CanjeService } from '../../services/canje.service';
 import { StudentService } from '../../services/student.service';
 import { Beneficio, CanjeRequest } from '../../models/beneficio.model';
 import { ApiResponse } from '../../services/student.service';
+import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.component';
 
 @Component({
   selector: 'app-beneficios',
@@ -45,6 +46,7 @@ import { ApiResponse } from '../../services/student.service';
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    FloatingChatbotComponent
   ],
   templateUrl: './beneficios.component.html',
   styleUrls: ['./beneficios.component.css'],

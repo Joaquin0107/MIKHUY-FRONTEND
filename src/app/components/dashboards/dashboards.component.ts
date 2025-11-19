@@ -34,6 +34,7 @@ import {
 } from '../../services/dashboard.service';
 import { StudentService } from '../../services/student.service';
 import { AuthService } from '../../services/auth.service';
+import { MailService } from '../../services/mail.service';
 
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -97,7 +98,9 @@ export class DashboardsComponent implements OnInit {
     private dashboardService: DashboardService,
     private studentService: StudentService,
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private mailService: MailService,
+
   ) {}
 
   ngOnInit(): void {
@@ -895,7 +898,7 @@ export class DashboardsComponent implements OnInit {
 }
 
 // ============================================
-// Email Dialog Component
+// Email Dialog Component - CON ADJUNTOS
 // ============================================
 @Component({
   selector: 'email-dialog',
@@ -908,6 +911,7 @@ export class DashboardsComponent implements OnInit {
     MatFormFieldModule,
     MatInputModule,
     MatIconModule,
+    MatProgressSpinnerModule,
   ],
   template: `
     <div class="email-dialog">
@@ -947,7 +951,7 @@ export class DashboardsComponent implements OnInit {
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Mensaje (opcional)</mat-label>
+            <mat-label>Mensaje</mat-label>
             <textarea
               matInput
               rows="4"
@@ -957,22 +961,78 @@ export class DashboardsComponent implements OnInit {
           </mat-form-field>
         </form>
 
-        <div class="attach-info">
-          <mat-icon>attach_file</mat-icon>
-          <span>Se adjuntará el reporte en PDF</span>
+        <!-- ✅ SECCIÓN DE ADJUNTAR ARCHIVO -->
+        <div class="file-upload-section">
+          <input
+            type="file"
+            #fileInput
+            (change)="onFileSelected($event)"
+            accept=".pdf,application/pdf"
+            hidden
+          />
+
+          <button
+            mat-stroked-button
+            (click)="fileInput.click()"
+            [disabled]="isLoading"
+            class="upload-button"
+          >
+            <mat-icon>attach_file</mat-icon>
+            {{ selectedFile ? 'Cambiar archivo' : 'Adjuntar PDF' }}
+          </button>
+
+          <!-- Mostrar archivo seleccionado -->
+          <div *ngIf="selectedFile" class="file-selected">
+            <mat-icon class="file-icon">picture_as_pdf</mat-icon>
+            <div class="file-info">
+              <strong>{{ selectedFile.name }}</strong>
+              <small>{{ formatFileSize(selectedFile.size) }}</small>
+            </div>
+            <button
+              mat-icon-button
+              (click)="removeFile()"
+              [disabled]="isLoading"
+              class="remove-button"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="attach-info" [class.has-file]="selectedFile">
+          <mat-icon>{{ selectedFile ? 'check_circle' : 'info' }}</mat-icon>
+          <span>
+            {{ selectedFile 
+              ? 'Archivo adjunto listo para enviar' 
+              : 'Opcionalmente puede adjuntar el reporte en PDF' }}
+          </span>
+        </div>
+
+        <!-- Loading indicator -->
+        <div *ngIf="isLoading" class="loading-overlay">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p>{{ selectedFile ? 'Enviando correo con archivo adjunto...' : 'Enviando correo...' }}</p>
+        </div>
+
+        <!-- Error message -->
+        <div *ngIf="errorMessage" class="error-message">
+          <mat-icon>error</mat-icon>
+          <span>{{ errorMessage }}</span>
         </div>
       </mat-dialog-content>
 
       <mat-dialog-actions align="end">
-        <button mat-button (click)="cancelar()">Cancelar</button>
+        <button mat-button (click)="cancelar()" [disabled]="isLoading">
+          Cancelar
+        </button>
         <button
           mat-raised-button
           color="primary"
-          [disabled]="!emailForm.valid"
+          [disabled]="!emailForm.valid || isLoading"
           (click)="enviar()"
         >
           <mat-icon>send</mat-icon>
-          Enviar
+          {{ selectedFile ? 'Enviar con PDF' : 'Enviar' }}
         </button>
       </mat-dialog-actions>
     </div>
@@ -1005,6 +1065,75 @@ export class DashboardsComponent implements OnInit {
         margin-bottom: 1rem;
       }
 
+      /* ===== FILE UPLOAD SECTION ===== */
+      .file-upload-section {
+        margin: 1rem 0;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 2px dashed #e0e0e0;
+        transition: all 0.3s;
+      }
+
+      .file-upload-section:hover {
+        border-color: #48a3f3;
+        background: #f0f7ff;
+      }
+
+      .upload-button {
+        width: 100%;
+        height: 48px;
+        font-size: 0.95rem;
+      }
+
+      .upload-button mat-icon {
+        margin-right: 0.5rem;
+      }
+
+      .file-selected {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #48a3f3;
+        margin-top: 0.75rem;
+      }
+
+      .file-icon {
+        color: #f44336;
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+      }
+
+      .file-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .file-info strong {
+        font-size: 0.9rem;
+        color: #333;
+      }
+
+      .file-info small {
+        font-size: 0.75rem;
+        color: #999;
+      }
+
+      .remove-button {
+        color: #999;
+      }
+
+      .remove-button:hover {
+        color: #f44336;
+      }
+
+      /* ===== ATTACH INFO ===== */
       .attach-info {
         display: flex;
         align-items: center;
@@ -1014,11 +1143,60 @@ export class DashboardsComponent implements OnInit {
         border-radius: 8px;
         font-size: 0.9rem;
         color: #666;
+        margin-top: 1rem;
+        transition: all 0.3s;
+      }
+
+      .attach-info.has-file {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .attach-info mat-icon {
+        color: #48a3f3;
+      }
+
+      .attach-info.has-file mat-icon {
+        color: #4caf50;
+      }
+
+      /* ===== LOADING & ERROR ===== */
+      .loading-overlay {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        margin-top: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+      }
+
+      .loading-overlay p {
+        margin: 0;
+        color: #666;
+      }
+
+      .error-message {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        margin-top: 1rem;
+        background: #ffebee;
+        border-radius: 8px;
+        color: #c62828;
+        font-size: 0.9rem;
+      }
+
+      .error-message mat-icon {
+        color: #c62828;
       }
 
       mat-dialog-content {
         padding: 1rem 0;
         overflow: visible;
+        min-height: 400px;
       }
 
       mat-dialog-actions button mat-icon {
@@ -1032,11 +1210,17 @@ export class DashboardsComponent implements OnInit {
 })
 export class EmailDialog implements OnInit {
   emailForm!: FormGroup;
+  isLoading = false;
+  errorMessage: string | null = null;
+  selectedFile: File | null = null;
 
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<EmailDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private mailService: MailService,
+    private snackBar: MatSnackBar,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -1046,17 +1230,196 @@ export class EmailDialog implements OnInit {
         `Reporte Nutricional - ${this.data.student.nombre} ${this.data.student.apellido}`,
         Validators.required,
       ],
-      message: [''],
+      message: [
+        `Estimado/a padre/madre de familia,\n\nAdjunto encontrará el reporte nutricional de ${this.data.student.nombre} ${this.data.student.apellido}.\n\nSaludos cordiales,\nPlataforma MIKHUY`,
+        Validators.required
+      ],
     });
   }
 
-  enviar(): void {
-    if (this.emailForm.valid) {
-      this.dialogRef.close(this.emailForm.value);
+  /**
+   * Manejar selección de archivo
+   */
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      
+      // Validar que sea PDF
+      if (file.type !== 'application/pdf') {
+        this.snackBar.open('⚠️ Solo se permiten archivos PDF', 'Cerrar', {
+          duration: 3000,
+        });
+        return;
+      }
+
+      // Validar tamaño (máx 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        this.snackBar.open('⚠️ El archivo es muy grande. Máximo 10MB', 'Cerrar', {
+          duration: 3000,
+        });
+        return;
+      }
+
+      this.selectedFile = file;
+      console.log('📎 Archivo seleccionado:', file.name, `(${this.formatFileSize(file.size)})`);
     }
   }
 
+  /**
+   * Remover archivo seleccionado
+   */
+  removeFile(): void {
+    this.selectedFile = null;
+    console.log('🗑️ Archivo removido');
+  }
+
+  /**
+   * Formatear tamaño de archivo
+   */
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+  }
+
+  /**
+   * Enviar email (con o sin archivo adjunto)
+   */
+  enviar(): void {
+    if (!this.emailForm.valid) {
+      this.snackBar.open('Por favor, complete todos los campos requeridos', 'Cerrar', {
+        duration: 3000,
+      });
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    // Obtener nombre del profesor del usuario actual
+    const currentUser = this.authService.getCurrentUser();
+    const profesorNombre = currentUser 
+      ? `${currentUser.nombres || ''} ${currentUser.apellidos || ''}`.trim() || 'Profesor'
+      : 'Profesor';
+
+    if (this.selectedFile) {
+      // ✅ ENVIAR CON ARCHIVO ADJUNTO
+      this.enviarConAdjunto(profesorNombre);
+    } else {
+      // ✅ ENVIAR SIN ARCHIVO ADJUNTO
+      this.enviarSinAdjunto();
+    }
+  }
+
+  /**
+   * Enviar email SIN archivo adjunto
+   */
+  private enviarSinAdjunto(): void {
+    const emailData = {
+      to: this.emailForm.value.email,
+      subject: this.emailForm.value.subject,
+      message: this.emailForm.value.message || '',
+    };
+
+    console.log('📧 [EmailDialog] Enviando email simple:', emailData);
+
+    this.mailService.sendEmail(emailData).subscribe({
+      next: (response) => {
+        console.log('✅ [EmailDialog] Email enviado exitosamente:', response);
+        this.isLoading = false;
+        
+        this.snackBar.open('✅ Correo enviado exitosamente', 'Cerrar', {
+          duration: 3000,
+        });
+
+        this.dialogRef.close({
+          success: true,
+          email: emailData.to,
+          withAttachment: false,
+          response: response,
+        });
+      },
+      error: (error) => {
+        this.handleError(error);
+      },
+    });
+  }
+
+  /**
+   * Enviar email CON archivo adjunto
+   */
+  private enviarConAdjunto(profesorNombre: string): void {
+    if (!this.selectedFile) return;
+
+    // Crear FormData
+    const formData = new FormData();
+    formData.append('to', this.emailForm.value.email);
+    formData.append('subject', this.emailForm.value.subject);
+    formData.append('message', this.emailForm.value.message || '');
+    formData.append('profesorNombre', profesorNombre);
+    formData.append('pdf', this.selectedFile, this.selectedFile.name);
+
+    console.log('📧 [EmailDialog] Enviando email con PDF adjunto');
+    console.log('📎 Archivo:', this.selectedFile.name, `(${this.formatFileSize(this.selectedFile.size)})`);
+
+    this.mailService.sendEmailWithPdf(formData).subscribe({
+      next: (response) => {
+        console.log('✅ [EmailDialog] Email con PDF enviado exitosamente:', response);
+        this.isLoading = false;
+        
+        this.snackBar.open('✅ Correo con PDF enviado exitosamente', 'Cerrar', {
+          duration: 3000,
+        });
+
+        this.dialogRef.close({
+          success: true,
+          email: this.emailForm.value.email,
+          withAttachment: true,
+          fileName: this.selectedFile?.name,
+          response: response,
+        });
+      },
+      error: (error) => {
+        this.handleError(error);
+      },
+    });
+  }
+
+  /**
+   * Manejar errores
+   */
+  private handleError(error: any): void {
+    console.error('❌ [EmailDialog] Error al enviar email:', error);
+    this.isLoading = false;
+
+    if (error.status === 400) {
+      this.errorMessage = 'Datos inválidos. Verifique el correo y el archivo.';
+    } else if (error.status === 401) {
+      this.errorMessage = 'Sesión expirada. Por favor, inicie sesión nuevamente.';
+    } else if (error.status === 500) {
+      this.errorMessage = 'Error en el servidor. Intente nuevamente más tarde.';
+    } else {
+      this.errorMessage = error.error?.message || 'Error al enviar el correo. Intente nuevamente.';
+    }
+
+    this.snackBar.open(`❌ ${this.errorMessage}`, 'Cerrar', {
+      duration: 5000,
+    });
+  }
+
+  /**
+   * Cancelar
+   */
   cancelar(): void {
-    this.dialogRef.close();
+    if (!this.isLoading) {
+      this.dialogRef.close();
+    }
   }
 }
