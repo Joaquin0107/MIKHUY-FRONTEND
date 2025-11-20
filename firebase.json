@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "dist/mikhuy",
+    "public": "dist/mikhuy/browser",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
