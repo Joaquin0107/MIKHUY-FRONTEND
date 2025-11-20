@@ -1,6 +1,7 @@
 {
   "hosting": {
     "public": "dist/mikhuy", 
+    "baseHref":"./",
     "ignore": [
       "firebase.json",
       "**/.*",
