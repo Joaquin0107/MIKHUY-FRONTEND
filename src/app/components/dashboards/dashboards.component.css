@@ -1317,3 +1317,417 @@
     flex: 0 0 20px;
   }
 }
+
+/* ========== HEALTH CHARTS STYLES ========== */
+
+/* Health Summary Card */
+.health-summary-card {
+  margin-bottom: 2rem;
+  border-radius: 16px !important;
+  background: white !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.health-summary-card mat-card-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #48A3F3;
+}
+
+.health-summary-card mat-card-title mat-icon {
+  color: #f44336;
+}
+
+.health-summary {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+/* IMC Gauge */
+.imc-gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.gauge-svg {
+  width: 200px;
+  height: 120px;
+}
+
+.gauge-segment {
+  fill: none;
+  stroke-width: 20;
+  opacity: 0.8;
+}
+
+.gauge-segment.bajo-peso {
+  stroke: #42A5F5;
+}
+
+.gauge-segment.normal {
+  stroke: #66BB6A;
+}
+
+.gauge-segment.sobrepeso {
+  stroke: #FFA726;
+}
+
+.gauge-segment.obesidad {
+  stroke: #EF5350;
+}
+
+.gauge-needle {
+  stroke: #333;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: transform 0.5s ease;
+}
+
+.gauge-center {
+  fill: #333;
+}
+
+.imc-info {
+  text-align: center;
+}
+
+.imc-info h3 {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.imc-label {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.estado-badge {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.estado-badge.bajo-peso {
+  background: #E3F2FD;
+  color: #1976D2;
+}
+
+.estado-badge.normal {
+  background: #E8F5E9;
+  color: #388E3C;
+}
+
+.estado-badge.sobrepeso {
+  background: #FFF3E0;
+  color: #F57C00;
+}
+
+.estado-badge.obesidad {
+  background: #FFEBEE;
+  color: #D32F2F;
+}
+
+/* Mediciones Actuales */
+.mediciones-actuales {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.medicion-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: #F8F9FA;
+  border-radius: 12px;
+  transition: all 0.3s;
+  border: 2px solid transparent;
+}
+
+.medicion-card:hover {
+  background: #E3F2FD;
+  border-color: #48A3F3;
+  transform: translateY(-2px);
+}
+
+.medicion-card mat-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+  color: #48A3F3;
+}
+
+.medicion-info {
+  flex: 1;
+}
+
+.medicion-info h4 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.medicion-info p {
+  margin: 0.25rem 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.variacion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+.variacion mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.variacion.positivo {
+  background: #E8F5E9;
+  color: #388E3C;
+}
+
+.variacion.negativo {
+  background: #FFEBEE;
+  color: #D32F2F;
+}
+
+.mediciones-count {
+  display: block;
+  font-size: 0.75rem;
+  color: #999;
+  margin-top: 0.5rem;
+}
+
+/* Health Recommendation */
+.health-recommendation {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: #E3F2FD;
+  border-radius: 12px;
+  border-left: 4px solid #48A3F3;
+}
+
+.health-recommendation mat-icon {
+  color: #48A3F3;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.health-recommendation p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Health Charts Grid */
+.health-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.line-chart-container {
+  padding: 1rem 0;
+  min-height: 200px;
+}
+
+.line-chart {
+  width: 100%;
+  height: 200px;
+}
+
+.grid-line {
+  stroke: #E0E0E0;
+  stroke-width: 2;
+}
+
+.chart-line {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.peso-line {
+  stroke: #48A3F3;
+}
+
+.talla-line {
+  stroke: #7BC67E;
+}
+
+.imc-line {
+  stroke: #9C27B0;
+}
+
+.chart-point {
+  fill: white;
+  stroke-width: 3;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.chart-point:hover {
+  r: 6;
+}
+
+.peso-point {
+  stroke: #48A3F3;
+}
+
+.talla-point {
+  stroke: #7BC67E;
+}
+
+.imc-point {
+  stroke: #9C27B0;
+}
+
+.imc-point.bajo-peso {
+  fill: #42A5F5;
+}
+
+.imc-point.normal {
+  fill: #66BB6A;
+}
+
+.imc-point.sobrepeso {
+  fill: #FFA726;
+}
+
+.imc-point.obesidad {
+  fill: #EF5350;
+}
+
+.chart-label {
+  font-size: 12px;
+  fill: #666;
+  font-weight: 600;
+}
+
+.zone-label {
+  font-size: 9px;
+  fill: #999;
+  font-weight: 500;
+}
+
+.imc-zone.bajo-peso {
+  fill: #42A5F5;
+}
+
+.imc-zone.normal {
+  fill: #66BB6A;
+}
+
+.imc-zone.sobrepeso {
+  fill: #FFA726;
+}
+
+.imc-zone.obesidad {
+  fill: #EF5350;
+}
+
+/* Health Empty State */
+.health-empty-card {
+  margin-bottom: 2rem;
+  border-radius: 16px !important;
+  background: white !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+.health-empty-card .empty-state {
+  padding: 4rem 2rem;
+}
+
+.health-empty-card .empty-state mat-icon {
+  font-size: 100px;
+  width: 100px;
+  height: 100px;
+  color: #FFB74D;
+}
+
+.health-empty-card .empty-state h3 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.3rem;
+  color: #333;
+}
+
+.health-empty-card .empty-state p {
+  margin: 0.5rem 0 1.5rem;
+  font-size: 1rem;
+  color: #666;
+}
+
+.health-empty-card .empty-state button mat-icon {
+  margin-right: 0.5rem;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Responsive Health Charts */
+@media (max-width: 1200px) {
+  .health-summary {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .mediciones-actuales {
+    grid-template-columns: 1fr;
+  }
+
+  .health-charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .gauge-svg {
+    width: 160px;
+    height: 100px;
+  }
+
+  .imc-info h3 {
+    font-size: 2rem;
+  }
+
+  .medicion-card {
+    padding: 1rem;
+  }
+
+  .medicion-info h4 {
+    font-size: 1.3rem;
+  }
+}

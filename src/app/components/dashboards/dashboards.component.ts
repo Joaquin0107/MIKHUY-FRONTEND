@@ -85,6 +85,7 @@ export class DashboardsComponent implements OnInit {
   filteredStudents: Student[] = [];
 
   dashboardData: DashboardEstudianteResponse | null = null;
+  
   loading = true;
   error: string | null = null;
 
