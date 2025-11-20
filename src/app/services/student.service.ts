@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.prod';
 import { Estudiante } from '../models/estudiante.model';
 
 export interface ApiResponse<T> {

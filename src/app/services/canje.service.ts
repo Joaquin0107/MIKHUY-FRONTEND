@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { CanjeRequest, CanjeResponse, ApiResponse } from '../models/beneficio.model';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment.prod';
 
 @Injectable({
   providedIn: 'root'
