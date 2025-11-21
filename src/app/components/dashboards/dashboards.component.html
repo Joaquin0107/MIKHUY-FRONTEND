@@ -5,7 +5,11 @@
       <button mat-icon-button class="back-btn" (click)="goBack()">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="header-logo">
+      <img
+        src="assets/images/MIKHUY.png"
+        alt="MIKHUY Logo"
+        class="header-logo"
+      />
     </div>
 
     <div class="header-center">
@@ -16,7 +20,7 @@
     </div>
 
     <div class="header-right">
-            <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
+      <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
         <mat-icon>menu</mat-icon>
       </button>
 
@@ -47,74 +51,86 @@
 
   <!-- Main Content -->
   <div class="dashboards-content" *ngIf="!loading && !error">
-
     <!-- Sidebar con lista de estudiantes (solo para profesores) -->
     <div class="sidebar" *ngIf="isTeacher">
       <!-- Search -->
       <div class="search-box">
         <mat-icon>search</mat-icon>
-        <input type="text"
-               placeholder="Buscar estudiante"
-               [(ngModel)]="searchQuery"
-               (input)="searchStudents()">
+        <input
+          type="text"
+          placeholder="Buscar estudiante"
+          [(ngModel)]="searchQuery"
+          (input)="searchStudents()"
+        />
       </div>
 
       <!-- Student List -->
       <mat-list class="student-list">
-        <mat-list-item *ngFor="let student of filteredStudents"
-                       [class.active]="selectedStudent?.id === student.id"
-                       (click)="selectStudent(student)">
+        <mat-list-item
+          *ngFor="let student of filteredStudents"
+          [class.active]="selectedStudent?.id === student.id"
+          (click)="selectStudent(student)"
+        >
           <div class="student-item">
             <div class="student-avatar">
-              <img [src]="getAvatarUrl(student)"
-                   [alt]="student.nombre"
-                   (error)="onAvatarError($event)">
+              <img
+                [src]="getAvatarUrl(student)"
+                [alt]="student.nombre"
+                (error)="onAvatarError($event)"
+              />
               <mat-icon *ngIf="!student.avatar">account_circle</mat-icon>
             </div>
             <div class="student-info">
-              <h4>{{student.nombre}} {{student.apellido}}</h4>
-              <p>{{student.grado}} - Sección {{student.seccion}}</p>
-              <span class="points-badge">{{student.puntosAcumulados || 0}} pts</span>
+              <h4>{{ student.nombre }} {{ student.apellido }}</h4>
+              <p>{{ student.grado }} - Sección {{ student.seccion }}</p>
+              <span class="points-badge"
+                >{{ student.puntosAcumulados || 0 }} pts</span
+              >
             </div>
           </div>
         </mat-list-item>
       </mat-list>
-    </div>
 
     <!-- Dashboard Content -->
     <div class="dashboard-main" *ngIf="selectedStudent && dashboardData">
-
       <!-- Student Profile Card -->
       <mat-card class="profile-summary">
         <div class="profile-content">
           <div class="profile-avatar">
-            <img [src]="getAvatarUrl(selectedStudent)"
-                 [alt]="selectedStudent.nombre"
-                 (error)="onAvatarError($event)">
+            <img
+              [src]="getAvatarUrl(selectedStudent)"
+              [alt]="selectedStudent.nombre"
+              (error)="onAvatarError($event)"
+            />
             <mat-icon *ngIf="!selectedStudent.avatar">account_circle</mat-icon>
           </div>
           <div class="profile-details">
-            <h2>{{selectedStudent.nombre}} {{selectedStudent.apellido}}</h2>
+            <h2>{{ selectedStudent.nombre }} {{ selectedStudent.apellido }}</h2>
             <div class="profile-stats">
               <div class="stat-item">
                 <span class="label">Edad:</span>
-                <span class="value">{{selectedStudent.edad}} años</span>
+                <span class="value">{{ selectedStudent.edad }} años</span>
               </div>
               <div class="stat-item">
                 <span class="label">Talla:</span>
-                <span class="value">{{selectedStudent.talla}}</span>
+                <span class="value">{{ selectedStudent.talla }}</span>
               </div>
               <div class="stat-item">
                 <span class="label">Peso:</span>
-                <span class="value">{{selectedStudent.peso}}</span>
+                <span class="value">{{ selectedStudent.peso }}</span>
               </div>
               <div class="stat-item">
                 <span class="label">Grado:</span>
-                <span class="value">{{selectedStudent.grado}} - {{selectedStudent.seccion}}</span>
+                <span class="value"
+                  >{{ selectedStudent.grado }} -
+                  {{ selectedStudent.seccion }}</span
+                >
               </div>
               <div class="stat-item">
                 <span class="label">Puntos:</span>
-                <span class="value highlight">{{dashboardData.estudiante.puntosAcumulados}}</span>
+                <span class="value highlight">{{
+                  dashboardData.estudiante.puntosAcumulados
+                }}</span>
               </div>
             </div>
           </div>
@@ -122,7 +138,11 @@
 
         <!-- Action Buttons -->
         <div class="profile-actions">
-          <button mat-raised-button class="download-btn" (click)="descargarReporte()">
+          <button
+            mat-raised-button
+            class="download-btn"
+            (click)="descargarReporte()"
+          >
             <mat-icon>download</mat-icon>
             Descargar reporte
           </button>
@@ -138,7 +158,7 @@
         <mat-card class="stat-card">
           <mat-icon class="stat-icon points">emoji_events</mat-icon>
           <div class="stat-content">
-            <h3>{{dashboardData.estadisticas.puntosGanados}}</h3>
+            <h3>{{ dashboardData.estadisticas.puntosGanados }}</h3>
             <p>Puntos Ganados</p>
           </div>
         </mat-card>
@@ -146,7 +166,7 @@
         <mat-card class="stat-card">
           <mat-icon class="stat-icon games">videogame_asset</mat-icon>
           <div class="stat-content">
-            <h3>{{dashboardData.estadisticas.juegosCompletados}}</h3>
+            <h3>{{ dashboardData.estadisticas.juegosCompletados }}</h3>
             <p>Juegos Completados</p>
           </div>
         </mat-card>
@@ -154,7 +174,7 @@
         <mat-card class="stat-card">
           <mat-icon class="stat-icon sessions">schedule</mat-icon>
           <div class="stat-content">
-            <h3>{{dashboardData.estadisticas.totalSesiones}}</h3>
+            <h3>{{ dashboardData.estadisticas.totalSesiones }}</h3>
             <p>Total Sesiones</p>
           </div>
         </mat-card>
@@ -162,317 +182,228 @@
         <mat-card class="stat-card">
           <mat-icon class="stat-icon ranking">leaderboard</mat-icon>
           <div class="stat-content">
-            <h3>#{{dashboardData.estadisticas.posicionRanking}}</h3>
+            <h3>#{{ dashboardData.estadisticas.posicionRanking }}</h3>
             <p>Posición Ranking</p>
           </div>
         </mat-card>
       </div>
 
-      <!-- 🎮 GRÁFICOS DE JUEGOS -->
-      <div class="charts-grid">
+      <!-- ============================================
+     SECCIÓN DE SALUD - Agregar después de stats-grid
+     ============================================ -->
+<!-- Estado de Salud Actual -->
+<ng-container *ngIf="dashboardData?.salud as salud">
+  <mat-card class="health-summary-card" *ngIf="salud.medicionActual">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>favorite</mat-icon>
+        Estado de Salud
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="health-summary">
+        <!-- IMC Gauge -->
+        <div class="imc-gauge" *ngIf="salud.estadisticas as stats">
+          <svg viewBox="0 0 200 120" class="gauge-svg">
+            <path d="M 20 100 A 80 80 0 0 1 100 20" class="gauge-segment bajo-peso" />
+            <path d="M 100 20 A 80 80 0 0 1 140 35" class="gauge-segment normal" />
+            <path d="M 140 35 A 80 80 0 0 1 165 65" class="gauge-segment sobrepeso" />
+            <path d="M 165 65 A 80 80 0 0 1 180 100" class="gauge-segment obesidad" />
+            
+            <g [attr.transform]="'rotate(' + getIMCAngle(stats.imcActual || 0) + ' 100 100)'">
+              <line x1="100" y1="100" x2="100" y2="35" class="gauge-needle" />
+              <circle cx="100" cy="100" r="6" class="gauge-center" />
+            </g>
+          </svg>
+          
+          <div class="imc-info">
+            <h3>{{stats.imcActual | number:'1.1-1'}}</h3>
+            <p class="imc-label">Índice de Masa Corporal</p>
+            <span class="estado-badge" 
+                  [ngClass]="{
+                    'bajo-peso': stats.estadoNutricionalActual === 'Bajo peso',
+                    'normal': stats.estadoNutricionalActual === 'Normal',
+                    'sobrepeso': stats.estadoNutricionalActual === 'Sobrepeso',
+                    'obesidad': stats.estadoNutricionalActual === 'Obesidad'
+                  }">
+              {{stats.estadoNutricionalActual}}
+            </span>
+          </div>
+        </div>
 
-        <!-- Gráfico 1: Conocimiento Nutricional (Desafío Nutrimental) -->
-        <mat-card class="chart-card" *ngIf="getJuegoData('Desafío Nutrimental') as nutrimental">
-          <mat-card-header>
-            <mat-icon class="info-icon" matTooltip="Resultados del Desafío Nutrimental">info</mat-icon>
-            <mat-card-title>Conocimiento Nutricional</mat-card-title>
-            <span class="data-source">Datos del Desafío Nutrimental</span>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="chart-container">
-              <div class="knowledge-stats">
-                <div class="stat-circle">
-                  <svg viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="40" class="stat-bg"/>
-                    <circle cx="50" cy="50" r="40" class="stat-progress"
-                            [attr.stroke-dasharray]="(calcularPorcentajeProgreso(nutrimental) * 2.51) + ' 251'"
-                            [style.stroke]="getColorByProgress(calcularPorcentajeProgreso(nutrimental))"/>
-                    <text x="50" y="55" class="stat-text">{{calcularPorcentajeProgreso(nutrimental)}}%</text>
-                  </svg>
-                  <p>Progreso</p>
-                </div>
-                <div class="knowledge-details">
-                  <div class="detail-item">
-                    <mat-icon>emoji_events</mat-icon>
-                    <div>
-                      <strong>Nivel {{nutrimental.nivelActual || 0}}/{{nutrimental.maxNiveles}}</strong>
-                      <span>{{nutrimental.puntosGanados || 0}} puntos</span>
-                    </div>
-                  </div>
-                  <div class="detail-item">
-                    <mat-icon>replay</mat-icon>
-                    <div>
-                      <strong>Veces jugado</strong>
-                      <span>{{nutrimental.vecesJugado || 0}} veces</span>
-                    </div>
-                  </div>
-                  <div class="detail-item" [class.success]="nutrimental.completado">
-                    <mat-icon>{{nutrimental.completado ? 'check_circle' : 'pending'}}</mat-icon>
-                    <div>
-                      <strong>{{nutrimental.completado ? '¡Completado!' : 'En progreso'}}</strong>
-                      <span>{{nutrimental.completado ? 'Juego terminado' : 'Continúa jugando'}}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <!-- Mediciones Actuales -->
+        <div class="mediciones-actuales">
+          <div class="medicion-card">
+            <mat-icon>monitor_weight</mat-icon>
+            <div class="medicion-info">
+              <h4>{{salud.medicionActual.peso}} kg</h4>
+              <p>Peso</p>
+              <ng-container *ngIf="salud.estadisticas as stats">
+                <span class="variacion" 
+                      [ngClass]="{
+                        'positivo': stats.variacionPeso > 0,
+                        'negativo': stats.variacionPeso < 0
+                      }">
+                  <mat-icon>{{stats.variacionPeso > 0 ? 'trending_up' : 'trending_down'}}</mat-icon>
+                  {{stats.variacionPeso | number:'1.1-1'}}%
+                </span>
+              </ng-container>
             </div>
-          </mat-card-content>
-        </mat-card>
+          </div>
 
-        <!-- Gráfico 2: Distribución de Macronutrientes (si hay análisis) -->
-        <mat-card class="chart-card" *ngIf="dashboardData.ultimoAnalisis">
-          <mat-card-header>
-            <mat-card-title>Distribución de Macronutrientes</mat-card-title>
-            <span class="data-source">Análisis Nutricional</span>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="chart-container">
-              <svg viewBox="0 0 200 200" class="donut-chart">
-                <circle cx="100" cy="100" r="60" class="donut-segment protein"
-                        [attr.stroke-dasharray]="getCircleSegment(dashboardData.ultimoAnalisis.proteinasPorcentaje) + ' 377'"/>
-                <circle cx="100" cy="100" r="60" class="donut-segment carbs"
-                        [attr.stroke-dasharray]="getCircleSegment(dashboardData.ultimoAnalisis.carbohidratosPorcentaje) + ' 377'"
-                        [attr.stroke-dashoffset]="-getCircleSegment(dashboardData.ultimoAnalisis.proteinasPorcentaje)"/>
-                <circle cx="100" cy="100" r="60" class="donut-segment fat"
-                        [attr.stroke-dasharray]="getCircleSegment(dashboardData.ultimoAnalisis.grasasPorcentaje) + ' 377'"
-                        [attr.stroke-dashoffset]="-(getCircleSegment(dashboardData.ultimoAnalisis.proteinasPorcentaje) + getCircleSegment(dashboardData.ultimoAnalisis.carbohidratosPorcentaje))"/>
-                <text x="100" y="105" class="donut-center">100%</text>
-              </svg>
-              <div class="chart-legend">
-                <div class="legend-item">
-                  <span class="legend-color protein-color"></span>
-                  <span>Proteínas {{dashboardData.ultimoAnalisis.proteinasPorcentaje}}%</span>
-                </div>
-                <div class="legend-item">
-                  <span class="legend-color carbs-color"></span>
-                  <span>Carbohidratos {{dashboardData.ultimoAnalisis.carbohidratosPorcentaje}}%</span>
-                </div>
-                <div class="legend-item">
-                  <span class="legend-color fat-color"></span>
-                  <span>Grasas {{dashboardData.ultimoAnalisis.grasasPorcentaje}}%</span>
-                </div>
-              </div>
+          <div class="medicion-card">
+            <mat-icon>height</mat-icon>
+            <div class="medicion-info">
+              <h4>{{salud.medicionActual.talla}} cm</h4>
+              <p>Talla</p>
+              <ng-container *ngIf="salud.estadisticas as stats">
+                <span class="variacion positivo" *ngIf="stats.variacionTalla > 0">
+                  <mat-icon>trending_up</mat-icon>
+                  +{{stats.variacionTalla | number:'1.1-1'}}%
+                </span>
+              </ng-container>
             </div>
-          </mat-card-content>
-        </mat-card>
+          </div>
 
-        <!-- Gráfico 3: Progreso Reto 7 Días -->
-        <mat-card class="chart-card" *ngIf="getJuegoData('Reto 7 Días') as reto7dias">
-          <mat-card-header>
-            <mat-card-title>Reto 7 Días - Registro Alimenticio</mat-card-title>
-            <span class="data-source">Datos del Reto 7 Días</span>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="chart-container">
-              <div class="game-progress">
-                <div class="progress-header">
-                  <mat-icon class="game-icon">restaurant</mat-icon>
-                  <div>
-                    <h3>{{reto7dias.nivelActual || 0}} de {{reto7dias.maxNiveles}} días completados</h3>
-                    <p>{{reto7dias.puntosGanados || 0}} puntos acumulados</p>
-                  </div>
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar" [style.width.%]="calcularPorcentajeProgreso(reto7dias)"></div>
-                </div>
-                <div class="game-stats">
-                  <div class="game-stat-item">
-                    <mat-icon>calendar_today</mat-icon>
-                    <span>Jugado {{reto7dias.vecesJugado || 0}} veces</span>
-                  </div>
-                  <div class="game-stat-item">
-                    <mat-icon>{{reto7dias.completado ? 'check_circle' : 'hourglass_empty'}}</mat-icon>
-                    <span>{{reto7dias.completado ? 'Completado' : 'En progreso'}}</span>
-                  </div>
-                </div>
-              </div>
+          <div class="medicion-card" *ngIf="salud.estadisticas as stats">
+            <mat-icon>{{getTendenciaIcon(stats.tendencia)}}</mat-icon>
+            <div class="medicion-info">
+              <h4>{{stats.tendencia}}</h4>
+              <p>Tendencia</p>
+              <span class="mediciones-count">
+                {{stats.totalMediciones}} mediciones
+              </span>
             </div>
-          </mat-card-content>
-        </mat-card>
-
-        <!-- Gráfico 4: Etapa de Cambio (Coach Exprés) -->
-        <mat-card class="chart-card" *ngIf="dashboardData.ultimoAnalisis && dashboardData.ultimoAnalisis.etapaCambio">
-          <mat-card-header>
-            <mat-card-title>Etapa de Cambio Conductual</mat-card-title>
-            <span class="data-source">Datos del Coach Exprés</span>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="chart-container">
-              <div class="stage-indicator">
-                <div class="stage-circle" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Pre-contemplación'">
-                  <span class="stage-number">1</span>
-                  <p>Pre-contemplación</p>
-                </div>
-                <div class="stage-connector" [class.active]="isStageActiveOrPast('Contemplación')"></div>
-                <div class="stage-circle" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Contemplación'">
-                  <span class="stage-number">2</span>
-                  <p>Contemplación</p>
-                </div>
-                <div class="stage-connector" [class.active]="isStageActiveOrPast('Preparación')"></div>
-                <div class="stage-circle" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Preparación'">
-                  <span class="stage-number">3</span>
-                  <p>Preparación</p>
-                </div>
-                <div class="stage-connector" [class.active]="isStageActiveOrPast('Acción')"></div>
-                <div class="stage-circle" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Acción'">
-                  <span class="stage-number">4</span>
-                  <p>Acción</p>
-                </div>
-                <div class="stage-connector" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Mantenimiento'"></div>
-                <div class="stage-circle" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Mantenimiento'">
-                  <span class="stage-number">5</span>
-                  <p>Mantenimiento</p>
-                </div>
-              </div>
-              <div class="current-stage-info">
-                <mat-icon>psychology</mat-icon>
-                <div>
-                  <strong>Etapa Actual: {{dashboardData.ultimoAnalisis.etapaCambio}}</strong>
-                  <p *ngIf="dashboardData.ultimoAnalisis.porcentajeAciertos">
-                    Conocimiento: {{dashboardData.ultimoAnalisis.porcentajeAciertos}}% de aciertos
-                  </p>
-                </div>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <!-- Gráfico 5: Progreso Coach Exprés -->
-        <mat-card class="chart-card" *ngIf="getJuegoData('Coach Exprés') as coach">
-          <mat-card-header>
-            <mat-card-title>Coach Exprés - Evaluación Psicológica</mat-card-title>
-            <span class="data-source">Datos del Coach Exprés</span>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="chart-container">
-              <div class="game-progress">
-                <div class="progress-header">
-                  <mat-icon class="game-icon">psychology</mat-icon>
-                  <div>
-                    <h3>Nivel {{coach.nivelActual || 0}} de {{coach.maxNiveles}}</h3>
-                    <p>{{coach.puntosGanados || 0}} puntos acumulados</p>
-                  </div>
-                </div>
-                <div class="progress-bar-container">
-                  <div class="progress-bar coach" [style.width.%]="calcularPorcentajeProgreso(coach)"></div>
-                </div>
-                <div class="game-stats">
-                  <div class="game-stat-item">
-                    <mat-icon>psychology</mat-icon>
-                    <span>Evaluaciones: {{coach.vecesJugado || 0}}</span>
-                  </div>
-                  <div class="game-stat-item">
-                    <mat-icon>{{coach.completado ? 'check_circle' : 'pending'}}</mat-icon>
-                    <span>{{coach.completado ? 'Evaluación completa' : 'En evaluación'}}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
-        <!-- Gráfico 6: Comparativa de Juegos -->
-        <mat-card class="chart-card">
-          <mat-card-header>
-            <mat-card-title>Comparativa de Juegos</mat-card-title>
-            <span class="data-source">Resumen General</span>
-          </mat-card-header>
-          <mat-card-content>
-            <div class="chart-container">
-              <div class="games-comparison">
-                <div class="game-comparison-item" *ngFor="let juego of dashboardData.juegos">
-                  <div class="game-name">
-                    <mat-icon>{{getGameIcon(juego.nombre)}}</mat-icon>
-                    <span>{{juego.nombre}}</span>
-                  </div>
-                  <div class="game-bar-container">
-                    <div class="game-bar" 
-                         [style.width.%]="calcularPorcentajeProgreso(juego)"
-                         [class.completed]="juego.completado">
-                    </div>
-                  </div>
-                  <span class="game-percentage">{{calcularPorcentajeProgreso(juego)}}%</span>
-                </div>
-              </div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-
+          </div>
+        </div>
       </div>
 
-      <!-- Últimas Sesiones de Juego -->
-      <mat-card class="recent-sessions">
+      <!-- Recomendación -->
+      <div class="health-recommendation" *ngIf="salud.estadisticas as stats">
+        <mat-icon>info</mat-icon>
+        <p>{{stats.recomendacion}}</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Gráficas de Evolución -->
+  <ng-container *ngIf="salud.historialMediciones as mediciones">
+    <div class="health-charts-grid" *ngIf="mediciones.length > 0">
+      
+      <!-- Gráfica de Peso -->
+      <mat-card class="chart-card">
         <mat-card-header>
-          <mat-card-title>Últimas Sesiones de Juego</mat-card-title>
+          <mat-card-title>Evolución de Peso</mat-card-title>
+          <span class="data-source">Últimas {{mediciones.length}} mediciones</span>
         </mat-card-header>
         <mat-card-content>
-          <div class="session-list" *ngIf="dashboardData.ultimasSesiones.length > 0">
-            <div class="session-item" *ngFor="let sesion of dashboardData.ultimasSesiones">
-              <mat-icon class="session-icon" [class.completed]="sesion.completado">
-                {{sesion.completado ? 'check_circle' : 'pending'}}
-              </mat-icon>
-              <div class="session-details">
-                <h4>{{sesion.juegoNombre}}</h4>
-                <p>Nivel {{sesion.nivelJugado}} • {{sesion.tiempoJugadoFormato}}</p>
-              </div>
-              <div class="session-points">
-                <span>+{{sesion.puntosObtenidos}} pts</span>
-                <small>{{sesion.fechaSesion | date:'short'}}</small>
-              </div>
-            </div>
-          </div>
-          <div class="empty-state" *ngIf="dashboardData.ultimasSesiones.length === 0">
-            <mat-icon>sports_esports</mat-icon>
-            <p>No hay sesiones registradas aún</p>
+          <div class="line-chart-container">
+            <svg viewBox="0 0 400 200" class="line-chart">
+              <line x1="40" y1="20" x2="40" y2="160" class="grid-line" />
+              <line x1="40" y1="160" x2="380" y2="160" class="grid-line" />
+              
+              <polyline 
+                [attr.points]="getWeightChartPoints()"
+                class="chart-line peso-line" />
+              
+              <circle *ngFor="let point of getWeightPoints(); let i = index"
+                      [attr.cx]="point.x"
+                      [attr.cy]="point.y"
+                      r="4"
+                      class="chart-point peso-point"
+                      [matTooltip]="point.peso + ' kg - ' + point.fecha">
+              </circle>
+              
+              <text x="15" y="25" class="chart-label">kg</text>
+            </svg>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <!-- Ranking Top 5 -->
-      <mat-card class="ranking-card">
+      <!-- Gráfica de Talla -->
+      <mat-card class="chart-card">
         <mat-card-header>
-          <mat-card-title>Top 5 Estudiantes</mat-card-title>
+          <mat-card-title>Evolución de Talla</mat-card-title>
+          <span class="data-source">Últimas {{mediciones.length}} mediciones</span>
         </mat-card-header>
         <mat-card-content>
-          <div class="ranking-list">
-            <div class="ranking-item" *ngFor="let top of dashboardData.ranking.top5">
-              <span class="ranking-position" [class.top3]="top.posicion <= 3">
-                {{top.posicion}}
-              </span>
-              <div class="ranking-info">
-                <strong>{{top.nombre}}</strong>
-              </div>
-              <span class="ranking-points">{{top.puntos}} pts</span>
-            </div>
-          </div>
-          <div class="my-ranking">
-            <mat-icon>person</mat-icon>
-            <span>Tu posición: <strong>#{{dashboardData.ranking.posicion}}</strong> de {{dashboardData.ranking.total}}</span>
+          <div class="line-chart-container">
+            <svg viewBox="0 0 400 200" class="line-chart">
+              <line x1="40" y1="20" x2="40" y2="160" class="grid-line" />
+              <line x1="40" y1="160" x2="380" y2="160" class="grid-line" />
+              
+              <polyline 
+                [attr.points]="getHeightChartPoints()"
+                class="chart-line talla-line" />
+              
+              <circle *ngFor="let point of getHeightPoints(); let i = index"
+                      [attr.cx]="point.x"
+                      [attr.cy]="point.y"
+                      r="4"
+                      class="chart-point talla-point"
+                      [matTooltip]="point.talla + ' cm - ' + point.fecha">
+              </circle>
+              
+              <text x="15" y="25" class="chart-label">cm</text>
+            </svg>
           </div>
         </mat-card-content>
       </mat-card>
 
-      <!-- Beneficios Disponibles -->
-      <mat-card class="benefits-card">
+      <!-- Gráfica de IMC -->
+      <mat-card class="chart-card">
         <mat-card-header>
-          <mat-card-title>Beneficios Disponibles</mat-card-title>
+          <mat-card-title>Evolución del IMC</mat-card-title>
+          <span class="data-source">Últimas {{mediciones.length}} mediciones</span>
         </mat-card-header>
         <mat-card-content>
-          <div class="benefits-grid" *ngIf="dashboardData.beneficiosDisponibles.length > 0">
-            <div class="benefit-item" *ngFor="let beneficio of dashboardData.beneficiosDisponibles">
-              <img [src]="beneficio.imagenUrl || 'assets/images/default-benefit.png'" [alt]="beneficio.nombre">
-              <h4>{{beneficio.nombre}}</h4>
-              <p class="benefit-points">{{beneficio.puntosRequeridos}} pts</p>
-              <span class="benefit-stock">Stock: {{beneficio.stock}}</span>
-            </div>
-          </div>
-          <div class="empty-state" *ngIf="dashboardData.beneficiosDisponibles.length === 0">
-            <mat-icon>card_giftcard</mat-icon>
-            <p>No hay beneficios disponibles actualmente</p>
+          <div class="line-chart-container">
+            <svg viewBox="0 0 400 200" class="line-chart">
+              <rect x="40" y="20" width="340" height="35" class="imc-zone bajo-peso" opacity="0.1" />
+              <rect x="40" y="55" width="340" height="50" class="imc-zone normal" opacity="0.1" />
+              <rect x="40" y="105" width="340" height="30" class="imc-zone sobrepeso" opacity="0.1" />
+              <rect x="40" y="135" width="340" height="25" class="imc-zone obesidad" opacity="0.1" />
+              
+              <line x1="40" y1="20" x2="40" y2="160" class="grid-line" />
+              <line x1="40" y1="160" x2="380" y2="160" class="grid-line" />
+              
+              <text x="45" y="40" class="zone-label">Bajo peso (&lt;18.5)</text>
+              <text x="45" y="80" class="zone-label">Normal (18.5-25)</text>
+              <text x="45" y="120" class="zone-label">Sobrepeso (25-30)</text>
+              <text x="45" y="150" class="zone-label">Obesidad (&gt;30)</text>
+              
+              <polyline 
+                [attr.points]="getIMCChartPoints()"
+                class="chart-line imc-line" />
+              
+              <circle *ngFor="let point of getIMCPoints(); let i = index"
+                      [attr.cx]="point.x"
+                      [attr.cy]="point.y"
+                      r="4"
+                      [attr.class]="'chart-point imc-point ' + point.estado"
+                      [matTooltip]="'IMC: ' + point.imc + ' (' + point.estado + ') - ' + point.fecha">
+              </circle>
+              
+              <text x="15" y="25" class="chart-label">IMC</text>
+            </svg>
           </div>
         </mat-card-content>
       </mat-card>
-
     </div>
-  </div>
-</div>
+  </ng-container>
+</ng-container>
+
+<!-- Empty state para salud -->
+<mat-card class="health-empty-card" *ngIf="!dashboardData?.salud?.medicionActual">
+  <mat-card-content>
+    <div class="empty-state">
+      <mat-icon>monitor_heart</mat-icon>
+      <h3>No hay mediciones de salud registradas</h3>
+      <p>Actualiza el peso y talla del estudiante en su perfil para comenzar el seguimiento.</p>
+      <button mat-raised-button color="primary" (click)="openProfile()">
+        <mat-icon>edit</mat-icon>
+        Ir al Perfil
+      </button>
+    </div>
+  </mat-card-content>
+</mat-card>

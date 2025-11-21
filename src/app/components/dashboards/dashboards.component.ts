@@ -31,6 +31,8 @@ import {
   DashboardEstudianteResponse,
   EstudianteResponse,
   JuegoResponse,
+  SaludInfo,
+  EstadisticasSalud,
 } from '../../services/dashboard.service';
 import { StudentService } from '../../services/student.service';
 import { AuthService } from '../../services/auth.service';
@@ -85,7 +87,6 @@ export class DashboardsComponent implements OnInit {
   filteredStudents: Student[] = [];
 
   dashboardData: DashboardEstudianteResponse | null = null;
-  
   loading = true;
   error: string | null = null;
 
@@ -100,17 +101,14 @@ export class DashboardsComponent implements OnInit {
     private studentService: StudentService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private mailService: MailService,
-
+    private mailService: MailService
   ) {}
 
   ngOnInit(): void {
-    // Cargar jsPDF y html2canvas dinámicamente
     this.loadExternalScripts();
 
-    // Obtener usuario actual desde localStorage
-    this.currentUser =
-      this.authService.getCurrentUser?.() ||
+    // ✅ CORREGIDO: Removido el operador opcional ?.()
+    this.currentUser = this.authService.getCurrentUser() || 
       JSON.parse(localStorage.getItem('currentUser') || '{}');
 
     this.isTeacher = this.currentUser?.rol === 'teacher';
@@ -122,11 +120,7 @@ export class DashboardsComponent implements OnInit {
     }
   }
 
-  /**
-   * Cargar scripts externos para PDF
-   */
   private loadExternalScripts(): void {
-    // Cargar html2canvas
     if (!(window as any).html2canvas) {
       const html2canvasScript = document.createElement('script');
       html2canvasScript.src =
@@ -134,7 +128,6 @@ export class DashboardsComponent implements OnInit {
       document.head.appendChild(html2canvasScript);
     }
 
-    // Cargar jsPDF
     if (!(window as any).jspdf) {
       const jspdfScript = document.createElement('script');
       jspdfScript.src =
@@ -143,9 +136,6 @@ export class DashboardsComponent implements OnInit {
     }
   }
 
-  /**
-   * Cargar mi dashboard (estudiante)
-   */
   loadMyDashboard(): void {
     this.loading = true;
     this.error = null;
@@ -155,11 +145,13 @@ export class DashboardsComponent implements OnInit {
         if (response.success && response.data) {
           this.dashboardData = response.data;
           this.notificationCount =
-            response.data.estadisticas.notificacionesNoLeidas;
+            response.data.estadisticas?.notificacionesNoLeidas || 0;
 
           this.selectedStudent = this.mapEstudianteToStudent(
             response.data.estudiante
           );
+
+          this.verificarAlertasSalud(response.data.salud);
 
           this.loading = false;
         } else {
@@ -176,9 +168,6 @@ export class DashboardsComponent implements OnInit {
     });
   }
 
-  /**
-   * Cargar todos los estudiantes (profesor)
-   */
   loadAllStudents(): void {
     this.loading = true;
     this.error = null;
@@ -193,7 +182,7 @@ export class DashboardsComponent implements OnInit {
             edad: est.edad,
             grado: est.grado,
             seccion: est.seccion,
-            talla: est.talla ? `${est.talla}m` : 'N/A',
+            talla: est.talla ? `${est.talla}cm` : 'N/A',
             peso: est.peso ? `${est.peso}kg` : 'N/A',
             avatar: est.avatarUrl,
             puntosAcumulados: est.puntosAcumulados,
@@ -221,9 +210,6 @@ export class DashboardsComponent implements OnInit {
     });
   }
 
-  /**
-   * Seleccionar un estudiante
-   */
   selectStudent(student: Student): void {
     this.selectedStudent = student;
     this.loading = true;
@@ -232,6 +218,9 @@ export class DashboardsComponent implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.dashboardData = response.data;
+          
+          this.verificarAlertasSalud(response.data.salud);
+          
           this.loading = false;
         } else {
           this.error =
@@ -247,9 +236,6 @@ export class DashboardsComponent implements OnInit {
     });
   }
 
-  /**
-   * Buscar estudiantes
-   */
   searchStudents(): void {
     if (!this.searchQuery.trim()) {
       this.filteredStudents = [...this.students];
@@ -264,9 +250,62 @@ export class DashboardsComponent implements OnInit {
     }
   }
 
-  /**
-   * GENERAR REPORTE PDF CON GRÁFICAS
-   */
+  // ========================================================
+  // SISTEMA DE ALERTAS DE SALUD
+  // ========================================================
+
+  verificarAlertasSalud(saludInfo: SaludInfo | null | undefined): void {
+    if (!saludInfo?.medicionActual || !saludInfo?.estadisticas) {
+      return;
+    }
+
+    const estado = saludInfo.estadisticas;
+    const alertas: string[] = [];
+
+    if (estado.estadoNutricionalActual === 'Obesidad') {
+      alertas.push('⚠️ ALERTA: El estudiante presenta obesidad. Se recomienda consulta con nutricionista.');
+    } else if (estado.estadoNutricionalActual === 'Bajo peso') {
+      alertas.push('⚠️ ALERTA: El estudiante presenta bajo peso. Se recomienda evaluación médica.');
+    } else if (estado.estadoNutricionalActual === 'Sobrepeso') {
+      alertas.push('⚠️ ADVERTENCIA: El estudiante presenta sobrepeso. Monitorear alimentación y actividad física.');
+    }
+
+    if (estado.tendencia === 'Preocupante') {
+      alertas.push('📉 TENDENCIA PREOCUPANTE: El estado nutricional ha empeorado. Revisar hábitos alimenticios.');
+    }
+
+    if (Math.abs(estado.variacionPeso) > 5) {
+      alertas.push(`📊 CAMBIO SIGNIFICATIVO: Variación de peso del ${estado.variacionPeso.toFixed(1)}% desde la última medición.`);
+    }
+
+    if (alertas.length > 0) {
+      this.mostrarDialogoAlertas(alertas, estado);
+    }
+  }
+
+  mostrarDialogoAlertas(alertas: string[], estado: EstadisticasSalud): void {
+    const dialogRef = this.dialog.open(AlertaSaludDialog, {
+      width: '600px',
+      data: {
+        alertas: alertas,
+        estadisticas: estado,
+        estudiante: this.selectedStudent
+      },
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === 'ver-recomendaciones') {
+        const element = document.querySelector('.health-recommendation');
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  }
+
+  // ========================================================
+  // GENERAR REPORTE PDF CON ANÁLISIS DE SALUD
+  // ========================================================
+
   async descargarReporte(): Promise<void> {
     if (!this.selectedStudent || !this.dashboardData) {
       this.snackBar.open('No hay datos para generar el reporte', 'Cerrar', {
@@ -276,10 +315,9 @@ export class DashboardsComponent implements OnInit {
     }
 
     this.isGeneratingPDF = true;
-    this.snackBar.open('Generando reporte PDF...', '', { duration: 2000 });
+    this.snackBar.open('Generando reporte PDF completo...', '', { duration: 2000 });
 
     try {
-      // Esperar a que las librerías estén disponibles
       await this.waitForLibraries();
 
       const pdf = new jsPDF('p', 'mm', 'a4');
@@ -320,165 +358,157 @@ export class DashboardsComponent implements OnInit {
         80,
         yPosition
       );
-      pdf.text(`Talla: ${this.selectedStudent.talla}`, 150, yPosition);
 
-      yPosition += 6;
-      pdf.text(`Peso: ${this.selectedStudent.peso}`, 20, yPosition);
-      pdf.text(
-        `Puntos Acumulados: ${this.dashboardData.estudiante.puntosAcumulados}`,
-        80,
-        yPosition
-      );
+      // ANÁLISIS DE SALUD
+      if (this.dashboardData.salud?.medicionActual) {
+        yPosition += 15;
+        pdf.setFillColor(255, 235, 238);
+        pdf.rect(15, yPosition - 5, pageWidth - 30, 60, 'F');
+
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(72, 163, 243);
+        pdf.text('❤️ ANÁLISIS DE SALUD', 20, yPosition);
+
+        yPosition += 10;
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setTextColor(0, 0, 0);
+
+        const medicion = this.dashboardData.salud.medicionActual;
+        const stats = this.dashboardData.salud.estadisticas;
+
+        pdf.text(`Peso: ${medicion.peso} kg`, 20, yPosition);
+        pdf.text(`Talla: ${medicion.talla} cm`, 70, yPosition);
+        if (stats) {
+          pdf.text(`IMC: ${stats.imcActual.toFixed(1)}`, 120, yPosition);
+        }
+
+        yPosition += 8;
+        
+        if (stats) {
+          const estadoColor = this.getEstadoColor(stats.estadoNutricionalActual);
+          pdf.setTextColor(estadoColor.r, estadoColor.g, estadoColor.b);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`Estado: ${stats.estadoNutricionalActual}`, 20, yPosition);
+
+          pdf.setTextColor(0, 0, 0);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(`Tendencia: ${stats.tendencia}`, 80, yPosition);
+          pdf.text(`Mediciones: ${stats.totalMediciones}`, 130, yPosition);
+
+          yPosition += 8;
+          
+          const variacionPesoText = stats.variacionPeso > 0 
+            ? `↑ +${stats.variacionPeso.toFixed(1)}%` 
+            : `↓ ${stats.variacionPeso.toFixed(1)}%`;
+          pdf.text(`Variación peso: ${variacionPesoText}`, 20, yPosition);
+
+          if (stats.variacionTalla > 0) {
+            pdf.text(`Variación talla: ↑ +${stats.variacionTalla.toFixed(1)}%`, 90, yPosition);
+          }
+
+          // ALERTAS
+          yPosition += 12;
+          if (this.tieneAlertasSalud(stats)) {
+            pdf.setFillColor(255, 243, 224);
+            pdf.rect(15, yPosition - 5, pageWidth - 30, 15, 'F');
+
+            pdf.setFontSize(10);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(244, 67, 54);
+            pdf.text('⚠️ ALERTAS:', 20, yPosition);
+
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(0, 0, 0);
+            const alertaText = this.getAlertaTexto(stats);
+            const splitAlerta = pdf.splitTextToSize(alertaText, pageWidth - 50);
+            pdf.text(splitAlerta, 45, yPosition);
+          }
+        }
+      }
 
       // ESTADÍSTICAS GENERALES
-      yPosition += 15;
+      yPosition += 20;
       pdf.setFillColor(232, 245, 253);
       pdf.rect(15, yPosition - 5, pageWidth - 30, 25, 'F');
 
       pdf.setFontSize(14);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Estadísticas Generales', 20, yPosition);
+      pdf.setTextColor(72, 163, 243);
+      pdf.text('📊 Estadísticas Generales', 20, yPosition);
 
       yPosition += 8;
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
 
       const stats = this.dashboardData.estadisticas;
-      pdf.text(`[PG] Puntos Ganados: ${stats.puntosGanados}`, 20, yPosition);
-      pdf.text(
-        `[JC] Juegos Completados: ${stats.juegosCompletados}`,
-        80,
-        yPosition
-      );
+      pdf.text(`Puntos Ganados: ${stats.puntosGanados}`, 20, yPosition);
+      pdf.text(`Juegos Completados: ${stats.juegosCompletados}`, 80, yPosition);
 
       yPosition += 6;
-      pdf.text(`[TS] Total Sesiones: ${stats.totalSesiones}`, 20, yPosition);
-      pdf.text(
-        `[RK] Posición Ranking: #${stats.posicionRanking} de ${stats.totalEstudiantes}`,
-        80,
-        yPosition
-      );
+      pdf.text(`Total Sesiones: ${stats.totalSesiones}`, 20, yPosition);
+      pdf.text(`Posición Ranking: #${stats.posicionRanking} de ${stats.totalEstudiantes}`, 80, yPosition);
 
-      // NUEVA PÁGINA PARA GRÁFICAS
+      // GRÁFICAS DE SALUD
+      if (this.dashboardData.salud?.historialMediciones?.length > 0) {
+        pdf.addPage();
+        yPosition = 20;
+
+        pdf.setFontSize(18);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(72, 163, 243);
+        pdf.text('📈 Evolución de Indicadores de Salud', 20, yPosition);
+
+        yPosition += 15;
+
+        await this.addHealthChartToPDF(pdf, yPosition, 'peso');
+        yPosition += 50;
+
+        await this.addHealthChartToPDF(pdf, yPosition, 'talla');
+        yPosition += 50;
+
+        if (yPosition > 200) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+        await this.addHealthChartToPDF(pdf, yPosition, 'imc');
+      }
+
+      // RECOMENDACIONES
       pdf.addPage();
       yPosition = 20;
 
       pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('Análisis de Progreso por Juegos', 20, yPosition);
-
-      yPosition += 15;
-
-      // GRÁFICA 1: Conocimiento Nutricional (Desafío Nutrimental)
-      const nutrimental = this.getJuegoData('Desafío Nutrimental');
-      if (nutrimental) {
-        await this.addGameChartToPDF(
-          pdf,
-          nutrimental,
-          yPosition,
-          'Desafío Nutrimental',
-          '🎓'
-        );
-        yPosition += 45;
-      }
-
-      // GRÁFICA 2: Reto 7 Días
-      const reto7dias = this.getJuegoData('Reto 7 Días');
-      if (reto7dias) {
-        await this.addGameChartToPDF(
-          pdf,
-          reto7dias,
-          yPosition,
-          'Reto 7 Días',
-          '🍽️'
-        );
-        yPosition += 45;
-      }
-
-      // GRÁFICA 3: Coach Exprés
-      const coach = this.getJuegoData('Coach Exprés');
-      if (coach) {
-        await this.addGameChartToPDF(
-          pdf,
-          coach,
-          yPosition,
-          'Coach Exprés',
-          '🧠'
-        );
-        yPosition += 45;
-      }
-
-      // NUEVA PÁGINA PARA ANÁLISIS NUTRICIONAL
-      pdf.addPage();
-      yPosition = 20;
-
-      pdf.setFontSize(18);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Análisis Nutricional', 20, yPosition);
-
-      yPosition += 15;
-
-      // GRÁFICA 4: Distribución de Macronutrientes
-      if (this.dashboardData.ultimoAnalisis) {
-        await this.addMacronutrientChart(pdf, yPosition);
-        yPosition += 80;
-      }
-
-      // GRÁFICA 5: Etapa de Cambio
-      if (this.dashboardData.ultimoAnalisis?.etapaCambio) {
-        await this.addStageChart(pdf, yPosition);
-        yPosition += 60;
-      }
-
-      // NUEVA PÁGINA PARA COMPARATIVA
-      pdf.addPage();
-      yPosition = 20;
-
-      pdf.setFontSize(18);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Comparativa de Juegos', 20, yPosition);
-
-      yPosition += 15;
-
-      // GRÁFICA 6: Comparativa General
-      await this.addComparisonChart(pdf, yPosition);
-
-      // ÚLTIMA PÁGINA: RECOMENDACIONES
-      pdf.addPage();
-      yPosition = 20;
-
-      pdf.setFontSize(18);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text('Recomendaciones y Conclusiones', 20, yPosition);
+      pdf.setTextColor(72, 163, 243);
+      pdf.text('💡 Recomendaciones y Conclusiones', 20, yPosition);
 
       yPosition += 15;
       pdf.setFontSize(11);
       pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(0, 0, 0);
 
-      const recomendaciones = this.generarRecomendaciones();
+      const recomendaciones = this.generarRecomendacionesCompletas();
       const splitText = pdf.splitTextToSize(recomendaciones, pageWidth - 40);
       pdf.text(splitText, 20, yPosition);
 
-      // PIE DE PÁGINA EN TODAS LAS PÁGINAS
+      // PIE DE PÁGINA
       const totalPages = pdf.internal.pages.length - 1;
       for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
         pdf.setFontSize(8);
         pdf.setTextColor(150, 150, 150);
         pdf.text(
-          `Generado el ${new Date().toLocaleDateString(
-            'es-ES'
-          )} - Página ${i} de ${totalPages}`,
+          `Generado el ${new Date().toLocaleDateString('es-ES')} - Página ${i} de ${totalPages}`,
           pageWidth / 2,
           pageHeight - 10,
           { align: 'center' }
         );
       }
 
-      // GUARDAR PDF
-      const fileName = `Reporte_${this.selectedStudent.nombre}_${
-        this.selectedStudent.apellido
-      }_${Date.now()}.pdf`;
+      const fileName = `Reporte_Completo_${this.selectedStudent.nombre}_${this.selectedStudent.apellido}_${Date.now()}.pdf`;
       pdf.save(fileName);
 
       this.snackBar.open('✅ Reporte PDF generado exitosamente', 'Cerrar', {
@@ -494,245 +524,153 @@ export class DashboardsComponent implements OnInit {
     }
   }
 
-  /**
-   * Agregar gráfica de juego al PDF
-   */
-  private async addGameChartToPDF(
-    pdf: any,
-    juego: JuegoResponse,
-    yPos: number,
-    titulo: string,
-    emoji: string
-  ): Promise<void> {
+  private async addHealthChartToPDF(pdf: any, yPos: number, tipo: 'peso' | 'talla' | 'imc'): Promise<void> {
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const progreso = this.calcularPorcentajeProgreso(juego);
+    
+    let titulo = '';
+    let unidad = '';
+    let color = { r: 72, g: 163, b: 243 };
+
+    switch (tipo) {
+      case 'peso':
+        titulo = 'Evolución de Peso';
+        unidad = 'kg';
+        color = { r: 72, g: 163, b: 243 };
+        break;
+      case 'talla':
+        titulo = 'Evolución de Talla';
+        unidad = 'cm';
+        color = { r: 123, g: 198, b: 126 };
+        break;
+      case 'imc':
+        titulo = 'Evolución del IMC';
+        unidad = 'IMC';
+        color = { r: 156, g: 39, b: 176 };
+        break;
+    }
 
     pdf.setFillColor(248, 249, 250);
-    pdf.rect(15, yPos - 5, pageWidth - 30, 40, 'F');
+    pdf.rect(15, yPos - 5, pageWidth - 30, 45, 'F');
 
     pdf.setFontSize(12);
     pdf.setFont('helvetica', 'bold');
-    pdf.text(`${emoji} ${titulo}`, 20, yPos + 3);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(titulo, 20, yPos + 3);
 
-    pdf.setFontSize(9);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(
-      `Nivel ${juego.nivelActual || 0}/${juego.maxNiveles}`,
-      20,
-      yPos + 10
-    );
-    pdf.text(`${juego.puntosGanados || 0} puntos`, 60, yPos + 10);
-    pdf.text(`Jugado ${juego.vecesJugado || 0} veces`, 100, yPos + 10);
+    const mediciones = [...this.dashboardData!.salud!.historialMediciones].reverse();
+    const chartWidth = pageWidth - 60;
+    const chartHeight = 25;
+    const startX = 30;
+    const startY = yPos + 10;
 
-    // Barra de progreso
-    const barY = yPos + 17;
-    const barWidth = pageWidth - 40;
-    const barHeight = 8;
+    pdf.setDrawColor(224, 224, 224);
+    pdf.line(startX, startY + chartHeight, startX + chartWidth, startY + chartHeight);
 
-    pdf.setFillColor(224, 224, 224);
-    pdf.rect(20, barY, barWidth, barHeight, 'F');
+    let valores: number[] = [];
+    if (tipo === 'peso') {
+      valores = mediciones.map(m => m.peso);
+    } else if (tipo === 'talla') {
+      valores = mediciones.map(m => m.talla);
+    } else {
+      valores = mediciones.map(m => m.imc);
+    }
 
-    const fillWidth = (progreso / 100) * barWidth;
-    const color = this.getColorByProgress(progreso);
-    const rgb = this.hexToRgb(color);
-    pdf.setFillColor(rgb.r, rgb.g, rgb.b);
-    pdf.rect(20, barY, fillWidth, barHeight, 'F');
+    const minVal = Math.min(...valores) * 0.95;
+    const maxVal = Math.max(...valores) * 1.05;
 
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(`${progreso}%`, pageWidth - 25, barY + 6);
+    pdf.setDrawColor(color.r, color.g, color.b);
+    pdf.setLineWidth(1);
+
+    for (let i = 0; i < valores.length - 1; i++) {
+      const x1 = startX + (i * chartWidth / (valores.length - 1));
+      const y1 = startY + chartHeight - ((valores[i] - minVal) / (maxVal - minVal)) * chartHeight;
+      const x2 = startX + ((i + 1) * chartWidth / (valores.length - 1));
+      const y2 = startY + chartHeight - ((valores[i + 1] - minVal) / (maxVal - minVal)) * chartHeight;
+      
+      pdf.line(x1, y1, x2, y2);
+    }
 
     pdf.setFontSize(8);
-    pdf.setFont('helvetica', 'normal');
-    pdf.text(
-      juego.completado ? '✓ Completado' : '⏳ En progreso',
-      20,
-      yPos + 32
-    );
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(`${minVal.toFixed(1)} ${unidad}`, startX - 15, startY + chartHeight);
+    pdf.text(`${maxVal.toFixed(1)} ${unidad}`, startX - 15, startY);
   }
 
-  /**
-   * Agregar gráfica de macronutrientes
-   */
-  private async addMacronutrientChart(pdf: any, yPos: number): Promise<void> {
-    if (!this.dashboardData?.ultimoAnalisis) return;
-
-    const analisis = this.dashboardData.ultimoAnalisis;
-    const pageWidth = pdf.internal.pageSize.getWidth();
-
-    pdf.setFillColor(248, 249, 250);
-    pdf.rect(15, yPos - 5, pageWidth - 30, 70, 'F');
-
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Distribución de Macronutrientes', 20, yPos + 3);
-
-    // Gráfica de barras horizontal
-    const startY = yPos + 15;
-    const barHeight = 12;
-    const maxWidth = pageWidth - 100;
-
-    // Proteínas
-    pdf.setFillColor(66, 133, 244);
-    pdf.rect(
-      70,
-      startY,
-      (analisis.proteinasPorcentaje / 100) * maxWidth,
-      barHeight,
-      'F'
-    );
-    pdf.setFontSize(10);
-    pdf.text('Proteínas:', 20, startY + 8);
-    pdf.text(`${analisis.proteinasPorcentaje}%`, pageWidth - 30, startY + 8);
-
-    // Carbohidratos
-    pdf.setFillColor(123, 198, 126);
-    pdf.rect(
-      70,
-      startY + 18,
-      (analisis.carbohidratosPorcentaje / 100) * maxWidth,
-      barHeight,
-      'F'
-    );
-    pdf.text('Carbohidratos:', 20, startY + 26);
-    pdf.text(
-      `${analisis.carbohidratosPorcentaje}%`,
-      pageWidth - 30,
-      startY + 26
-    );
-
-    // Grasas
-    pdf.setFillColor(255, 183, 77);
-    pdf.rect(
-      70,
-      startY + 36,
-      (analisis.grasasPorcentaje / 100) * maxWidth,
-      barHeight,
-      'F'
-    );
-    pdf.text('Grasas:', 20, startY + 44);
-    pdf.text(`${analisis.grasasPorcentaje}%`, pageWidth - 30, startY + 44);
+  private getEstadoColor(estado: string): { r: number; g: number; b: number } {
+    switch (estado) {
+      case 'Bajo peso': return { r: 25, g: 118, b: 210 };
+      case 'Normal': return { r: 56, g: 142, b: 60 };
+      case 'Sobrepeso': return { r: 245, g: 124, b: 0 };
+      case 'Obesidad': return { r: 211, g: 47, b: 47 };
+      default: return { r: 0, g: 0, b: 0 };
+    }
   }
 
-  /**
-   * Agregar gráfica de etapas de cambio
-   */
-  private async addStageChart(pdf: any, yPos: number): Promise<void> {
-    if (!this.dashboardData?.ultimoAnalisis?.etapaCambio) return;
+  private tieneAlertasSalud(stats: EstadisticasSalud): boolean {
+    return stats.estadoNutricionalActual === 'Obesidad' ||
+           stats.estadoNutricionalActual === 'Bajo peso' ||
+           stats.tendencia === 'Preocupante' ||
+           Math.abs(stats.variacionPeso) > 5;
+  }
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const etapas = [
-      'Pre-contemplación',
-      'Contemplación',
-      'Preparación',
-      'Acción',
-      'Mantenimiento',
-    ];
-    const etapaActual = this.dashboardData.ultimoAnalisis.etapaCambio;
+  private getAlertaTexto(stats: EstadisticasSalud): string {
+    const alertas: string[] = [];
 
-    pdf.setFillColor(227, 242, 253);
-    pdf.rect(15, yPos - 5, pageWidth - 30, 50, 'F');
+    if (stats.estadoNutricionalActual === 'Obesidad') {
+      alertas.push('Obesidad detectada - Consulta médica recomendada');
+    } else if (stats.estadoNutricionalActual === 'Bajo peso') {
+      alertas.push('Bajo peso detectado - Evaluación nutricional necesaria');
+    }
 
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Etapa de Cambio Conductual', 20, yPos + 3);
+    if (stats.tendencia === 'Preocupante') {
+      alertas.push('Tendencia negativa en estado nutricional');
+    }
 
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
+    if (Math.abs(stats.variacionPeso) > 5) {
+      alertas.push(`Cambio significativo de peso (${stats.variacionPeso.toFixed(1)}%)`);
+    }
 
-    const circleY = yPos + 20;
-    const spacing = (pageWidth - 40) / etapas.length;
+    return alertas.join('. ');
+  }
 
-    etapas.forEach((etapa, index) => {
-      const x = 20 + index * spacing + spacing / 2;
-      const isActive = etapa === etapaActual;
+  private generarRecomendacionesCompletas(): string {
+    let recomendaciones = '';
 
-      if (isActive) {
-        pdf.setFillColor(72, 163, 243);
-        pdf.circle(x, circleY, 5, 'F');
-        pdf.setTextColor(72, 163, 243);
-      } else {
-        pdf.setFillColor(224, 224, 224);
-        pdf.circle(x, circleY, 4, 'F');
-        pdf.setTextColor(150, 150, 150);
+    if (this.dashboardData?.salud?.estadisticas) {
+      recomendaciones += 'RECOMENDACIONES DE SALUD:\n\n';
+      recomendaciones += this.dashboardData.salud.estadisticas.recomendacion + '\n\n';
+    }
+
+    const stats = this.dashboardData?.estadisticas;
+    if (stats) {
+      recomendaciones += 'RECOMENDACIONES ACADÉMICAS:\n\n';
+
+      if (stats.juegosCompletados < 3) {
+        recomendaciones += '• Se recomienda completar todos los juegos educativos para una evaluación nutricional completa.\n\n';
       }
 
-      pdf.setFontSize(7);
-      const splitEtapa = pdf.splitTextToSize(etapa, spacing - 5);
-      pdf.text(splitEtapa, x, circleY + 10, { align: 'center' });
-    });
-
-    pdf.setTextColor(0, 0, 0);
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text(`Etapa Actual: ${etapaActual}`, 20, yPos + 40);
-  }
-
-  /**
-   * Agregar gráfica comparativa
-   */
-  private async addComparisonChart(pdf: any, yPos: number): Promise<void> {
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const maxWidth = pageWidth - 100;
-
-    this.dashboardData?.juegos.forEach((juego, index) => {
-      const progreso = this.calcularPorcentajeProgreso(juego);
-      const y = yPos + index * 18;
-
-      pdf.setFontSize(9);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(juego.nombre, 20, y + 6);
-
-      pdf.setFillColor(224, 224, 224);
-      pdf.rect(80, y, maxWidth, 8, 'F');
-
-      const fillWidth = (progreso / 100) * maxWidth;
-      const rgb = juego.completado
-        ? { r: 123, g: 198, b: 126 }
-        : { r: 72, g: 163, b: 243 };
-      pdf.setFillColor(rgb.r, rgb.g, rgb.b);
-      pdf.rect(80, y, fillWidth, 8, 'F');
-
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(`${progreso}%`, pageWidth - 25, y + 6);
-    });
-  }
-
-  /**
-   * Generar recomendaciones
-   */
-  private generarRecomendaciones(): string {
-    if (!this.dashboardData) return '';
-
-    const stats = this.dashboardData.estadisticas;
-    let recomendaciones = 'RECOMENDACIONES:\n\n';
-
-    if (stats.juegosCompletados < 3) {
-      recomendaciones +=
-        '• Se recomienda completar todos los juegos para obtener una evaluación nutricional completa.\n\n';
+      if (stats.puntosGanados < 1000) {
+        recomendaciones += '• Incrementar la participación en actividades educativas para reforzar conocimientos nutricionales.\n\n';
+      }
     }
 
-    if (stats.puntosGanados < 1000) {
-      recomendaciones +=
-        '• Aumentar la participación en las actividades para mejorar el conocimiento nutricional.\n\n';
+    recomendaciones += 'CONCLUSIÓN:\n\n';
+    recomendaciones += `El estudiante ${this.selectedStudent?.nombre} ${this.selectedStudent?.apellido} `;
+    
+    if (this.dashboardData?.salud?.estadisticas) {
+      const estado = this.dashboardData.salud.estadisticas.estadoNutricionalActual;
+      recomendaciones += `presenta un estado nutricional ${estado.toLowerCase()}. `;
     }
 
-    if (this.dashboardData.ultimoAnalisis) {
-      recomendaciones +=
-        '• El estudiante ha completado la evaluación nutricional. Se recomienda seguimiento periódico.\n\n';
+    if (stats) {
+      recomendaciones += `Ha acumulado ${stats.puntosAcumulados} puntos y se encuentra en la posición #${stats.posicionRanking} del ranking. `;
     }
 
-    recomendaciones += 'CONCLUSIONES:\n\n';
-    recomendaciones += `El estudiante ha acumulado ${stats.puntosAcumulados} puntos y se encuentra en la posición #${stats.posicionRanking} del ranking. `;
-    recomendaciones +=
-      'Continúe motivando al estudiante a participar activamente en las actividades de la plataforma.';
+    recomendaciones += 'Se recomienda continuar con el seguimiento periódico y reforzar los hábitos saludables aprendidos en la plataforma.';
 
     return recomendaciones;
   }
 
-  /**
-   * Esperar a que las librerías estén cargadas
-   */
   private waitForLibraries(): Promise<void> {
     return new Promise((resolve) => {
       const checkLibraries = () => {
@@ -746,22 +684,8 @@ export class DashboardsComponent implements OnInit {
     });
   }
 
-  /**
-   * Convertir hex a RGB
-   */
-  private hexToRgb(hex: string): { r: number; g: number; b: number } {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : { r: 0, g: 0, b: 0 };
-  }
-
   // ========================================================
-  // FUNCIONES PARA GRÁFICOS DE JUEGOS
+  // FUNCIONES PARA GRÁFICOS
   // ========================================================
 
   getJuegoData(nombreJuego: string): JuegoResponse | null {
@@ -792,19 +716,158 @@ export class DashboardsComponent implements OnInit {
     return 'sports_esports';
   }
 
+  // ========================================================
+  // MÉTODOS PARA GRÁFICAS DE SALUD
+  // ========================================================
+
+  getIMCAngle(imc: number): number {
+    if (!imc) return 0;
+    
+    if (imc < 18.5) {
+      return (imc / 18.5) * 45;
+    } else if (imc < 25) {
+      return 45 + ((imc - 18.5) / 6.5) * 55;
+    } else if (imc < 30) {
+      return 100 + ((imc - 25) / 5) * 40;
+    } else {
+      return Math.min(180, 140 + ((imc - 30) / 10) * 40);
+    }
+  }
+
+  getTendenciaIcon(tendencia: string): string {
+    switch (tendencia) {
+      case 'Mejorando': return 'trending_up';
+      case 'Estable': return 'remove';
+      case 'Preocupante': return 'warning';
+      default: return 'help_outline';
+    }
+  }
+
+  getWeightChartPoints(): string {
+    if (!this.dashboardData?.salud?.historialMediciones) return '';
+    
+    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const width = 340;
+    const height = 140;
+    const padding = 20;
+    
+    const minPeso = Math.min(...mediciones.map(m => m.peso)) - 5;
+    const maxPeso = Math.max(...mediciones.map(m => m.peso)) + 5;
+    
+    const points = mediciones.map((m, i) => {
+      const x = 40 + (i * width / (mediciones.length - 1 || 1));
+      const y = 160 - padding - ((m.peso - minPeso) / (maxPeso - minPeso)) * height;
+      return `${x},${y}`;
+    });
+    
+    return points.join(' ');
+  }
+
+  getWeightPoints(): any[] {
+    if (!this.dashboardData?.salud?.historialMediciones) return [];
+    
+    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const width = 340;
+    const height = 140;
+    const padding = 20;
+    
+    const minPeso = Math.min(...mediciones.map(m => m.peso)) - 5;
+    const maxPeso = Math.max(...mediciones.map(m => m.peso)) + 5;
+    
+    return mediciones.map((m, i) => ({
+      x: 40 + (i * width / (mediciones.length - 1 || 1)),
+      y: 160 - padding - ((m.peso - minPeso) / (maxPeso - minPeso)) * height,
+      peso: m.peso,
+      fecha: new Date(m.fechaRegistro).toLocaleDateString('es-ES')
+    }));
+  }
+
+  getHeightChartPoints(): string {
+    if (!this.dashboardData?.salud?.historialMediciones) return '';
+    
+    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const width = 340;
+    const height = 140;
+    const padding = 20;
+    
+    const minTalla = Math.min(...mediciones.map(m => m.talla)) - 5;
+    const maxTalla = Math.max(...mediciones.map(m => m.talla)) + 5;
+    
+    const points = mediciones.map((m, i) => {
+      const x = 40 + (i * width / (mediciones.length - 1 || 1));
+      const y = 160 - padding - ((m.talla - minTalla) / (maxTalla - minTalla)) * height;
+      return `${x},${y}`;
+    });
+    
+    return points.join(' ');
+  }
+
+  getHeightPoints(): any[] {
+    if (!this.dashboardData?.salud?.historialMediciones) return [];
+    
+    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const width = 340;
+    const height = 140;
+    const padding = 20;
+    
+    const minTalla = Math.min(...mediciones.map(m => m.talla)) - 5;
+    const maxTalla = Math.max(...mediciones.map(m => m.talla)) + 5;
+    
+    return mediciones.map((m, i) => ({
+      x: 40 + (i * width / (mediciones.length - 1 || 1)),
+      y: 160 - padding - ((m.talla - minTalla) / (maxTalla - minTalla)) * height,
+      talla: m.talla,
+      fecha: new Date(m.fechaRegistro).toLocaleDateString('es-ES')
+    }));
+  }
+
+  getIMCChartPoints(): string {
+    if (!this.dashboardData?.salud?.historialMediciones) return '';
+    
+    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const width = 340;
+    
+    const points = mediciones.map((m, i) => {
+      const x = 40 + (i * width / (mediciones.length - 1 || 1));
+      const y = this.mapIMCToY(m.imc);
+      return `${x},${y}`;
+    });
+    
+    return points.join(' ');
+  }
+
+  getIMCPoints(): any[] {
+    if (!this.dashboardData?.salud?.historialMediciones) return [];
+    
+    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const width = 340;
+    
+    return mediciones.map((m, i) => ({
+      x: 40 + (i * width / (mediciones.length - 1 || 1)),
+      y: this.mapIMCToY(m.imc),
+      imc: m.imc.toFixed(1),
+      estado: m.estadoNutricional.toLowerCase().replace(' ', '-'),
+      fecha: new Date(m.fechaRegistro).toLocaleDateString('es-ES')
+    }));
+  }
+
+  private mapIMCToY(imc: number): number {
+    if (imc < 18.5) {
+      return 55 - ((imc / 18.5) * 35);
+    } else if (imc < 25) {
+      return 105 - (((imc - 18.5) / 6.5) * 50);
+    } else if (imc < 30) {
+      return 135 - (((imc - 25) / 5) * 30);
+    } else {
+      return Math.max(135, 160 - (((imc - 30) / 10) * 25));
+    }
+  }
+
   isStageActiveOrPast(etapa: string): boolean {
     if (!this.dashboardData?.ultimoAnalisis?.etapaCambio) return false;
 
-    const etapas = [
-      'Pre-contemplación',
-      'Contemplación',
-      'Preparación',
-      'Acción',
-      'Mantenimiento',
-    ];
-    const etapaActualIndex = etapas.indexOf(
-      this.dashboardData.ultimoAnalisis.etapaCambio
-    );
+    const etapas = ['Pre-contemplación', 'Contemplación', 'Preparación', 'Acción', 'Mantenimiento'];
+    const etapaActualIndex = etapas.indexOf(this.dashboardData.ultimoAnalisis.etapaCambio);
     const etapaComparar = etapas.indexOf(etapa);
 
     return etapaComparar <= etapaActualIndex;
@@ -814,9 +877,6 @@ export class DashboardsComponent implements OnInit {
     return (percentage / 100) * 377;
   }
 
-  /**
-   * Enviar reporte por correo
-   */
   enviarCorreo(): void {
     if (!this.selectedStudent) {
       this.snackBar.open('No hay estudiante seleccionado', 'Cerrar', {
@@ -832,7 +892,6 @@ export class DashboardsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        console.log('📧 Enviando correo:', result);
         this.snackBar.open(
           `✅ Correo enviado exitosamente a ${result.email}`,
           'Cerrar',
@@ -850,23 +909,11 @@ export class DashboardsComponent implements OnInit {
       edad: estudiante.edad,
       grado: estudiante.grado,
       seccion: estudiante.seccion,
-      talla: estudiante.talla ? `${estudiante.talla}m` : 'N/A',
+      talla: estudiante.talla ? `${estudiante.talla}cm` : 'N/A',
       peso: estudiante.peso ? `${estudiante.peso}kg` : 'N/A',
       avatar: estudiante.avatarUrl,
       puntosAcumulados: estudiante.puntosAcumulados,
     };
-  }
-
-  formatearTiempo(segundos: number): string {
-    if (!segundos || segundos === 0) return '00:00:00';
-
-    const horas = Math.floor(segundos / 3600);
-    const minutos = Math.floor((segundos % 3600) / 60);
-    const segs = segundos % 60;
-
-    return `${horas.toString().padStart(2, '0')}:${minutos
-      .toString()
-      .padStart(2, '0')}:${segs.toString().padStart(2, '0')}`;
   }
 
   getAvatarUrl(student: Student): string {
@@ -899,7 +946,240 @@ export class DashboardsComponent implements OnInit {
 }
 
 // ============================================
-// Email Dialog Component - CON ADJUNTOS
+// DIÁLOGO DE ALERTAS DE SALUD
+// ============================================
+@Component({
+  selector: 'alerta-salud-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatIconModule,
+  ],
+  template: `
+    <div class="alerta-dialog">
+      <h2 mat-dialog-title>
+        <mat-icon class="warning-icon">warning</mat-icon>
+        Alertas de Salud
+      </h2>
+
+      <mat-dialog-content>
+        <div class="student-info">
+          <strong>Estudiante:</strong> {{ data.estudiante.nombre }} {{ data.estudiante.apellido }}
+        </div>
+
+        <div class="alertas-list">
+          <div class="alerta-item" *ngFor="let alerta of data.alertas">
+            <mat-icon>error_outline</mat-icon>
+            <p>{{ alerta }}</p>
+          </div>
+        </div>
+
+        <div class="estado-actual">
+          <h3>Estado Actual:</h3>
+          <div class="estado-grid">
+            <div class="estado-item">
+              <span class="label">IMC:</span>
+              <span class="value">{{ data.estadisticas.imcActual | number:'1.1-1' }}</span>
+            </div>
+            <div class="estado-item">
+              <span class="label">Estado:</span>
+              <span class="value" [ngClass]="getEstadoClass(data.estadisticas.estadoNutricionalActual)">
+                {{ data.estadisticas.estadoNutricionalActual }}
+              </span>
+            </div>
+            <div class="estado-item">
+              <span class="label">Tendencia:</span>
+              <span class="value">{{ data.estadisticas.tendencia }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="recomendacion-box">
+          <mat-icon>lightbulb</mat-icon>
+          <p>{{ data.estadisticas.recomendacion }}</p>
+        </div>
+      </mat-dialog-content>
+
+      <mat-dialog-actions align="end">
+        <button mat-button (click)="cerrar()">
+          Cerrar
+        </button>
+        <button mat-raised-button color="primary" (click)="verRecomendaciones()">
+          <mat-icon>visibility</mat-icon>
+          Ver Recomendaciones
+        </button>
+      </mat-dialog-actions>
+    </div>
+  `,
+  styles: [`
+    .alerta-dialog {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #f44336;
+      margin: 0;
+    }
+
+    .warning-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: #ff9800;
+    }
+
+    .student-info {
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+
+    .alertas-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .alerta-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem;
+      background: #ffebee;
+      border-left: 4px solid #f44336;
+      border-radius: 8px;
+    }
+
+    .alerta-item mat-icon {
+      color: #f44336;
+      flex-shrink: 0;
+    }
+
+    .alerta-item p {
+      margin: 0;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    .estado-actual {
+      margin-bottom: 1.5rem;
+    }
+
+    .estado-actual h3 {
+      margin: 0 0 1rem;
+      font-size: 1.1rem;
+      color: #333;
+    }
+
+    .estado-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .estado-item {
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .estado-item .label {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 0.25rem;
+    }
+
+    .estado-item .value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .value.bajo-peso {
+      color: #1976d2;
+    }
+
+    .value.normal {
+      color: #388e3c;
+    }
+
+    .value.sobrepeso {
+      color: #f57c00;
+    }
+
+    .value.obesidad {
+      color: #d32f2f;
+    }
+
+    .recomendacion-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.25rem;
+      background: #e3f2fd;
+      border-left: 4px solid #48a3f3;
+      border-radius: 8px;
+    }
+
+    .recomendacion-box mat-icon {
+      color: #48a3f3;
+      flex-shrink: 0;
+    }
+
+    .recomendacion-box p {
+      margin: 0;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    mat-dialog-content {
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    mat-dialog-actions button mat-icon {
+      margin-right: 0.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .estado-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  `]
+})
+export class AlertaSaludDialog {
+  constructor(
+    public dialogRef: MatDialogRef<AlertaSaludDialog>,
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {}
+
+  getEstadoClass(estado: string): string {
+    return estado.toLowerCase().replace(' ', '-');
+  }
+
+  cerrar(): void {
+    this.dialogRef.close();
+  }
+
+  verRecomendaciones(): void {
+    this.dialogRef.close('ver-recomendaciones');
+  }
+}
+
+// ============================================
+// EMAIL DIALOG COMPONENT
 // ============================================
 @Component({
   selector: 'email-dialog',
@@ -923,19 +1203,13 @@ export class DashboardsComponent implements OnInit {
 
       <mat-dialog-content>
         <p class="student-info">
-          Reporte de:
-          <strong>{{ data.student.nombre }} {{ data.student.apellido }}</strong>
+          Reporte de: <strong>{{ data.student.nombre }} {{ data.student.apellido }}</strong>
         </p>
 
         <form [formGroup]="emailForm">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Correo del destinatario</mat-label>
-            <input
-              matInput
-              type="email"
-              placeholder="padre@ejemplo.com"
-              formControlName="email"
-            />
+            <input matInput type="email" placeholder="padre@ejemplo.com" formControlName="email" />
             <mat-icon matPrefix>email</mat-icon>
             <mat-error *ngIf="emailForm.get('email')?.hasError('required')">
               El correo es requerido
@@ -953,48 +1227,25 @@ export class DashboardsComponent implements OnInit {
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Mensaje</mat-label>
-            <textarea
-              matInput
-              rows="4"
-              formControlName="message"
-              placeholder="Agregue un mensaje personalizado..."
-            ></textarea>
+            <textarea matInput rows="4" formControlName="message" placeholder="Agregue un mensaje personalizado..."></textarea>
           </mat-form-field>
         </form>
 
-        <!-- ✅ SECCIÓN DE ADJUNTAR ARCHIVO -->
         <div class="file-upload-section">
-          <input
-            type="file"
-            #fileInput
-            (change)="onFileSelected($event)"
-            accept=".pdf,application/pdf"
-            hidden
-          />
+          <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,application/pdf" hidden />
 
-          <button
-            mat-stroked-button
-            (click)="fileInput.click()"
-            [disabled]="isLoading"
-            class="upload-button"
-          >
+          <button mat-stroked-button (click)="fileInput.click()" [disabled]="isLoading" class="upload-button">
             <mat-icon>attach_file</mat-icon>
             {{ selectedFile ? 'Cambiar archivo' : 'Adjuntar PDF' }}
           </button>
 
-          <!-- Mostrar archivo seleccionado -->
           <div *ngIf="selectedFile" class="file-selected">
             <mat-icon class="file-icon">picture_as_pdf</mat-icon>
             <div class="file-info">
               <strong>{{ selectedFile.name }}</strong>
               <small>{{ formatFileSize(selectedFile.size) }}</small>
             </div>
-            <button
-              mat-icon-button
-              (click)="removeFile()"
-              [disabled]="isLoading"
-              class="remove-button"
-            >
+            <button mat-icon-button (click)="removeFile()" [disabled]="isLoading" class="remove-button">
               <mat-icon>close</mat-icon>
             </button>
           </div>
@@ -1003,19 +1254,15 @@ export class DashboardsComponent implements OnInit {
         <div class="attach-info" [class.has-file]="selectedFile">
           <mat-icon>{{ selectedFile ? 'check_circle' : 'info' }}</mat-icon>
           <span>
-            {{ selectedFile 
-              ? 'Archivo adjunto listo para enviar' 
-              : 'Opcionalmente puede adjuntar el reporte en PDF' }}
+            {{ selectedFile ? 'Archivo adjunto listo para enviar' : 'Opcionalmente puede adjuntar el reporte en PDF' }}
           </span>
         </div>
 
-        <!-- Loading indicator -->
         <div *ngIf="isLoading" class="loading-overlay">
           <mat-spinner diameter="40"></mat-spinner>
           <p>{{ selectedFile ? 'Enviando correo con archivo adjunto...' : 'Enviando correo...' }}</p>
         </div>
 
-        <!-- Error message -->
         <div *ngIf="errorMessage" class="error-message">
           <mat-icon>error</mat-icon>
           <span>{{ errorMessage }}</span>
@@ -1023,191 +1270,41 @@ export class DashboardsComponent implements OnInit {
       </mat-dialog-content>
 
       <mat-dialog-actions align="end">
-        <button mat-button (click)="cancelar()" [disabled]="isLoading">
-          Cancelar
-        </button>
-        <button
-          mat-raised-button
-          color="primary"
-          [disabled]="!emailForm.valid || isLoading"
-          (click)="enviar()"
-        >
+        <button mat-button (click)="cancelar()" [disabled]="isLoading">Cancelar</button>
+        <button mat-raised-button color="primary" [disabled]="!emailForm.valid || isLoading" (click)="enviar()">
           <mat-icon>send</mat-icon>
           {{ selectedFile ? 'Enviar con PDF' : 'Enviar' }}
         </button>
       </mat-dialog-actions>
     </div>
   `,
-  styles: [
-    `
-      .email-dialog {
-        font-family: 'Poppins', sans-serif;
-      }
-
-      h2 {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #48a3f3;
-        font-weight: 600;
-        margin: 0;
-      }
-
-      .student-info {
-        color: #666;
-        margin-bottom: 1.5rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-      }
-
-      .full-width {
-        width: 100%;
-        margin-bottom: 1rem;
-      }
-
-      /* ===== FILE UPLOAD SECTION ===== */
-      .file-upload-section {
-        margin: 1rem 0;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 2px dashed #e0e0e0;
-        transition: all 0.3s;
-      }
-
-      .file-upload-section:hover {
-        border-color: #48a3f3;
-        background: #f0f7ff;
-      }
-
-      .upload-button {
-        width: 100%;
-        height: 48px;
-        font-size: 0.95rem;
-      }
-
-      .upload-button mat-icon {
-        margin-right: 0.5rem;
-      }
-
-      .file-selected {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 0.75rem;
-        background: white;
-        border-radius: 8px;
-        border: 1px solid #48a3f3;
-        margin-top: 0.75rem;
-      }
-
-      .file-icon {
-        color: #f44336;
-        font-size: 32px;
-        width: 32px;
-        height: 32px;
-      }
-
-      .file-info {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-      }
-
-      .file-info strong {
-        font-size: 0.9rem;
-        color: #333;
-      }
-
-      .file-info small {
-        font-size: 0.75rem;
-        color: #999;
-      }
-
-      .remove-button {
-        color: #999;
-      }
-
-      .remove-button:hover {
-        color: #f44336;
-      }
-
-      /* ===== ATTACH INFO ===== */
-      .attach-info {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem;
-        background: #e3f2fd;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        color: #666;
-        margin-top: 1rem;
-        transition: all 0.3s;
-      }
-
-      .attach-info.has-file {
-        background: #e8f5e9;
-        color: #2e7d32;
-      }
-
-      .attach-info mat-icon {
-        color: #48a3f3;
-      }
-
-      .attach-info.has-file mat-icon {
-        color: #4caf50;
-      }
-
-      /* ===== LOADING & ERROR ===== */
-      .loading-overlay {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem;
-        margin-top: 1rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-      }
-
-      .loading-overlay p {
-        margin: 0;
-        color: #666;
-      }
-
-      .error-message {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem;
-        margin-top: 1rem;
-        background: #ffebee;
-        border-radius: 8px;
-        color: #c62828;
-        font-size: 0.9rem;
-      }
-
-      .error-message mat-icon {
-        color: #c62828;
-      }
-
-      mat-dialog-content {
-        padding: 1rem 0;
-        overflow: visible;
-        min-height: 400px;
-      }
-
-      mat-dialog-actions button mat-icon {
-        margin-right: 0.5rem;
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-      }
-    `,
-  ],
+  styles: [`
+    .email-dialog { font-family: 'Poppins', sans-serif; }
+    h2 { display: flex; align-items: center; gap: 0.5rem; color: #48a3f3; font-weight: 600; margin: 0; }
+    .student-info { color: #666; margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; }
+    .full-width { width: 100%; margin-bottom: 1rem; }
+    .file-upload-section { margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px; border: 2px dashed #e0e0e0; transition: all 0.3s; }
+    .file-upload-section:hover { border-color: #48a3f3; background: #f0f7ff; }
+    .upload-button { width: 100%; height: 48px; font-size: 0.95rem; }
+    .upload-button mat-icon { margin-right: 0.5rem; }
+    .file-selected { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: white; border-radius: 8px; border: 1px solid #48a3f3; margin-top: 0.75rem; }
+    .file-icon { color: #f44336; font-size: 32px; width: 32px; height: 32px; }
+    .file-info { flex: 1; display: flex; flex-direction: column; gap: 0.25rem; }
+    .file-info strong { font-size: 0.9rem; color: #333; }
+    .file-info small { font-size: 0.75rem; color: #999; }
+    .remove-button { color: #999; }
+    .remove-button:hover { color: #f44336; }
+    .attach-info { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: #e3f2fd; border-radius: 8px; font-size: 0.9rem; color: #666; margin-top: 1rem; transition: all 0.3s; }
+    .attach-info.has-file { background: #e8f5e9; color: #2e7d32; }
+    .attach-info mat-icon { color: #48a3f3; }
+    .attach-info.has-file mat-icon { color: #4caf50; }
+    .loading-overlay { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem; margin-top: 1rem; background: #f8f9fa; border-radius: 8px; }
+    .loading-overlay p { margin: 0; color: #666; }
+    .error-message { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; margin-top: 1rem; background: #ffebee; border-radius: 8px; color: #c62828; font-size: 0.9rem; }
+    .error-message mat-icon { color: #c62828; }
+    mat-dialog-content { padding: 1rem 0; overflow: visible; min-height: 400px; }
+    mat-dialog-actions button mat-icon { margin-right: 0.5rem; font-size: 18px; width: 18px; height: 18px; }
+  `]
 })
 export class EmailDialog implements OnInit {
   emailForm!: FormGroup;
@@ -1227,101 +1324,59 @@ export class EmailDialog implements OnInit {
   ngOnInit(): void {
     this.emailForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      subject: [
-        `Reporte Nutricional - ${this.data.student.nombre} ${this.data.student.apellido}`,
-        Validators.required,
-      ],
-      message: [
-        `Estimado/a padre/madre de familia,\n\nAdjunto encontrará el reporte nutricional de ${this.data.student.nombre} ${this.data.student.apellido}.\n\nSaludos cordiales,\nPlataforma MIKHUY`,
-        Validators.required
-      ],
+      subject: [`Reporte Nutricional - ${this.data.student.nombre} ${this.data.student.apellido}`, Validators.required],
+      message: [`Estimado/a padre/madre de familia,\n\nAdjunto encontrará el reporte nutricional de ${this.data.student.nombre} ${this.data.student.apellido}.\n\nSaludos cordiales,\nPlataforma MIKHUY`, Validators.required],
     });
   }
 
-  /**
-   * Manejar selección de archivo
-   */
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
-      
-      // Validar que sea PDF
       if (file.type !== 'application/pdf') {
-        this.snackBar.open('⚠️ Solo se permiten archivos PDF', 'Cerrar', {
-          duration: 3000,
-        });
+        this.snackBar.open('⚠️ Solo se permiten archivos PDF', 'Cerrar', { duration: 3000 });
         return;
       }
-
-      // Validar tamaño (máx 10MB)
-      const maxSize = 10 * 1024 * 1024; // 10MB
+      const maxSize = 10 * 1024 * 1024;
       if (file.size > maxSize) {
-        this.snackBar.open('⚠️ El archivo es muy grande. Máximo 10MB', 'Cerrar', {
-          duration: 3000,
-        });
+        this.snackBar.open('⚠️ El archivo es muy grande. Máximo 10MB', 'Cerrar', { duration: 3000 });
         return;
       }
-
       this.selectedFile = file;
-      console.log('📎 Archivo seleccionado:', file.name, `(${this.formatFileSize(file.size)})`);
     }
   }
 
-  /**
-   * Remover archivo seleccionado
-   */
   removeFile(): void {
     this.selectedFile = null;
-    console.log('🗑️ Archivo removido');
   }
 
-  /**
-   * Formatear tamaño de archivo
-   */
   formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes';
-    
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
-  /**
-   * Enviar email (con o sin archivo adjunto)
-   */
   enviar(): void {
     if (!this.emailForm.valid) {
-      this.snackBar.open('Por favor, complete todos los campos requeridos', 'Cerrar', {
-        duration: 3000,
-      });
+      this.snackBar.open('Por favor, complete todos los campos requeridos', 'Cerrar', { duration: 3000 });
       return;
     }
-
     this.isLoading = true;
     this.errorMessage = null;
-
-    // Obtener nombre del profesor del usuario actual
+    
+    // ✅ CORREGIDO: Removido el operador opcional
     const currentUser = this.authService.getCurrentUser();
-    const profesorNombre = currentUser 
-      ? `${currentUser.nombres || ''} ${currentUser.apellidos || ''}`.trim() || 'Profesor'
-      : 'Profesor';
+    const profesorNombre = currentUser ? `${currentUser.nombres || ''} ${currentUser.apellidos || ''}`.trim() || 'Profesor' : 'Profesor';
 
     if (this.selectedFile) {
-      // ✅ ENVIAR CON ARCHIVO ADJUNTO
       this.enviarConAdjunto(profesorNombre);
     } else {
-      // ✅ ENVIAR SIN ARCHIVO ADJUNTO
       this.enviarSinAdjunto();
     }
   }
 
-  /**
-   * Enviar email SIN archivo adjunto
-   */
   private enviarSinAdjunto(): void {
     const emailData = {
       to: this.emailForm.value.email,
@@ -1329,23 +1384,11 @@ export class EmailDialog implements OnInit {
       message: this.emailForm.value.message || '',
     };
 
-    console.log('📧 [EmailDialog] Enviando email simple:', emailData);
-
     this.mailService.sendEmail(emailData).subscribe({
       next: (response) => {
-        console.log('✅ [EmailDialog] Email enviado exitosamente:', response);
         this.isLoading = false;
-        
-        this.snackBar.open('✅ Correo enviado exitosamente', 'Cerrar', {
-          duration: 3000,
-        });
-
-        this.dialogRef.close({
-          success: true,
-          email: emailData.to,
-          withAttachment: false,
-          response: response,
-        });
+        this.snackBar.open('✅ Correo enviado exitosamente', 'Cerrar', { duration: 3000 });
+        this.dialogRef.close({ success: true, email: emailData.to, withAttachment: false, response: response });
       },
       error: (error) => {
         this.handleError(error);
@@ -1353,13 +1396,8 @@ export class EmailDialog implements OnInit {
     });
   }
 
-  /**
-   * Enviar email CON archivo adjunto
-   */
   private enviarConAdjunto(profesorNombre: string): void {
     if (!this.selectedFile) return;
-
-    // Crear FormData
     const formData = new FormData();
     formData.append('to', this.emailForm.value.email);
     formData.append('subject', this.emailForm.value.subject);
@@ -1367,25 +1405,11 @@ export class EmailDialog implements OnInit {
     formData.append('profesorNombre', profesorNombre);
     formData.append('pdf', this.selectedFile, this.selectedFile.name);
 
-    console.log('📧 [EmailDialog] Enviando email con PDF adjunto');
-    console.log('📎 Archivo:', this.selectedFile.name, `(${this.formatFileSize(this.selectedFile.size)})`);
-
     this.mailService.sendEmailWithPdf(formData).subscribe({
       next: (response) => {
-        console.log('✅ [EmailDialog] Email con PDF enviado exitosamente:', response);
         this.isLoading = false;
-        
-        this.snackBar.open('✅ Correo con PDF enviado exitosamente', 'Cerrar', {
-          duration: 3000,
-        });
-
-        this.dialogRef.close({
-          success: true,
-          email: this.emailForm.value.email,
-          withAttachment: true,
-          fileName: this.selectedFile?.name,
-          response: response,
-        });
+        this.snackBar.open('✅ Correo con PDF enviado exitosamente', 'Cerrar', { duration: 3000 });
+        this.dialogRef.close({ success: true, email: this.emailForm.value.email, withAttachment: true, fileName: this.selectedFile?.name, response: response });
       },
       error: (error) => {
         this.handleError(error);
@@ -1393,13 +1417,8 @@ export class EmailDialog implements OnInit {
     });
   }
 
-  /**
-   * Manejar errores
-   */
   private handleError(error: any): void {
-    console.error('❌ [EmailDialog] Error al enviar email:', error);
     this.isLoading = false;
-
     if (error.status === 400) {
       this.errorMessage = 'Datos inválidos. Verifique el correo y el archivo.';
     } else if (error.status === 401) {
@@ -1409,15 +1428,9 @@ export class EmailDialog implements OnInit {
     } else {
       this.errorMessage = error.error?.message || 'Error al enviar el correo. Intente nuevamente.';
     }
-
-    this.snackBar.open(`❌ ${this.errorMessage}`, 'Cerrar', {
-      duration: 5000,
-    });
+    this.snackBar.open(`❌ ${this.errorMessage}`, 'Cerrar', { duration: 5000 });
   }
 
-  /**
-   * Cancelar
-   */
   cancelar(): void {
     if (!this.isLoading) {
       this.dialogRef.close();

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment.prod';
+import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
 // Interfaces adaptadas a tu estructura ApiResponse
@@ -20,6 +20,7 @@ export interface DashboardEstudianteResponse {
   beneficiosDisponibles: BeneficioResponse[];
   ultimoAnalisis: AnalisisNutricionalResponse | null;
   ranking: RankingInfo;
+  salud: SaludInfo;
 }
 
 export interface EstudianteResponse {
@@ -127,6 +128,46 @@ export interface TopEstudiante {
   posicion: number;
 }
 
+// ============================================
+// ✅ INTERFACES DE SALUD
+// ============================================
+
+/**
+ * Información consolidada de salud del estudiante
+ */
+export interface SaludInfo {
+  medicionActual: MedicionSaludResponse | null;
+  historialMediciones: MedicionSaludResponse[];
+  estadisticas: EstadisticasSalud | null;
+}
+
+/**
+ * Respuesta de una medición de salud
+ */
+export interface MedicionSaludResponse {
+  id: string;
+  estudianteId: string;
+  peso: number;
+  talla: number;
+  imc: number;
+  estadoNutricional: string;
+  fechaRegistro: string;
+  notas?: string;
+}
+
+/**
+ * Estadísticas calculadas de salud
+ */
+export interface EstadisticasSalud {
+  imcActual: number;
+  estadoNutricionalActual: string;
+  variacionPeso: number; // Porcentaje de cambio
+  variacionTalla: number; // Porcentaje de cambio
+  totalMediciones: number;
+  tendencia: string; // "Mejorando" | "Estable" | "Preocupante"
+  recomendacion: string; // Mensaje personalizado
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -139,7 +180,8 @@ export class DashboardService {
   ) {}
 
   private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken?.() || 
+    // ✅ CORREGIDO: Removido el operador opcional ?.()
+    const token = this.authService.getToken() || 
                   localStorage.getItem('authToken') || 
                   sessionStorage.getItem('authToken');
     
