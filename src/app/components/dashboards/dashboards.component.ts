@@ -1314,10 +1314,14 @@ export class AlertaSaludDialog {
     </div>
   `,
   styles: [`
+    :host {
+      display: block;
+    }
+
     .email-dialog {
       font-family: 'Poppins', sans-serif;
-      width: 100%;
-      max-width: 500px;
+      width: 480px;
+      max-width: 100%;
     }
 
     /* ========== HEADER ========== */
@@ -1325,9 +1329,9 @@ export class AlertaSaludDialog {
       display: flex;
       align-items: center;
       gap: 1rem;
-      padding: 1.25rem 1.5rem;
+      padding: 1rem 1.25rem;
       background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%);
-      margin: -24px -24px 0 -24px;
+      margin: -24px -24px 1.5rem -24px;
       border-radius: 4px 4px 0 0;
     }
 
@@ -1375,25 +1379,26 @@ export class AlertaSaludDialog {
 
     /* ========== CONTENT ========== */
     mat-dialog-content {
-      padding: 1.5rem 0 1rem !important;
+      padding: 0 !important;
+      margin: 0 !important;
       overflow-x: hidden;
-      max-height: 60vh;
+      max-height: 55vh;
     }
 
     .full-width {
       width: 100%;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
     }
 
-    .full-width mat-icon[matPrefix] {
+    ::ng-deep .full-width .mat-mdc-form-field-icon-prefix {
       color: #48A3F3;
-      margin-right: 0.5rem;
+      padding-right: 8px;
     }
 
     /* ========== FILE UPLOAD ========== */
     .file-upload-section {
-      margin: 1rem 0;
-      border: 2px dashed #e0e0e0;
+      margin: 0.5rem 0 1rem;
+      border: 2px dashed #d0d0d0;
       border-radius: 12px;
       background: #fafafa;
       transition: all 0.3s ease;
@@ -1418,39 +1423,39 @@ export class AlertaSaludDialog {
     }
 
     .upload-area {
-      padding: 2rem;
+      padding: 1.5rem;
       text-align: center;
       cursor: pointer;
     }
 
     .upload-icon {
-      font-size: 48px;
-      width: 48px;
-      height: 48px;
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
       color: #48A3F3;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.5rem;
     }
 
     .upload-text {
       margin: 0;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 500;
       color: #333;
     }
 
     .upload-subtext {
       margin: 0.25rem 0 0;
-      font-size: 0.85rem;
-      color: #666;
+      font-size: 0.8rem;
+      color: #888;
     }
 
     .upload-hint {
       display: inline-block;
-      margin-top: 0.75rem;
-      padding: 0.25rem 0.75rem;
-      background: #e0e0e0;
-      border-radius: 12px;
-      font-size: 0.75rem;
+      margin-top: 0.5rem;
+      padding: 0.2rem 0.6rem;
+      background: #e8e8e8;
+      border-radius: 10px;
+      font-size: 0.7rem;
       color: #666;
     }
 
@@ -1518,13 +1523,12 @@ export class AlertaSaludDialog {
     .status-info {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
       background: #e3f2fd;
-      border-radius: 8px;
-      font-size: 0.9rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
       color: #1976d2;
-      margin-top: 1rem;
     }
 
     .status-info.success {
@@ -1533,9 +1537,9 @@ export class AlertaSaludDialog {
     }
 
     .status-info mat-icon {
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
     }
 
     /* ========== LOADING STATE ========== */
@@ -1543,54 +1547,56 @@ export class AlertaSaludDialog {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1rem;
-      padding: 1.5rem;
-      margin-top: 1rem;
+      gap: 0.75rem;
+      padding: 1.25rem;
+      margin-top: 0.75rem;
       background: #f5f5f5;
-      border-radius: 12px;
+      border-radius: 10px;
     }
 
     .loading-state p {
       margin: 0;
       color: #666;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
     /* ========== ERROR STATE ========== */
     .error-state {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      margin-top: 1rem;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      margin-top: 0.75rem;
       background: #ffebee;
-      border-radius: 8px;
-      border-left: 4px solid #f44336;
+      border-radius: 6px;
+      border-left: 3px solid #f44336;
       color: #c62828;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
     .error-state mat-icon {
       color: #f44336;
-      font-size: 20px;
-      width: 20px;
-      height: 20px;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
     }
 
     /* ========== ACTIONS ========== */
     mat-dialog-actions {
       padding: 1rem 0 0 !important;
-      margin: 0 !important;
+      margin: 1rem 0 0 0 !important;
       gap: 0.75rem;
+      display: flex;
       justify-content: flex-end;
-      border-top: 1px solid #e0e0e0;
+      border-top: 1px solid #eee;
     }
 
     mat-dialog-actions button {
-      min-width: 120px;
-      height: 42px;
+      min-width: 110px;
+      height: 40px;
       border-radius: 8px !important;
       font-weight: 500;
+      font-size: 0.9rem;
     }
 
     .send-btn {
@@ -1598,7 +1604,7 @@ export class AlertaSaludDialog {
     }
 
     .send-btn mat-icon {
-      margin-right: 0.5rem;
+      margin-right: 0.4rem;
       font-size: 18px;
       width: 18px;
       height: 18px;
