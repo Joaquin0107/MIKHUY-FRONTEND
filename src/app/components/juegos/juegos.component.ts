@@ -84,7 +84,7 @@ export class JuegosComponent implements OnInit, OnDestroy {
             title: juego.nombre,
             subtitle: juego.categoria,
             description: juego.descripcion,
-            image: juego.image || this.getDefaultImage(juego.categoria),
+            image: juego.imagen || this.getDefaultImage(juego.categoria),
           }));
 
           this.notificationCount = this.calcularNotificaciones(this.juegos);

@@ -27,6 +27,7 @@ export interface JuegoResponse {
   completado?: boolean;
   porcentajeCompletado?: number;
   image?: string;
+  imagen?: string;
   title?: string;
   subtitle?: string;
   description?: string;
