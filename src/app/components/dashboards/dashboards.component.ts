@@ -1196,21 +1196,28 @@ export class AlertaSaludDialog {
   ],
   template: `
     <div class="email-dialog">
-      <h2 mat-dialog-title>
-        <mat-icon>email</mat-icon>
-        Enviar Reporte por Correo
-      </h2>
+      <!-- Header -->
+      <div class="dialog-header">
+        <div class="header-icon">
+          <mat-icon>email</mat-icon>
+        </div>
+        <div class="header-text">
+          <h2>Enviar Reporte por Correo</h2>
+          <p>{{ data.student.nombre }} {{ data.student.apellido }}</p>
+        </div>
+        <button mat-icon-button class="close-btn" (click)="cancelar()" [disabled]="isLoading">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
 
+      <!-- Content -->
       <mat-dialog-content>
-        <p class="student-info">
-          Reporte de: <strong>{{ data.student.nombre }} {{ data.student.apellido }}</strong>
-        </p>
-
         <form [formGroup]="emailForm">
+          <!-- Email Field -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Correo del destinatario</mat-label>
+            <mat-icon matPrefix>person</mat-icon>
             <input matInput type="email" placeholder="padre@ejemplo.com" formControlName="email" />
-            <mat-icon matPrefix>email</mat-icon>
             <mat-error *ngIf="emailForm.get('email')?.hasError('required')">
               El correo es requerido
             </mat-error>
@@ -1219,91 +1226,414 @@ export class AlertaSaludDialog {
             </mat-error>
           </mat-form-field>
 
+          <!-- Subject Field -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Asunto</mat-label>
-            <input matInput formControlName="subject" />
             <mat-icon matPrefix>subject</mat-icon>
+            <input matInput formControlName="subject" />
           </mat-form-field>
 
+          <!-- Message Field -->
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Mensaje</mat-label>
-            <textarea matInput rows="4" formControlName="message" placeholder="Agregue un mensaje personalizado..."></textarea>
+            <textarea 
+              matInput 
+              rows="5" 
+              formControlName="message" 
+              placeholder="Escriba un mensaje personalizado...">
+            </textarea>
           </mat-form-field>
         </form>
 
-        <div class="file-upload-section">
+        <!-- File Upload Section -->
+        <div class="file-upload-section" [class.has-file]="selectedFile" [class.drag-over]="isDragOver"
+             (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+          
           <input type="file" #fileInput (change)="onFileSelected($event)" accept=".pdf,application/pdf" hidden />
 
-          <button mat-stroked-button (click)="fileInput.click()" [disabled]="isLoading" class="upload-button">
-            <mat-icon>attach_file</mat-icon>
-            {{ selectedFile ? 'Cambiar archivo' : 'Adjuntar PDF' }}
-          </button>
+          <!-- Upload Area (when no file) -->
+          <div *ngIf="!selectedFile" class="upload-area" (click)="fileInput.click()">
+            <mat-icon class="upload-icon">cloud_upload</mat-icon>
+            <p class="upload-text">Arrastra un archivo PDF aquí</p>
+            <p class="upload-subtext">o haz clic para seleccionar</p>
+            <span class="upload-hint">Máximo 10MB</span>
+          </div>
 
+          <!-- File Selected -->
           <div *ngIf="selectedFile" class="file-selected">
-            <mat-icon class="file-icon">picture_as_pdf</mat-icon>
-            <div class="file-info">
-              <strong>{{ selectedFile.name }}</strong>
-              <small>{{ formatFileSize(selectedFile.size) }}</small>
+            <div class="file-preview">
+              <mat-icon class="pdf-icon">picture_as_pdf</mat-icon>
             </div>
-            <button mat-icon-button (click)="removeFile()" [disabled]="isLoading" class="remove-button">
-              <mat-icon>close</mat-icon>
-            </button>
+            <div class="file-details">
+              <strong>{{ selectedFile.name }}</strong>
+              <span class="file-size">{{ formatFileSize(selectedFile.size) }}</span>
+            </div>
+            <div class="file-actions">
+              <button mat-icon-button (click)="fileInput.click()" [disabled]="isLoading" matTooltip="Cambiar archivo">
+                <mat-icon>sync</mat-icon>
+              </button>
+              <button mat-icon-button (click)="removeFile()" [disabled]="isLoading" matTooltip="Eliminar" class="remove-btn">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="attach-info" [class.has-file]="selectedFile">
+        <!-- Status Info -->
+        <div class="status-info" [class.success]="selectedFile">
           <mat-icon>{{ selectedFile ? 'check_circle' : 'info' }}</mat-icon>
-          <span>
-            {{ selectedFile ? 'Archivo adjunto listo para enviar' : 'Opcionalmente puede adjuntar el reporte en PDF' }}
-          </span>
+          <span>{{ selectedFile ? 'PDF listo para enviar' : 'Adjunta el reporte en PDF (opcional)' }}</span>
         </div>
 
-        <div *ngIf="isLoading" class="loading-overlay">
-          <mat-spinner diameter="40"></mat-spinner>
-          <p>{{ selectedFile ? 'Enviando correo con archivo adjunto...' : 'Enviando correo...' }}</p>
+        <!-- Loading State -->
+        <div *ngIf="isLoading" class="loading-state">
+          <mat-spinner diameter="36"></mat-spinner>
+          <p>{{ selectedFile ? 'Enviando correo con adjunto...' : 'Enviando correo...' }}</p>
         </div>
 
-        <div *ngIf="errorMessage" class="error-message">
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="error-state">
           <mat-icon>error</mat-icon>
           <span>{{ errorMessage }}</span>
         </div>
       </mat-dialog-content>
 
-      <mat-dialog-actions align="end">
-        <button mat-button (click)="cancelar()" [disabled]="isLoading">Cancelar</button>
-        <button mat-raised-button color="primary" [disabled]="!emailForm.valid || isLoading" (click)="enviar()">
-          <mat-icon>send</mat-icon>
-          {{ selectedFile ? 'Enviar con PDF' : 'Enviar' }}
+      <!-- Actions -->
+      <mat-dialog-actions>
+        <button mat-stroked-button (click)="cancelar()" [disabled]="isLoading">
+          Cancelar
+        </button>
+        <button mat-raised-button color="primary" 
+                [disabled]="!emailForm.valid || isLoading" 
+                (click)="enviar()"
+                class="send-btn">
+          <mat-icon>{{ isLoading ? 'hourglass_empty' : 'send' }}</mat-icon>
+          {{ isLoading ? 'Enviando...' : (selectedFile ? 'Enviar con PDF' : 'Enviar') }}
         </button>
       </mat-dialog-actions>
     </div>
   `,
   styles: [`
-    .email-dialog { font-family: 'Poppins', sans-serif; }
-    h2 { display: flex; align-items: center; gap: 0.5rem; color: #48a3f3; font-weight: 600; margin: 0; }
-    .student-info { color: #666; margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; }
-    .full-width { width: 100%; margin-bottom: 1rem; }
-    .file-upload-section { margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px; border: 2px dashed #e0e0e0; transition: all 0.3s; }
-    .file-upload-section:hover { border-color: #48a3f3; background: #f0f7ff; }
-    .upload-button { width: 100%; height: 48px; font-size: 0.95rem; }
-    .upload-button mat-icon { margin-right: 0.5rem; }
-    .file-selected { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: white; border-radius: 8px; border: 1px solid #48a3f3; margin-top: 0.75rem; }
-    .file-icon { color: #f44336; font-size: 32px; width: 32px; height: 32px; }
-    .file-info { flex: 1; display: flex; flex-direction: column; gap: 0.25rem; }
-    .file-info strong { font-size: 0.9rem; color: #333; }
-    .file-info small { font-size: 0.75rem; color: #999; }
-    .remove-button { color: #999; }
-    .remove-button:hover { color: #f44336; }
-    .attach-info { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; background: #e3f2fd; border-radius: 8px; font-size: 0.9rem; color: #666; margin-top: 1rem; transition: all 0.3s; }
-    .attach-info.has-file { background: #e8f5e9; color: #2e7d32; }
-    .attach-info mat-icon { color: #48a3f3; }
-    .attach-info.has-file mat-icon { color: #4caf50; }
-    .loading-overlay { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1rem; margin-top: 1rem; background: #f8f9fa; border-radius: 8px; }
-    .loading-overlay p { margin: 0; color: #666; }
-    .error-message { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; margin-top: 1rem; background: #ffebee; border-radius: 8px; color: #c62828; font-size: 0.9rem; }
-    .error-message mat-icon { color: #c62828; }
-    mat-dialog-content { padding: 1rem 0; overflow: visible; min-height: 400px; }
-    mat-dialog-actions button mat-icon { margin-right: 0.5rem; font-size: 18px; width: 18px; height: 18px; }
+    .email-dialog {
+      font-family: 'Poppins', sans-serif;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    /* ========== HEADER ========== */
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%);
+      margin: -24px -24px 0 -24px;
+      border-radius: 4px 4px 0 0;
+    }
+
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-icon mat-icon {
+      color: white;
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .header-text {
+      flex: 1;
+    }
+
+    .header-text h2 {
+      margin: 0;
+      color: white;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .header-text p {
+      margin: 0.25rem 0 0;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.9rem;
+    }
+
+    .close-btn {
+      color: white;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ========== CONTENT ========== */
+    mat-dialog-content {
+      padding: 1.5rem 0 1rem !important;
+      overflow-x: hidden;
+      max-height: 60vh;
+    }
+
+    .full-width {
+      width: 100%;
+      margin-bottom: 0.5rem;
+    }
+
+    .full-width mat-icon[matPrefix] {
+      color: #48A3F3;
+      margin-right: 0.5rem;
+    }
+
+    /* ========== FILE UPLOAD ========== */
+    .file-upload-section {
+      margin: 1rem 0;
+      border: 2px dashed #e0e0e0;
+      border-radius: 12px;
+      background: #fafafa;
+      transition: all 0.3s ease;
+      overflow: hidden;
+    }
+
+    .file-upload-section:hover {
+      border-color: #48A3F3;
+      background: #f5faff;
+    }
+
+    .file-upload-section.drag-over {
+      border-color: #48A3F3;
+      background: #e3f2fd;
+      transform: scale(1.02);
+    }
+
+    .file-upload-section.has-file {
+      border-style: solid;
+      border-color: #4caf50;
+      background: #f1f8e9;
+    }
+
+    .upload-area {
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      width: 48px;
+      height: 48px;
+      color: #48A3F3;
+      margin-bottom: 0.75rem;
+    }
+
+    .upload-text {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .upload-subtext {
+      margin: 0.25rem 0 0;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .upload-hint {
+      display: inline-block;
+      margin-top: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      background: #e0e0e0;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      color: #666;
+    }
+
+    /* File Selected State */
+    .file-selected {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+    }
+
+    .file-preview {
+      width: 50px;
+      height: 50px;
+      background: white;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .pdf-icon {
+      font-size: 32px;
+      width: 32px;
+      height: 32px;
+      color: #f44336;
+    }
+
+    .file-details {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+    }
+
+    .file-details strong {
+      font-size: 0.9rem;
+      color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-size {
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 0.25rem;
+    }
+
+    .file-actions button {
+      color: #666;
+    }
+
+    .file-actions .remove-btn:hover {
+      color: #f44336;
+    }
+
+    /* ========== STATUS INFO ========== */
+    .status-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #e3f2fd;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      color: #1976d2;
+      margin-top: 1rem;
+    }
+
+    .status-info.success {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+
+    .status-info mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ========== LOADING STATE ========== */
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      margin-top: 1rem;
+      background: #f5f5f5;
+      border-radius: 12px;
+    }
+
+    .loading-state p {
+      margin: 0;
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    /* ========== ERROR STATE ========== */
+    .error-state {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      margin-top: 1rem;
+      background: #ffebee;
+      border-radius: 8px;
+      border-left: 4px solid #f44336;
+      color: #c62828;
+      font-size: 0.9rem;
+    }
+
+    .error-state mat-icon {
+      color: #f44336;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    /* ========== ACTIONS ========== */
+    mat-dialog-actions {
+      padding: 1rem 0 0 !important;
+      margin: 0 !important;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    mat-dialog-actions button {
+      min-width: 120px;
+      height: 42px;
+      border-radius: 8px !important;
+      font-weight: 500;
+    }
+
+    .send-btn {
+      background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%) !important;
+    }
+
+    .send-btn mat-icon {
+      margin-right: 0.5rem;
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 500px) {
+      .dialog-header {
+        padding: 1rem;
+      }
+
+      .header-text h2 {
+        font-size: 1.1rem;
+      }
+
+      .upload-area {
+        padding: 1.5rem;
+      }
+
+      .file-selected {
+        flex-wrap: wrap;
+      }
+
+      .file-details {
+        order: 1;
+        width: calc(100% - 66px);
+      }
+
+      .file-actions {
+        order: 2;
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+      }
+    }
   `]
 })
 export class EmailDialog implements OnInit {
@@ -1311,6 +1641,7 @@ export class EmailDialog implements OnInit {
   isLoading = false;
   errorMessage: string | null = null;
   selectedFile: File | null = null;
+  isDragOver = false;
 
   constructor(
     private fb: FormBuilder,
@@ -1329,21 +1660,48 @@ export class EmailDialog implements OnInit {
     });
   }
 
+  // Drag & Drop handlers
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.processFile(files[0]);
+    }
+  }
+
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      if (file.type !== 'application/pdf') {
-        this.snackBar.open('⚠️ Solo se permiten archivos PDF', 'Cerrar', { duration: 3000 });
-        return;
-      }
-      const maxSize = 10 * 1024 * 1024;
-      if (file.size > maxSize) {
-        this.snackBar.open('⚠️ El archivo es muy grande. Máximo 10MB', 'Cerrar', { duration: 3000 });
-        return;
-      }
-      this.selectedFile = file;
+      this.processFile(input.files[0]);
     }
+  }
+
+  private processFile(file: File): void {
+    if (file.type !== 'application/pdf') {
+      this.snackBar.open('⚠️ Solo se permiten archivos PDF', 'Cerrar', { duration: 3000 });
+      return;
+    }
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      this.snackBar.open('⚠️ El archivo es muy grande. Máximo 10MB', 'Cerrar', { duration: 3000 });
+      return;
+    }
+    this.selectedFile = file;
   }
 
   removeFile(): void {
@@ -1360,15 +1718,16 @@ export class EmailDialog implements OnInit {
 
   enviar(): void {
     if (!this.emailForm.valid) {
-      this.snackBar.open('Por favor, complete todos los campos requeridos', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('Por favor, complete todos los campos', 'Cerrar', { duration: 3000 });
       return;
     }
     this.isLoading = true;
     this.errorMessage = null;
     
-    // ✅ CORREGIDO: Removido el operador opcional
     const currentUser = this.authService.getCurrentUser();
-    const profesorNombre = currentUser ? `${currentUser.nombres || ''} ${currentUser.apellidos || ''}`.trim() || 'Profesor' : 'Profesor';
+    const profesorNombre = currentUser 
+      ? `${currentUser.nombres || ''} ${currentUser.apellidos || ''}`.trim() || 'Profesor' 
+      : 'Profesor';
 
     if (this.selectedFile) {
       this.enviarConAdjunto(profesorNombre);
@@ -1387,17 +1746,15 @@ export class EmailDialog implements OnInit {
     this.mailService.sendEmail(emailData).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this.snackBar.open('✅ Correo enviado exitosamente', 'Cerrar', { duration: 3000 });
-        this.dialogRef.close({ success: true, email: emailData.to, withAttachment: false, response: response });
+        this.dialogRef.close({ success: true, email: emailData.to, withAttachment: false });
       },
-      error: (error) => {
-        this.handleError(error);
-      },
+      error: (error) => this.handleError(error),
     });
   }
 
   private enviarConAdjunto(profesorNombre: string): void {
     if (!this.selectedFile) return;
+    
     const formData = new FormData();
     formData.append('to', this.emailForm.value.email);
     formData.append('subject', this.emailForm.value.subject);
@@ -1408,12 +1765,9 @@ export class EmailDialog implements OnInit {
     this.mailService.sendEmailWithPdf(formData).subscribe({
       next: (response) => {
         this.isLoading = false;
-        this.snackBar.open('✅ Correo con PDF enviado exitosamente', 'Cerrar', { duration: 3000 });
-        this.dialogRef.close({ success: true, email: this.emailForm.value.email, withAttachment: true, fileName: this.selectedFile?.name, response: response });
+        this.dialogRef.close({ success: true, email: this.emailForm.value.email, withAttachment: true });
       },
-      error: (error) => {
-        this.handleError(error);
-      },
+      error: (error) => this.handleError(error),
     });
   }
 
@@ -1422,13 +1776,12 @@ export class EmailDialog implements OnInit {
     if (error.status === 400) {
       this.errorMessage = 'Datos inválidos. Verifique el correo y el archivo.';
     } else if (error.status === 401) {
-      this.errorMessage = 'Sesión expirada. Por favor, inicie sesión nuevamente.';
+      this.errorMessage = 'Sesión expirada. Inicie sesión nuevamente.';
     } else if (error.status === 500) {
-      this.errorMessage = 'Error en el servidor. Intente nuevamente más tarde.';
+      this.errorMessage = 'Error en el servidor. Intente más tarde.';
     } else {
-      this.errorMessage = error.error?.message || 'Error al enviar el correo. Intente nuevamente.';
+      this.errorMessage = error.error?.message || 'Error al enviar el correo.';
     }
-    this.snackBar.open(`❌ ${this.errorMessage}`, 'Cerrar', { duration: 5000 });
   }
 
   cancelar(): void {
