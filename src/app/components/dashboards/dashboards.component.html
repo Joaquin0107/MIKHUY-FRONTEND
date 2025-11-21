@@ -187,7 +187,223 @@
           </div>
         </mat-card>
       </div>
+<!-- 🎮 GRÁFICOS DE JUEGOS -->
+      <div class="charts-grid">
 
+        <!-- Gráfico 1: Conocimiento Nutricional (Desafío Nutrimental) -->
+        <mat-card class="chart-card" *ngIf="getJuegoData('Desafío Nutrimental') as nutrimental">
+          <mat-card-header>
+            <mat-icon class="info-icon" matTooltip="Resultados del Desafío Nutrimental">info</mat-icon>
+            <mat-card-title>Conocimiento Nutricional</mat-card-title>
+            <span class="data-source">Datos del Desafío Nutrimental</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <div class="knowledge-stats">
+                <div class="stat-circle">
+                  <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" class="stat-bg"/>
+                    <circle cx="50" cy="50" r="40" class="stat-progress"
+                            [attr.stroke-dasharray]="(calcularPorcentajeProgreso(nutrimental) * 2.51) + ' 251'"
+                            [style.stroke]="getColorByProgress(calcularPorcentajeProgreso(nutrimental))"/>
+                    <text x="50" y="55" class="stat-text">{{calcularPorcentajeProgreso(nutrimental)}}%</text>
+                  </svg>
+                  <p>Progreso</p>
+                </div>
+                <div class="knowledge-details">
+                  <div class="detail-item">
+                    <mat-icon>emoji_events</mat-icon>
+                    <div>
+                      <strong>Nivel {{nutrimental.nivelActual || 0}}/{{nutrimental.maxNiveles}}</strong>
+                      <span>{{nutrimental.puntosGanados || 0}} puntos</span>
+                    </div>
+                  </div>
+                  <div class="detail-item">
+                    <mat-icon>replay</mat-icon>
+                    <div>
+                      <strong>Veces jugado</strong>
+                      <span>{{nutrimental.vecesJugado || 0}} veces</span>
+                    </div>
+                  </div>
+                  <div class="detail-item" [class.success]="nutrimental.completado">
+                    <mat-icon>{{nutrimental.completado ? 'check_circle' : 'pending'}}</mat-icon>
+                    <div>
+                      <strong>{{nutrimental.completado ? '¡Completado!' : 'En progreso'}}</strong>
+                      <span>{{nutrimental.completado ? 'Juego terminado' : 'Continúa jugando'}}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Gráfico 2: Distribución de Macronutrientes (si hay análisis) -->
+        <mat-card class="chart-card" *ngIf="dashboardData.ultimoAnalisis">
+          <mat-card-header>
+            <mat-card-title>Distribución de Macronutrientes</mat-card-title>
+            <span class="data-source">Análisis Nutricional</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <svg viewBox="0 0 200 200" class="donut-chart">
+                <circle cx="100" cy="100" r="60" class="donut-segment protein"
+                        [attr.stroke-dasharray]="getCircleSegment(dashboardData.ultimoAnalisis.proteinasPorcentaje) + ' 377'"/>
+                <circle cx="100" cy="100" r="60" class="donut-segment carbs"
+                        [attr.stroke-dasharray]="getCircleSegment(dashboardData.ultimoAnalisis.carbohidratosPorcentaje) + ' 377'"
+                        [attr.stroke-dashoffset]="-getCircleSegment(dashboardData.ultimoAnalisis.proteinasPorcentaje)"/>
+                <circle cx="100" cy="100" r="60" class="donut-segment fat"
+                        [attr.stroke-dasharray]="getCircleSegment(dashboardData.ultimoAnalisis.grasasPorcentaje) + ' 377'"
+                        [attr.stroke-dashoffset]="-(getCircleSegment(dashboardData.ultimoAnalisis.proteinasPorcentaje) + getCircleSegment(dashboardData.ultimoAnalisis.carbohidratosPorcentaje))"/>
+                <text x="100" y="105" class="donut-center">100%</text>
+              </svg>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <span class="legend-color protein-color"></span>
+                  <span>Proteínas {{dashboardData.ultimoAnalisis.proteinasPorcentaje}}%</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color carbs-color"></span>
+                  <span>Carbohidratos {{dashboardData.ultimoAnalisis.carbohidratosPorcentaje}}%</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-color fat-color"></span>
+                  <span>Grasas {{dashboardData.ultimoAnalisis.grasasPorcentaje}}%</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Gráfico 3: Progreso Reto 7 Días -->
+        <mat-card class="chart-card" *ngIf="getJuegoData('Reto 7 Días') as reto7dias">
+          <mat-card-header>
+            <mat-card-title>Reto 7 Días - Registro Alimenticio</mat-card-title>
+            <span class="data-source">Datos del Reto 7 Días</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <div class="game-progress">
+                <div class="progress-header">
+                  <mat-icon class="game-icon">restaurant</mat-icon>
+                  <div>
+                    <h3>{{reto7dias.nivelActual || 0}} de {{reto7dias.maxNiveles}} días completados</h3>
+                    <p>{{reto7dias.puntosGanados || 0}} puntos acumulados</p>
+                  </div>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar" [style.width.%]="calcularPorcentajeProgreso(reto7dias)"></div>
+                </div>
+                <div class="game-stats">
+                  <div class="game-stat-item">
+                    <mat-icon>calendar_today</mat-icon>
+                    <span>Jugado {{reto7dias.vecesJugado || 0}} veces</span>
+                  </div>
+                  <div class="game-stat-item">
+                    <mat-icon>{{reto7dias.completado ? 'check_circle' : 'hourglass_empty'}}</mat-icon>
+                    <span>{{reto7dias.completado ? 'Completado' : 'En progreso'}}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+         <!-- Gráfico 4: Etapa de Cambio (Coach Exprés) -->
+        <mat-card class="chart-card" *ngIf="dashboardData.ultimoAnalisis && dashboardData.ultimoAnalisis.etapaCambio">
+          <mat-card-header>
+            <mat-card-title>Etapa de Cambio Conductual</mat-card-title>
+            <span class="data-source">Datos del Coach Exprés</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <div class="stage-indicator">
+                <div class="stage-circle" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Pre-contemplación'">
+                  <span class="stage-number">1</span>
+                  <p>Pre-contemplación</p>
+                </div>
+                <div class="stage-connector" [class.active]="isStageActiveOrPast('Contemplación')"></div>
+                <div class="stage-circle" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Contemplación'">
+                  <span class="stage-number">2</span>
+                  <p>Contemplación</p>
+                </div>
+                <div class="stage-connector" [class.active]="isStageActiveOrPast('Preparación')"></div>
+                <div class="stage-circle" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Preparación'">
+                  <span class="stage-number">3</span>
+                  <p>Preparación</p>
+                </div>
+                <div class="stage-connector" [class.active]="isStageActiveOrPast('Acción')"></div>
+                <div class="stage-circle" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Acción'">
+                  <span class="stage-number">4</span>
+                  <p>Acción</p>
+                </div>
+                <div class="stage-connector" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Mantenimiento'"></div>
+                <div class="stage-circle" [class.active]="dashboardData.ultimoAnalisis.etapaCambio === 'Mantenimiento'">
+                  <span class="stage-number">5</span>
+                  <p>Mantenimiento</p>
+                </div>
+              </div>
+              <div class="current-stage-info">
+                <mat-icon>psychology</mat-icon>
+                <div>
+                  <strong>Etapa Actual: {{dashboardData.ultimoAnalisis.etapaCambio}}</strong>
+                  <p *ngIf="dashboardData.ultimoAnalisis.porcentajeAciertos">
+                    Conocimiento: {{dashboardData.ultimoAnalisis.porcentajeAciertos}}% de aciertos
+                  </p>
+                </div>
+              </div>
+              <!-- Gráfico 5: Progreso Coach Exprés -->
+        <mat-card class="chart-card" *ngIf="getJuegoData('Coach Exprés') as coach">
+          <mat-card-header>
+            <mat-card-title>Coach Exprés - Evaluación Psicológica</mat-card-title>
+            <span class="data-source">Datos del Coach Exprés</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <div class="game-progress">
+                <div class="progress-header">
+                  <mat-icon class="game-icon">psychology</mat-icon>
+                  <div>
+                    <h3>Nivel {{coach.nivelActual || 0}} de {{coach.maxNiveles}}</h3>
+                    <p>{{coach.puntosGanados || 0}} puntos acumulados</p>
+                  </div>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar coach" [style.width.%]="calcularPorcentajeProgreso(coach)"></div>
+                </div>
+                <div class="game-stats">
+                  <div class="game-stat-item">
+                    <mat-icon>psychology</mat-icon>
+                    <span>Evaluaciones: {{coach.vecesJugado || 0}}</span>
+                  </div>
+                  <div class="game-stat-item">
+                    <mat-icon>{{coach.completado ? 'check_circle' : 'pending'}}</mat-icon>
+                    <span>{{coach.completado ? 'Evaluación completa' : 'En evaluación'}}</span>
+                  </div>
+                </div>
+              </div>
+               <!-- Gráfico 6: Comparativa de Juegos -->
+        <mat-card class="chart-card">
+          <mat-card-header>
+            <mat-card-title>Comparativa de Juegos</mat-card-title>
+            <span class="data-source">Resumen General</span>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="chart-container">
+              <div class="games-comparison">
+                <div class="game-comparison-item" *ngFor="let juego of dashboardData.juegos">
+                  <div class="game-name">
+                    <mat-icon>{{getGameIcon(juego.nombre)}}</mat-icon>
+                    <span>{{juego.nombre}}</span>
+                  </div>
+                  <div class="game-bar-container">
+                    <div class="game-bar" 
+                         [style.width.%]="calcularPorcentajeProgreso(juego)"
+                         [class.completed]="juego.completado">
+                    </div>
+                  </div>
+                  <span class="game-percentage">{{calcularPorcentajeProgreso(juego)}}%</span>
+                </div>
+              </div>
       <!-- ============================================
      SECCIÓN DE SALUD - Agregar después de stats-grid
      ============================================ -->
