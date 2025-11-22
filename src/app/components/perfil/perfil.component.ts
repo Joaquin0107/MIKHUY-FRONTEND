@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
@@ -14,7 +19,11 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { PerfilService, EstudianteResponse, UpdateProfileRequest } from '../../services/perfil.service';
+import {
+  PerfilService,
+  EstudianteResponse,
+  UpdateProfileRequest,
+} from '../../services/perfil.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -34,22 +43,21 @@ import { AuthService } from '../../services/auth.service';
     MatMenuModule,
     MatDividerModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
   ],
   templateUrl: './perfil.component.html',
-  styleUrls: ['./perfil.component.css']
+  styleUrls: ['./perfil.component.css'],
 })
 export class PerfilComponent implements OnInit {
-  
   perfilForm!: FormGroup;
   seguridadForm!: FormGroup;
   hideCurrentPassword = true;
   hideNewPassword = true;
   hideConfirmPassword = true;
-  
+
   selectedAvatar: string | null = null;
   avatarFile: File | null = null;
-  
+
   // ✅ CORRECCIÓN: Solo rol student
   userRole: 'student' = 'student';
   notificationCount = 0;
@@ -63,10 +71,10 @@ export class PerfilComponent implements OnInit {
 
   // ✅ Estadísticas del usuario
   stats = {
-    juegoCompletados: 0,
+    juegosCompletados: 0,
     puntosGanados: 0,
     canjesRealizados: 0,
-    diasActivo: 0
+    diasActivo: 0,
   };
 
   // Datos del perfil
@@ -87,7 +95,10 @@ export class PerfilComponent implements OnInit {
 
   loadPerfilData(): void {
     console.log('📡 Cargando perfil del estudiante...');
-    console.log('🎟️ Token:', localStorage.getItem('authToken') ? '✓ EXISTE' : '✗ NO EXISTE');
+    console.log(
+      '🎟️ Token:',
+      localStorage.getItem('authToken') ? '✓ EXISTE' : '✗ NO EXISTE'
+    );
 
     this.loading = true;
     this.perfilService.getMiPerfil().subscribe({
@@ -96,18 +107,17 @@ export class PerfilComponent implements OnInit {
         if (response.success && response.data) {
           this.perfilData = response.data;
           this.studentPoints = response.data.puntosAcumulados || 0;
-          
-          // ✅ Cargar estadísticas básicas desde el perfil
+
           this.stats = {
-            juegoCompletados: response.data.juegosCompletados || 0,
+            juegosCompletados: response.data.juegosCompletados || 0,
             puntosGanados: this.studentPoints,
             canjesRealizados: 0,
-            diasActivo: this.calcularDiasActivo(response.data)
+            diasActivo: this.calcularDiasActivo(response.data.fechaRegistro), // ✅ Usar fechaRegistro
           };
-          
+
           this.populateForm(response.data);
           this.loadEstadisticas();
-          
+
           if (response.data.avatarUrl) {
             this.selectedAvatar = response.data.avatarUrl;
           } else {
@@ -123,18 +133,23 @@ export class PerfilComponent implements OnInit {
         console.error('❌ Error cargando perfil:', error);
         console.error('Status:', error.status);
         console.error('URL:', error.url);
-        
+
         if (error.status === 401) {
-          this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
+          this.showMessage(
+            'Sesión expirada. Inicia sesión nuevamente.',
+            'error'
+          );
           setTimeout(() => {
             this.authService.logout();
-            this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+            this.router.navigate(['/login'], {
+              queryParams: { role: 'student' },
+            });
           }, 2000);
         } else {
           this.showMessage('Error al cargar el perfil', 'error');
         }
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -145,10 +160,12 @@ export class PerfilComponent implements OnInit {
         console.log('✅ Estadísticas recibidas:', response);
         if (response.success && response.data) {
           this.stats = {
-            juegoCompletados: response.data.juegosCompletados || 0,
+            juegosCompletados: response.data.juegosCompletados || 0,
             puntosGanados: response.data.puntosGanados || 0,
-            canjesRealizados: response.data.puntosGastados ? Math.floor(response.data.puntosGastados / 100) : 0,
-            diasActivo: this.calcularDiasDesdeRegistro()
+            canjesRealizados: response.data.puntosGastados
+              ? Math.floor(response.data.puntosGastados / 100)
+              : 0,
+            diasActivo: this.calcularDiasDesdeRegistro(),
           };
         }
         this.loadingStats = false;
@@ -157,21 +174,23 @@ export class PerfilComponent implements OnInit {
         console.error('❌ Error cargando estadísticas:', error);
         // No mostrar error, usar valores por defecto
         this.loadingStats = false;
-      }
+      },
     });
   }
 
-  calcularDiasActivo(data: EstudianteResponse): number {
-    // Calcular días desde el primer juego
-    if (data.totalSesiones && data.totalSesiones > 0) {
-      return Math.floor(data.totalSesiones / 3); // Aproximación
-    }
-    return 0;
+  calcularDiasActivo(fechaRegistro?: string): number {
+    if (!fechaRegistro) return 0;
+    const fecha = new Date(fechaRegistro);
+    const hoy = new Date();
+    const diff = hoy.getTime() - fecha.getTime();
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
   }
 
   calcularDiasDesdeRegistro(): number {
     if (this.perfilData) {
-      const fechaRegistro = new Date(this.perfilData.fechaRegistro || Date.now());
+      const fechaRegistro = new Date(
+        this.perfilData.fechaRegistro || Date.now()
+      );
       const hoy = new Date();
       const diff = hoy.getTime() - fechaRegistro.getTime();
       return Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -189,7 +208,7 @@ export class PerfilComponent implements OnInit {
       peso: data.peso || '',
       talla: data.talla || '',
       grado: data.grado || '5to',
-      seccion: data.seccion || 'A'
+      seccion: data.seccion || 'A',
     });
   }
 
@@ -205,18 +224,21 @@ export class PerfilComponent implements OnInit {
       talla: ['', [Validators.min(100), Validators.max(250)]],
       edad: ['', [Validators.min(5), Validators.max(100)]],
       grado: ['5to'],
-      seccion: ['A']
+      seccion: ['A'],
     });
 
     // Formulario de seguridad
-    this.seguridadForm = this.fb.group({
-      currentPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', Validators.required]
-    }, { validators: this.passwordMatchValidator });
+    this.seguridadForm = this.fb.group(
+      {
+        currentPassword: ['', Validators.required],
+        newPassword: ['', [Validators.required, Validators.minLength(6)]],
+        confirmPassword: ['', Validators.required],
+      },
+      { validators: this.passwordMatchValidator }
+    );
   }
 
-  passwordMatchValidator(group: FormGroup): {[key: string]: boolean} | null {
+  passwordMatchValidator(group: FormGroup): { [key: string]: boolean } | null {
     const newPassword = group.get('newPassword')?.value;
     const confirmPassword = group.get('confirmPassword')?.value;
     return newPassword === confirmPassword ? null : { passwordMismatch: true };
@@ -236,7 +258,7 @@ export class PerfilComponent implements OnInit {
       }
 
       this.avatarFile = file;
-      
+
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedAvatar = e.target.result;
@@ -254,79 +276,81 @@ export class PerfilComponent implements OnInit {
   }
 
   guardarPerfil(): void {
-    if (!this.perfilForm.valid) {
-      this.showMessage('Por favor completa todos los campos requeridos', 'error');
-      return;
-    }
-
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      this.showMessage('No hay sesión activa. Inicia sesión nuevamente.', 'error');
-      this.router.navigate(['/login'], { queryParams: { role: 'student' } });
-      return;
-    }
-
-    this.loading = true;
-
-    // ✅ Convertir a números (acepta decimales)
-    const pesoValue = this.perfilForm.value.peso;
-    const tallaValue = this.perfilForm.value.talla;
-    const edadValue = this.perfilForm.value.edad;
-
-    const updateData: UpdateProfileRequest = {
-      nombres: this.perfilForm.value.firstName,
-      apellidos: this.perfilForm.value.lastName,
-      email: this.perfilForm.value.email,
-      telefono: this.perfilForm.value.telefono || undefined,
-      grado: this.perfilForm.value.grado,
-      seccion: this.perfilForm.value.seccion,
-      edad: edadValue ? parseFloat(edadValue) : undefined,
-      peso: pesoValue ? parseFloat(pesoValue) : undefined,
-      talla: tallaValue ? parseFloat(tallaValue) : undefined
-    };
-
-    console.log('📦 Datos a enviar:', updateData);
-
-    this.perfilService.updateMiPerfil(updateData).subscribe({
-      next: (response) => {
-        console.log('✅ Perfil actualizado:', response);
-        if (response.success) {
-          this.showMessage('Perfil actualizado exitosamente', 'success');
-          
-          const currentUser = this.authService.getCurrentUser();
-          if (currentUser) {
-            currentUser.name = `${updateData.nombres} ${updateData.apellidos}`;
-            currentUser.email = updateData.email;
-            this.authService.saveUser(currentUser);
-          }
-
-          this.loadPerfilData();
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error('❌ Error actualizando perfil:', error);
-        
-        if (error.status === 401) {
-          this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
-          setTimeout(() => {
-            this.authService.logout();
-            this.router.navigate(['/login'], { queryParams: { role: 'student' } });
-          }, 2000);
-        } else {
-          this.showMessage(
-            error.error?.message || 'Error al actualizar el perfil',
-            'error'
-          );
-        }
-        this.loading = false;
-      }
-    });
+  if (!this.perfilForm.valid) {
+    this.showMessage('Por favor completa todos los campos requeridos', 'error');
+    return;
   }
+
+  const token = localStorage.getItem('authToken');
+  if (!token) {
+    this.showMessage('No hay sesión activa. Inicia sesión nuevamente.', 'error');
+    this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+    return;
+  }
+
+  this.loading = true;
+
+  const pesoValue = this.perfilForm.value.peso;
+  const tallaValue = this.perfilForm.value.talla;
+  const edadValue = this.perfilForm.value.edad;
+
+  const updateData: UpdateProfileRequest = {
+    nombres: this.perfilForm.value.firstName,
+    apellidos: this.perfilForm.value.lastName,
+    telefono: this.perfilForm.value.telefono || undefined,
+    grado: this.perfilForm.value.grado,
+    seccion: this.perfilForm.value.seccion,
+    edad: edadValue ? parseInt(edadValue) : undefined,
+    peso: pesoValue ? parseFloat(pesoValue) : undefined,
+    talla: tallaValue ? parseFloat(tallaValue) : undefined
+    // ✅ REMOVIDO: email (no está en UpdateProfileRequest)
+  };
+
+  console.log('📦 Datos a enviar:', updateData);
+
+  this.perfilService.updateMiPerfil(updateData).subscribe({
+    next: (response) => {
+      console.log('✅ Perfil actualizado:', response);
+      if (response.success) {
+        this.showMessage('Perfil actualizado exitosamente', 'success');
+
+        const currentUser = this.authService.getCurrentUser();
+        if (currentUser) {
+          currentUser.name = `${updateData.nombres} ${updateData.apellidos}`;
+          // ✅ REMOVIDO: currentUser.email = updateData.email;
+          this.authService.saveUser(currentUser);
+        }
+
+        this.loadPerfilData();
+      }
+      this.loading = false;
+    },
+    error: (error) => {
+      console.error('❌ Error actualizando perfil:', error);
+
+      if (error.status === 401) {
+        this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
+        setTimeout(() => {
+          this.authService.logout();
+          this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+        }, 2000);
+      } else {
+        this.showMessage(
+          error.error?.message || 'Error al actualizar el perfil',
+          'error'
+        );
+      }
+      this.loading = false;
+    }
+  });
+}
 
   cambiarContrasena(): void {
     if (!this.seguridadForm.valid) {
-      this.showMessage('Por favor completa todos los campos correctamente', 'error');
+      this.showMessage(
+        'Por favor completa todos los campos correctamente',
+        'error'
+      );
       return;
     }
 
@@ -340,7 +364,7 @@ export class PerfilComponent implements OnInit {
     const passwordData = {
       oldPassword: this.seguridadForm.value.currentPassword,
       newPassword: this.seguridadForm.value.newPassword,
-      confirmPassword: this.seguridadForm.value.confirmPassword
+      confirmPassword: this.seguridadForm.value.confirmPassword,
     };
 
     this.authService.cambiarContrasena(passwordData).subscribe({
@@ -362,7 +386,7 @@ export class PerfilComponent implements OnInit {
           'error'
         );
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -371,7 +395,7 @@ export class PerfilComponent implements OnInit {
       duration: 3000,
       horizontalPosition: 'center',
       verticalPosition: 'top',
-      panelClass: type === 'success' ? 'snackbar-success' : 'snackbar-error'
+      panelClass: type === 'success' ? 'snackbar-success' : 'snackbar-error',
     });
   }
 
