@@ -524,10 +524,27 @@
   background: white !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
   transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
 }
 
 .chart-card:hover {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+.chart-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(72, 163, 243, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.chart-card:hover::before {
+  left: 100%;
 }
 
 .chart-card mat-card-header {
@@ -1229,95 +1246,6 @@
   margin-right: 0.5rem;
 }
 
-/* ========== RESPONSIVE ========== */
-@media (max-width: 1400px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 1200px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboards-content {
-    flex-direction: column;
-    height: auto;
-  }
-
-  .sidebar {
-    width: 100%;
-    max-height: 300px;
-  }
-
-  .dashboard-main {
-    padding: 1rem;
-  }
-
-  .profile-content {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .profile-stats {
-    justify-content: center;
-  }
-
-  .profile-actions {
-    flex-direction: column;
-  }
-
-  .download-btn, .email-btn {
-    width: 100%;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .game-comparison-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .game-name {
-    min-width: 100%;
-  }
-  
-  .game-bar-container {
-    width: 100%;
-  }
-  
-  .game-percentage {
-    width: 100%;
-    text-align: left;
-  }
-
-  .knowledge-stats {
-    flex-direction: column;
-  }
-
-  .stage-indicator {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
-  .stage-circle p {
-    font-size: 0.65rem;
-  }
-
-  .stage-connector {
-    flex: 0 0 20px;
-  }
-}
-
 /* ========== HEALTH CHARTS STYLES ========== */
 
 /* Health Summary Card */
@@ -1506,14 +1434,34 @@
   height: 16px;
 }
 
-.variacion.positivo {
-  background: #E8F5E9;
-  color: #388E3C;
+/* ✅ CORRECCIÓN: Flecha VERDE para crecimiento en talla */
+.variacion.talla-up {
+  background: #E8F5E9 !important;
+  color: #4caf50 !important;
 }
 
-.variacion.negativo {
+.variacion.talla-up mat-icon {
+  color: #4caf50 !important;
+}
+
+/* ✅ Flecha ROJA para aumento de peso */
+.variacion.positivo {
   background: #FFEBEE;
-  color: #D32F2F;
+  color: #f44336;
+}
+
+.variacion.positivo mat-icon {
+  color: #f44336;
+}
+
+/* ✅ Flecha VERDE para disminución de peso */
+.variacion.negativo {
+  background: #E8F5E9;
+  color: #4caf50;
+}
+
+.variacion.negativo mat-icon {
+  color: #4caf50;
 }
 
 .mediciones-count {
@@ -1558,18 +1506,21 @@
   margin-bottom: 2rem;
 }
 
+/* ========== MEJORAS PARA LOS GRÁFICOS DE SALUD ========== */
 .line-chart-container {
-  padding: 1rem 0;
-  min-height: 200px;
+  position: relative;
+  width: 100%;
+  height: 200px;
+  padding: 1rem;
 }
 
 .line-chart {
   width: 100%;
-  height: 200px;
+  height: 100%;
 }
 
 .grid-line {
-  stroke: #E0E0E0;
+  stroke: #e0e0e0;
   stroke-width: 2;
 }
 
@@ -1578,41 +1529,52 @@
   stroke-width: 3;
   stroke-linecap: round;
   stroke-linejoin: round;
+  transition: stroke-width 0.3s ease;
+}
+
+.chart-line:hover {
+  stroke-width: 4;
 }
 
 .peso-line {
-  stroke: #48A3F3;
+  stroke: #48a3f3;
+  filter: drop-shadow(0 2px 4px rgba(72, 163, 243, 0.3));
 }
 
 .talla-line {
-  stroke: #7BC67E;
+  stroke: #7bc67e;
+  filter: drop-shadow(0 2px 4px rgba(123, 198, 126, 0.3));
 }
 
 .imc-line {
-  stroke: #9C27B0;
+  stroke: #9c27b0;
+  filter: drop-shadow(0 2px 4px rgba(156, 39, 176, 0.3));
 }
 
 .chart-point {
-  fill: white;
-  stroke-width: 3;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  stroke-width: 2;
 }
 
 .chart-point:hover {
-  r: 6;
+  r: 6 !important;
+  filter: drop-shadow(0 0 6px rgba(0,0,0,0.4));
 }
 
 .peso-point {
-  stroke: #48A3F3;
+  fill: #48a3f3;
+  stroke: white;
 }
 
 .talla-point {
-  stroke: #7BC67E;
+  fill: #7bc67e;
+  stroke: white;
 }
 
 .imc-point {
-  stroke: #9C27B0;
+  stroke: white;
+  stroke-width: 2;
 }
 
 .imc-point.bajo-peso {
@@ -1635,12 +1597,24 @@
   font-size: 12px;
   fill: #666;
   font-weight: 600;
+  font-family: 'Poppins', sans-serif;
 }
 
 .zone-label {
   font-size: 9px;
   fill: #999;
   font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Zonas del IMC */
+.imc-zone {
+  opacity: 0.15;
+  transition: opacity 0.3s ease;
+}
+
+.chart-card:hover .imc-zone {
+  opacity: 0.2;
 }
 
 .imc-zone.bajo-peso {
@@ -1697,8 +1671,85 @@
   height: 20px;
 }
 
-/* Responsive Health Charts */
+/* ========== ANIMACIONES PARA LOS GRÁFICOS ========== */
+@keyframes drawLine {
+  from {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.chart-line {
+  animation: drawLine 1.5s ease-in-out;
+}
+
+@keyframes fadeInPoint {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.chart-point {
+  animation: fadeInPoint 0.5s ease-out backwards;
+}
+
+.chart-point:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.chart-point:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.chart-point:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.chart-point:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.chart-point:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+/* Estados de carga para gráficos */
+.chart-container.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.chart-container.loading::after {
+  content: 'Cargando datos...';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.9rem;
+  color: #666;
+  font-weight: 500;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1400px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .health-summary {
     flex-direction: column;
     align-items: stretch;
@@ -1714,6 +1765,80 @@
 }
 
 @media (max-width: 768px) {
+  .dashboards-content {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .sidebar {
+    width: 100%;
+    max-height: 300px;
+  }
+
+  .dashboard-main {
+    padding: 1rem;
+  }
+
+  .profile-content {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .profile-stats {
+    justify-content: center;
+  }
+
+  .profile-actions {
+    flex-direction: column;
+  }
+
+  .download-btn, .email-btn {
+    width: 100%;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .game-comparison-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .game-name {
+    min-width: 100%;
+  }
+  
+  .game-bar-container {
+    width: 100%;
+  }
+  
+  .game-percentage {
+    width: 100%;
+    text-align: left;
+  }
+
+  .knowledge-stats {
+    flex-direction: column;
+  }
+
+  .stage-indicator {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .stage-circle p {
+    font-size: 0.65rem;
+  }
+
+  .stage-connector {
+    flex: 0 0 20px;
+  }
+
   .gauge-svg {
     width: 160px;
     height: 100px;
@@ -1729,5 +1854,30 @@
 
   .medicion-info h4 {
     font-size: 1.3rem;
+  }
+
+  .line-chart-container {
+    height: 180px;
+    padding: 0.5rem;
+  }
+
+  .chart-line {
+    stroke-width: 2;
+  }
+
+  .chart-point {
+    r: 3;
+  }
+
+  .chart-point:hover {
+    r: 5 !important;
+  }
+
+  .chart-label {
+    font-size: 10px;
+  }
+
+  .zone-label {
+    font-size: 8px;
   }
 }

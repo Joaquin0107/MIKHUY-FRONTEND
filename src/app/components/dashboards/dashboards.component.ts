@@ -107,7 +107,6 @@ export class DashboardsComponent implements OnInit {
   ngOnInit(): void {
     this.loadExternalScripts();
 
-    // ✅ CORREGIDO: Removido el operador opcional ?.()
     this.currentUser = this.authService.getCurrentUser() || 
       JSON.parse(localStorage.getItem('currentUser') || '{}');
 
@@ -218,6 +217,11 @@ export class DashboardsComponent implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.dashboardData = response.data;
+          
+          // 🔍 DEBUG: Verificar datos de salud
+          console.log('Dashboard Data:', this.dashboardData);
+          console.log('Salud Info:', this.dashboardData.salud);
+          console.log('Historial Mediciones:', this.dashboardData.salud?.historialMediciones);
           
           this.verificarAlertasSalud(response.data.salud);
           
@@ -557,7 +561,9 @@ export class DashboardsComponent implements OnInit {
     pdf.setTextColor(0, 0, 0);
     pdf.text(titulo, 20, yPos + 3);
 
-    const mediciones = [...this.dashboardData!.salud!.historialMediciones].reverse();
+    const mediciones = [...this.dashboardData!.salud!.historialMediciones]
+      .sort((a, b) => new Date(a.fechaRegistro).getTime() - new Date(b.fechaRegistro).getTime());
+    
     const chartWidth = pageWidth - 60;
     const chartHeight = 25;
     const startX = 30;
@@ -717,7 +723,7 @@ export class DashboardsComponent implements OnInit {
   }
 
   // ========================================================
-  // MÉTODOS PARA GRÁFICAS DE SALUD
+  // MÉTODOS PARA GRÁFICAS DE SALUD - CORREGIDOS
   // ========================================================
 
   getIMCAngle(imc: number): number {
@@ -743,107 +749,157 @@ export class DashboardsComponent implements OnInit {
     }
   }
 
+  // ✅ CORREGIDO: Gráfico de Peso
   getWeightChartPoints(): string {
-    if (!this.dashboardData?.salud?.historialMediciones) return '';
+    if (!this.dashboardData?.salud?.historialMediciones || 
+        this.dashboardData.salud.historialMediciones.length === 0) {
+      return '';
+    }
     
-    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const mediciones = [...this.dashboardData.salud.historialMediciones]
+      .sort((a, b) => new Date(a.fechaRegistro).getTime() - new Date(b.fechaRegistro).getTime());
+    
+    if (mediciones.length < 1) return '';
+    
     const width = 340;
-    const height = 140;
+    const height = 120;
     const padding = 20;
     
-    const minPeso = Math.min(...mediciones.map(m => m.peso)) - 5;
-    const maxPeso = Math.max(...mediciones.map(m => m.peso)) + 5;
+    const pesos = mediciones.map(m => m.peso);
+    const minPeso = Math.min(...pesos) - 2;
+    const maxPeso = Math.max(...pesos) + 2;
+    const range = maxPeso - minPeso || 1;
     
     const points = mediciones.map((m, i) => {
-      const x = 40 + (i * width / (mediciones.length - 1 || 1));
-      const y = 160 - padding - ((m.peso - minPeso) / (maxPeso - minPeso)) * height;
-      return `${x},${y}`;
+      const x = 40 + (i * width / Math.max(1, mediciones.length - 1));
+      const y = 160 - padding - ((m.peso - minPeso) / range) * height;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
     });
     
+    console.log('Weight points:', points); // DEBUG
     return points.join(' ');
   }
 
   getWeightPoints(): any[] {
-    if (!this.dashboardData?.salud?.historialMediciones) return [];
+    if (!this.dashboardData?.salud?.historialMediciones || 
+        this.dashboardData.salud.historialMediciones.length === 0) {
+      return [];
+    }
     
-    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const mediciones = [...this.dashboardData.salud.historialMediciones]
+      .sort((a, b) => new Date(a.fechaRegistro).getTime() - new Date(b.fechaRegistro).getTime());
+    
     const width = 340;
-    const height = 140;
+    const height = 120;
     const padding = 20;
     
-    const minPeso = Math.min(...mediciones.map(m => m.peso)) - 5;
-    const maxPeso = Math.max(...mediciones.map(m => m.peso)) + 5;
+    const pesos = mediciones.map(m => m.peso);
+    const minPeso = Math.min(...pesos) - 2;
+    const maxPeso = Math.max(...pesos) + 2;
+    const range = maxPeso - minPeso || 1;
     
     return mediciones.map((m, i) => ({
-      x: 40 + (i * width / (mediciones.length - 1 || 1)),
-      y: 160 - padding - ((m.peso - minPeso) / (maxPeso - minPeso)) * height,
+      x: 40 + (i * width / Math.max(1, mediciones.length - 1)),
+      y: 160 - padding - ((m.peso - minPeso) / range) * height,
       peso: m.peso,
       fecha: new Date(m.fechaRegistro).toLocaleDateString('es-ES')
     }));
   }
 
+  // ✅ CORREGIDO: Gráfico de Talla
   getHeightChartPoints(): string {
-    if (!this.dashboardData?.salud?.historialMediciones) return '';
+    if (!this.dashboardData?.salud?.historialMediciones || 
+        this.dashboardData.salud.historialMediciones.length === 0) {
+      return '';
+    }
     
-    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const mediciones = [...this.dashboardData.salud.historialMediciones]
+      .sort((a, b) => new Date(a.fechaRegistro).getTime() - new Date(b.fechaRegistro).getTime());
+    
+    if (mediciones.length < 1) return '';
+    
     const width = 340;
-    const height = 140;
+    const height = 120;
     const padding = 20;
     
-    const minTalla = Math.min(...mediciones.map(m => m.talla)) - 5;
-    const maxTalla = Math.max(...mediciones.map(m => m.talla)) + 5;
+    const tallas = mediciones.map(m => m.talla);
+    const minTalla = Math.min(...tallas) - 2;
+    const maxTalla = Math.max(...tallas) + 2;
+    const range = maxTalla - minTalla || 1;
     
     const points = mediciones.map((m, i) => {
-      const x = 40 + (i * width / (mediciones.length - 1 || 1));
-      const y = 160 - padding - ((m.talla - minTalla) / (maxTalla - minTalla)) * height;
-      return `${x},${y}`;
+      const x = 40 + (i * width / Math.max(1, mediciones.length - 1));
+      const y = 160 - padding - ((m.talla - minTalla) / range) * height;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
     });
     
+    console.log('Height points:', points); // DEBUG
     return points.join(' ');
   }
 
   getHeightPoints(): any[] {
-    if (!this.dashboardData?.salud?.historialMediciones) return [];
+    if (!this.dashboardData?.salud?.historialMediciones || 
+        this.dashboardData.salud.historialMediciones.length === 0) {
+      return [];
+    }
     
-    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const mediciones = [...this.dashboardData.salud.historialMediciones]
+      .sort((a, b) => new Date(a.fechaRegistro).getTime() - new Date(b.fechaRegistro).getTime());
+    
     const width = 340;
-    const height = 140;
+    const height = 120;
     const padding = 20;
     
-    const minTalla = Math.min(...mediciones.map(m => m.talla)) - 5;
-    const maxTalla = Math.max(...mediciones.map(m => m.talla)) + 5;
+    const tallas = mediciones.map(m => m.talla);
+    const minTalla = Math.min(...tallas) - 2;
+    const maxTalla = Math.max(...tallas) + 2;
+    const range = maxTalla - minTalla || 1;
     
     return mediciones.map((m, i) => ({
-      x: 40 + (i * width / (mediciones.length - 1 || 1)),
-      y: 160 - padding - ((m.talla - minTalla) / (maxTalla - minTalla)) * height,
+      x: 40 + (i * width / Math.max(1, mediciones.length - 1)),
+      y: 160 - padding - ((m.talla - minTalla) / range) * height,
       talla: m.talla,
       fecha: new Date(m.fechaRegistro).toLocaleDateString('es-ES')
     }));
   }
 
+  // ✅ CORREGIDO: Gráfico de IMC
   getIMCChartPoints(): string {
-    if (!this.dashboardData?.salud?.historialMediciones) return '';
+    if (!this.dashboardData?.salud?.historialMediciones || 
+        this.dashboardData.salud.historialMediciones.length === 0) {
+      return '';
+    }
     
-    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const mediciones = [...this.dashboardData.salud.historialMediciones]
+      .sort((a, b) => new Date(a.fechaRegistro).getTime() - new Date(b.fechaRegistro).getTime());
+    
+    if (mediciones.length < 1) return '';
+    
     const width = 340;
     
     const points = mediciones.map((m, i) => {
-      const x = 40 + (i * width / (mediciones.length - 1 || 1));
+      const x = 40 + (i * width / Math.max(1, mediciones.length - 1));
       const y = this.mapIMCToY(m.imc);
-      return `${x},${y}`;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
     });
     
+    console.log('IMC points:', points); // DEBUG
     return points.join(' ');
   }
 
   getIMCPoints(): any[] {
-    if (!this.dashboardData?.salud?.historialMediciones) return [];
+    if (!this.dashboardData?.salud?.historialMediciones || 
+        this.dashboardData.salud.historialMediciones.length === 0) {
+      return [];
+    }
     
-    const mediciones = [...this.dashboardData.salud.historialMediciones].reverse();
+    const mediciones = [...this.dashboardData.salud.historialMediciones]
+      .sort((a, b) => new Date(a.fechaRegistro).getTime() - new Date(b.fechaRegistro).getTime());
+    
     const width = 340;
     
     return mediciones.map((m, i) => ({
-      x: 40 + (i * width / (mediciones.length - 1 || 1)),
+      x: 40 + (i * width / Math.max(1, mediciones.length - 1)),
       y: this.mapIMCToY(m.imc),
       imc: m.imc.toFixed(1),
       estado: m.estadoNutricional.toLowerCase().replace(' ', '-'),
@@ -851,15 +907,33 @@ export class DashboardsComponent implements OnInit {
     }));
   }
 
+  // ✅ MEJORADO: Mapeo de IMC a coordenada Y
   private mapIMCToY(imc: number): number {
+    const chartHeight = 140;
+    const startY = 20;
+    
+    // Zonas del IMC en el gráfico
+    // Bajo peso: y=20 a y=55 (35px) -> IMC < 18.5
+    // Normal: y=55 a y=105 (50px) -> IMC 18.5-25
+    // Sobrepeso: y=105 a y=135 (30px) -> IMC 25-30
+    // Obesidad: y=135 a y=160 (25px) -> IMC > 30
+    
     if (imc < 18.5) {
-      return 55 - ((imc / 18.5) * 35);
+      // Mapear 0-18.5 a y=55-20
+      const percent = imc / 18.5;
+      return 55 - (percent * 35);
     } else if (imc < 25) {
-      return 105 - (((imc - 18.5) / 6.5) * 50);
+      // Mapear 18.5-25 a y=105-55
+      const percent = (imc - 18.5) / 6.5;
+      return 105 - (percent * 50);
     } else if (imc < 30) {
-      return 135 - (((imc - 25) / 5) * 30);
+      // Mapear 25-30 a y=135-105
+      const percent = (imc - 25) / 5;
+      return 135 - (percent * 30);
     } else {
-      return Math.max(135, 160 - (((imc - 30) / 10) * 25));
+      // Mapear 30+ a y=160-135
+      const percent = Math.min(1, (imc - 30) / 10);
+      return 160 - (percent * 25);
     }
   }
 
