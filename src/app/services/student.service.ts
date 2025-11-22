@@ -61,7 +61,7 @@ export interface StudentListResponse {
   providedIn: 'root'
 })
 export class StudentService {
-  private apiUrl = `${environment.apiUrl}/estudiantes`;
+  private apiUrl = `${environment.apiUrl}/api/estudiantes`;
 
   // BehaviorSubject para mantener los puntos sincronizados
   private puntosSubject = new BehaviorSubject<number>(0);

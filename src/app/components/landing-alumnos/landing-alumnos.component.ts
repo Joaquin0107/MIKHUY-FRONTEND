@@ -1,4 +1,3 @@
-// src/app/components/landing-alumnos/landing-alumnos.component.ts
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -52,14 +51,6 @@ export class LandingAlumnosComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((puntos) => {
         this.studentPoints = puntos;
-      });
-
-    // Suscribirse a las notificaciones
-    this.studentService.notificaciones$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((notificaciones) => {
-        this.notifications = notificaciones;
-        this.notificationCount = notificaciones.filter((n) => !n.leida).length;
       });
 
     // Cargar datos iniciales
