@@ -243,13 +243,13 @@
                       matInput
                       type="number"
                       formControlName="peso"
-                      placeholder="45.5"
+                      placeholder="60.0"
                       step="0.1"
-                      min="20"
-                      max="200"
+                      min="20.0"
+                      max="200.0"
                     />
                     <mat-icon matPrefix>monitor_weight</mat-icon>
-                    <mat-hint>Puedes usar decimales (ej: 45.5)</mat-hint>
+                    <mat-hint>Puedes usar decimales (ej: 60.0)</mat-hint>
                     <mat-error *ngIf="perfilForm.get('peso')?.hasError('min')">
                       Peso mínimo: 20 kg
                     </mat-error>
@@ -264,18 +264,18 @@
                       matInput
                       type="number"
                       formControlName="talla"
-                      placeholder="152.5"
+                      placeholder="100"
                       step="0.1"
-                      min="100"
-                      max="250"
+                      min="100.0"
+                      max="250.0"
                     />
                     <mat-icon matPrefix>height</mat-icon>
-                    <mat-hint>Puedes usar decimales (ej: 152.5)</mat-hint>
+                    <mat-hint>Puedes usar decimales (ej: 100.0)</mat-hint>
                     <mat-error *ngIf="perfilForm.get('talla')?.hasError('min')">
-                      Talla mínima: 100 cm
+                      Talla mínima: 100.0 cm
                     </mat-error>
                     <mat-error *ngIf="perfilForm.get('talla')?.hasError('max')">
-                      Talla máxima: 250 cm
+                      Talla máxima: 250.0 cm
                     </mat-error>
                   </mat-form-field>
                 </div>

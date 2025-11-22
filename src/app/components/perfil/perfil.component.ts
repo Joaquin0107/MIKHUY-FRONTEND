@@ -222,7 +222,7 @@ export class PerfilComponent implements OnInit {
       // ✅ CORRECCIÓN: Permitir decimales en peso y talla
       peso: ['', [Validators.min(0.50), Validators.max(200)]],
       talla: ['', [Validators.min(0.50), Validators.max(250)]],
-      edad: ['', [Validators.min(11), Validators.max(18)]],
+      edad: ['', [Validators.min(11), Validators.max(17)]],
       grado: ['5to'],
       seccion: ['A'],
     });
