@@ -5,7 +5,11 @@
       <button mat-icon-button class="back-btn" (click)="goBack()">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="header-logo">
+      <img
+        src="assets/images/MIKHUY.png"
+        alt="MIKHUY Logo"
+        class="header-logo"
+      />
     </div>
 
     <div class="header-center">
@@ -13,21 +17,31 @@
     </div>
 
     <div class="header-right">
-      <button mat-raised-button class="games-btn" (click)="navigateToGames()" *ngIf="userRole === 'student'">
+      <button
+        mat-raised-button
+        class="games-btn"
+        (click)="navigateToGames()"
+        *ngIf="userRole === 'student'"
+      >
         <mat-icon>sports_esports</mat-icon>
         JUEGOS
       </button>
-      <button mat-raised-button class="benefits-btn" (click)="navigateToBenefits()" *ngIf="userRole === 'student'">
+      <button
+        mat-raised-button
+        class="benefits-btn"
+        (click)="navigateToBenefits()"
+        *ngIf="userRole === 'student'"
+      >
         <mat-icon>card_giftcard</mat-icon>
         BENEFICIOS
       </button>
 
       <div class="points-display" *ngIf="userRole === 'student'">
         <mat-icon class="points-icon">stars</mat-icon>
-        <span class="points-value">{{studentPoints}}</span>
+        <span class="points-value">{{ studentPoints }}</span>
       </div>
 
-    <!--Apartado de Notificaciones (a futuro)-->
+      <!--Apartado de Notificaciones (a futuro)-->
       <mat-menu #notificationMenu="matMenu" class="notification-menu">
         <div class="notification-header">
           <h3>Notificaciones</h3>
@@ -62,46 +76,50 @@
   <!-- Main Content -->
   <div class="perfil-content" *ngIf="!loading">
     <div class="content-wrapper">
-      
       <!-- Profile Card -->
       <mat-card class="profile-card">
         <div class="profile-header">
           <!-- Avatar solo para estudiantes -->
           <div class="avatar-section" *ngIf="userRole === 'student'">
             <div class="avatar-circle" [class.has-image]="selectedAvatar">
-              <img *ngIf="selectedAvatar" [src]="selectedAvatar" alt="Avatar">
+              <img *ngIf="selectedAvatar" [src]="selectedAvatar" alt="Avatar" />
               <mat-icon *ngIf="!selectedAvatar">account_circle</mat-icon>
             </div>
-            <button mat-icon-button 
-                    *ngIf="selectedAvatar" 
-                    class="remove-avatar-btn"
-                    (click)="removeAvatar()">
+            <button
+              mat-icon-button
+              *ngIf="selectedAvatar"
+              class="remove-avatar-btn"
+              (click)="removeAvatar()"
+            >
               <mat-icon>close</mat-icon>
             </button>
           </div>
 
-          <!-- Avatar para profesores (sin opción de cambio) -->
-          <div class="avatar-section" *ngIf="userRole === 'teacher'">
-            <div class="avatar-circle">
-              <mat-icon>person</mat-icon>
-            </div>
-          </div>
-
           <div class="profile-actions" *ngIf="userRole === 'student'">
-            <input type="file" 
-                   #avatarInput 
-                   accept="image/*" 
-                   style="display: none;"
-                   (change)="onAvatarSelected($event)">
-            <button mat-raised-button color="primary" (click)="avatarInput.click()">
+            <input
+              type="file"
+              #avatarInput
+              accept="image/*"
+              style="display: none"
+              (change)="onAvatarSelected($event)"
+            />
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="avatarInput.click()"
+            >
               <mat-icon>photo_camera</mat-icon>
-              {{selectedAvatar ? 'Cambiar foto' : 'Subir foto'}}
+              {{ selectedAvatar ? "Cambiar foto" : "Subir foto" }}
             </button>
           </div>
 
           <div class="user-info">
-            <h2>{{perfilForm.value.firstName}} {{perfilForm.value.lastName}}</h2>
-            <p class="role-badge">{{userRole === 'student' ? 'Estudiante' : 'Profesor'}}</p>
+            <h2>
+              {{ perfilForm.value.firstName }} {{ perfilForm.value.lastName }}
+            </h2>
+            <p class="role-badge">
+              {{ userRole === "student" ? "Estudiante" : "Profesor" }}
+            </p>
           </div>
         </div>
 
@@ -111,22 +129,22 @@
           <div class="stats-grid" *ngIf="!loadingStats">
             <div class="stat-item">
               <mat-icon>sports_esports</mat-icon>
-              <span class="stat-value">{{stats.juegoCompletados}}</span>
+              <span class="stat-value">{{ stats.juegoCompletados }}</span>
               <span class="stat-label">Juegos</span>
             </div>
             <div class="stat-item">
               <mat-icon>stars</mat-icon>
-              <span class="stat-value">{{stats.puntosGanados}}</span>
+              <span class="stat-value">{{ stats.puntosGanados }}</span>
               <span class="stat-label">Historial de Puntos</span>
             </div>
             <div class="stat-item">
               <mat-icon>card_giftcard</mat-icon>
-              <span class="stat-value">{{stats.canjesRealizados}}</span>
+              <span class="stat-value">{{ stats.canjesRealizados }}</span>
               <span class="stat-label">Canjes</span>
             </div>
             <div class="stat-item">
               <mat-icon>calendar_today</mat-icon>
-              <span class="stat-value">{{stats.diasActivo}}</span>
+              <span class="stat-value">{{ stats.diasActivo }}</span>
               <span class="stat-label">Días</span>
             </div>
           </div>
@@ -139,12 +157,10 @@
       <!-- Tabs -->
       <mat-card class="tabs-card">
         <mat-tab-group>
-          
           <!-- Datos Personales -->
           <mat-tab label="Datos Personales">
             <div class="tab-content">
               <form [formGroup]="perfilForm">
-                
                 <div class="section-title">
                   <mat-icon>person</mat-icon>
                   <h3>Información Personal</h3>
@@ -153,23 +169,31 @@
                 <div class="form-row">
                   <mat-form-field appearance="outline" class="half-width">
                     <mat-label>Nombres</mat-label>
-                    <input matInput formControlName="firstName">
+                    <input matInput formControlName="firstName" />
                     <mat-icon matPrefix>account_circle</mat-icon>
-                    <mat-error *ngIf="perfilForm.get('firstName')?.hasError('required')">
+                    <mat-error
+                      *ngIf="perfilForm.get('firstName')?.hasError('required')"
+                    >
                       El nombre es requerido
                     </mat-error>
-                    <mat-error *ngIf="perfilForm.get('firstName')?.hasError('minlength')">
+                    <mat-error
+                      *ngIf="perfilForm.get('firstName')?.hasError('minlength')"
+                    >
                       Mínimo 2 caracteres
                     </mat-error>
                   </mat-form-field>
 
                   <mat-form-field appearance="outline" class="half-width">
                     <mat-label>Apellidos</mat-label>
-                    <input matInput formControlName="lastName">
-                    <mat-error *ngIf="perfilForm.get('lastName')?.hasError('required')">
+                    <input matInput formControlName="lastName" />
+                    <mat-error
+                      *ngIf="perfilForm.get('lastName')?.hasError('required')"
+                    >
                       El apellido es requerido
                     </mat-error>
-                    <mat-error *ngIf="perfilForm.get('lastName')?.hasError('minlength')">
+                    <mat-error
+                      *ngIf="perfilForm.get('lastName')?.hasError('minlength')"
+                    >
                       Mínimo 2 caracteres
                     </mat-error>
                   </mat-form-field>
@@ -177,9 +201,11 @@
 
                 <mat-form-field appearance="outline" class="full-width">
                   <mat-label>Correo Electrónico</mat-label>
-                  <input matInput type="email" formControlName="email">
+                  <input matInput type="email" formControlName="email" />
                   <mat-icon matPrefix>email</mat-icon>
-                  <mat-error *ngIf="perfilForm.get('email')?.hasError('required')">
+                  <mat-error
+                    *ngIf="perfilForm.get('email')?.hasError('required')"
+                  >
                     El correo es requerido
                   </mat-error>
                   <mat-error *ngIf="perfilForm.get('email')?.hasError('email')">
@@ -188,50 +214,71 @@
                 </mat-form-field>
 
                 <!-- Datos de Salud (Solo Estudiantes) -->
-                <ng-container *ngIf="userRole === 'student'">
-                  <div class="section-title">
-                    <mat-icon>favorite</mat-icon>
-                    <h3>Datos de Salud</h3>
-                  </div>
+                <div class="section-title">
+                  <mat-icon>favorite</mat-icon>
+                  <h3>Datos de Salud</h3>
+                </div>
+                <div class="form-row three-columns">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Edad (años)</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="edad"
+                      placeholder="15"
+                      step="1"
+                    />
+                    <mat-icon matPrefix>cake</mat-icon>
+                    <mat-error *ngIf="perfilForm.get('edad')?.hasError('min')">
+                      Edad mínima: 5 años
+                    </mat-error>
+                    <mat-error *ngIf="perfilForm.get('edad')?.hasError('max')">
+                      Edad máxima: 100 años
+                    </mat-error>
+                  </mat-form-field>
 
-                  <div class="form-row three-columns">
-                    <mat-form-field appearance="outline">
-                      <mat-label>Edad (años)</mat-label>
-                      <input matInput type="number" formControlName="edad" placeholder="15">
-                      <mat-icon matPrefix>cake</mat-icon>
-                      <mat-error *ngIf="perfilForm.get('edad')?.hasError('min')">
-                        Edad mínima: 5 años
-                      </mat-error>
-                      <mat-error *ngIf="perfilForm.get('edad')?.hasError('max')">
-                        Edad máxima: 100 años
-                      </mat-error>
-                    </mat-form-field>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Peso (kg)</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="peso"
+                      placeholder="45.5"
+                      step="0.1"
+                      min="20"
+                      max="200"
+                    />
+                    <mat-icon matPrefix>monitor_weight</mat-icon>
+                    <mat-hint>Puedes usar decimales (ej: 45.5)</mat-hint>
+                    <mat-error *ngIf="perfilForm.get('peso')?.hasError('min')">
+                      Peso mínimo: 20 kg
+                    </mat-error>
+                    <mat-error *ngIf="perfilForm.get('peso')?.hasError('max')">
+                      Peso máximo: 200 kg
+                    </mat-error>
+                  </mat-form-field>
 
-                    <mat-form-field appearance="outline">
-                      <mat-label>Peso (kg)</mat-label>
-                      <input matInput type="number" formControlName="peso" placeholder="60">
-                      <mat-icon matPrefix>monitor_weight</mat-icon>
-                      <mat-error *ngIf="perfilForm.get('peso')?.hasError('min')">
-                        Peso mínimo: 20 kg
-                      </mat-error>
-                      <mat-error *ngIf="perfilForm.get('peso')?.hasError('max')">
-                        Peso máximo: 200 kg
-                      </mat-error>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline">
-                      <mat-label>Talla (cm)</mat-label>
-                      <input matInput type="number" formControlName="talla" placeholder="160">
-                      <mat-icon matPrefix>height</mat-icon>
-                      <mat-error *ngIf="perfilForm.get('talla')?.hasError('min')">
-                        Talla mínima: 100 cm
-                      </mat-error>
-                      <mat-error *ngIf="perfilForm.get('talla')?.hasError('max')">
-                        Talla máxima: 250 cm
-                      </mat-error>
-                    </mat-form-field>
-                  </div>
-                </ng-container>
+                  <mat-form-field appearance="outline">
+                    <mat-label>Talla (cm)</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      formControlName="talla"
+                      placeholder="152.5"
+                      step="0.1"
+                      min="100"
+                      max="250"
+                    />
+                    <mat-icon matPrefix>height</mat-icon>
+                    <mat-hint>Puedes usar decimales (ej: 152.5)</mat-hint>
+                    <mat-error *ngIf="perfilForm.get('talla')?.hasError('min')">
+                      Talla mínima: 100 cm
+                    </mat-error>
+                    <mat-error *ngIf="perfilForm.get('talla')?.hasError('max')">
+                      Talla máxima: 250 cm
+                    </mat-error>
+                  </mat-form-field>
+                </div>
 
                 <!-- Datos Académicos (Estudiantes) -->
                 <ng-container *ngIf="userRole === 'student'">
@@ -244,8 +291,11 @@
                     <mat-form-field appearance="outline" class="half-width">
                       <mat-label>Grado</mat-label>
                       <mat-select formControlName="grado">
-                        <mat-option *ngFor="let grado of grados" [value]="grado">
-                          {{grado}}
+                        <mat-option
+                          *ngFor="let grado of grados"
+                          [value]="grado"
+                        >
+                          {{ grado }}
                         </mat-option>
                       </mat-select>
                     </mat-form-field>
@@ -253,44 +303,26 @@
                     <mat-form-field appearance="outline" class="half-width">
                       <mat-label>Sección</mat-label>
                       <mat-select formControlName="seccion">
-                        <mat-option *ngFor="let seccion of secciones" [value]="seccion">
-                          Sección {{seccion}}
+                        <mat-option
+                          *ngFor="let seccion of secciones"
+                          [value]="seccion"
+                        >
+                          Sección {{ seccion }}
                         </mat-option>
                       </mat-select>
                     </mat-form-field>
                   </div>
                 </ng-container>
 
-                <!-- Datos Profesionales (Profesores) -->
-                <ng-container *ngIf="userRole === 'teacher'">
-                  <div class="section-title">
-                    <mat-icon>work</mat-icon>
-                    <h3>Datos Profesionales</h3>
-                  </div>
-
-                  <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Materia que imparte</mat-label>
-                    <mat-select formControlName="materia">
-                      <mat-option *ngFor="let materia of materias" [value]="materia">
-                        {{materia}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-
-                  <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Años de experiencia</mat-label>
-                    <input matInput type="number" formControlName="experiencia">
-                    <mat-icon matPrefix>timeline</mat-icon>
-                  </mat-form-field>
-                </ng-container>
-
                 <div class="form-actions">
-                  <button mat-raised-button 
-                          color="primary" 
-                          (click)="guardarPerfil()" 
-                          [disabled]="!perfilForm.valid || loading">
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    (click)="guardarPerfil()"
+                    [disabled]="!perfilForm.valid || loading"
+                  >
                     <mat-icon>save</mat-icon>
-                    {{loading ? 'Guardando...' : 'Guardar Cambios'}}
+                    {{ loading ? "Guardando..." : "Guardar Cambios" }}
                   </button>
                 </div>
               </form>
@@ -300,106 +332,142 @@
           <!-- ========================================
      SECCIÓN DE SEGURIDAD - CAMBIAR CONTRASEÑA
      ======================================== -->
-<mat-tab label="Seguridad">
-  <div class="tab-content">
-    <form [formGroup]="seguridadForm" (ngSubmit)="cambiarContrasena()">
-      <h3>Cambiar Contraseña</h3>
+          <mat-tab label="Seguridad">
+            <div class="tab-content">
+              <form
+                [formGroup]="seguridadForm"
+                (ngSubmit)="cambiarContrasena()"
+              >
+                <h3>Cambiar Contraseña</h3>
 
-      <!-- Contraseña Actual -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Contraseña Actual</mat-label>
-        <input 
-          matInput 
-          [type]="hideCurrentPassword ? 'password' : 'text'"
-          formControlName="currentPassword"
-          placeholder="Ingresa tu contraseña actual"
-          required>
-        <button 
-          mat-icon-button 
-          matSuffix 
-          type="button"
-          (click)="hideCurrentPassword = !hideCurrentPassword"
-          [attr.aria-label]="'Hide password'"
-          [attr.aria-pressed]="hideCurrentPassword">
-          <mat-icon>{{hideCurrentPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-        </button>
-        <mat-error *ngIf="seguridadForm.get('currentPassword')?.hasError('required')">
-          La contraseña actual es requerida
-        </mat-error>
-      </mat-form-field>
+                <!-- Contraseña Actual -->
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Contraseña Actual</mat-label>
+                  <input
+                    matInput
+                    [type]="hideCurrentPassword ? 'password' : 'text'"
+                    formControlName="currentPassword"
+                    placeholder="Ingresa tu contraseña actual"
+                    required
+                  />
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    type="button"
+                    (click)="hideCurrentPassword = !hideCurrentPassword"
+                    [attr.aria-label]="'Hide password'"
+                    [attr.aria-pressed]="hideCurrentPassword"
+                  >
+                    <mat-icon>{{
+                      hideCurrentPassword ? "visibility_off" : "visibility"
+                    }}</mat-icon>
+                  </button>
+                  <mat-error
+                    *ngIf="
+                      seguridadForm.get('currentPassword')?.hasError('required')
+                    "
+                  >
+                    La contraseña actual es requerida
+                  </mat-error>
+                </mat-form-field>
 
-      <!-- Nueva Contraseña -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Nueva Contraseña</mat-label>
-        <input 
-          matInput 
-          [type]="hideNewPassword ? 'password' : 'text'"
-          formControlName="newPassword"
-          placeholder="Mínimo 6 caracteres"
-          required>
-        <button 
-          mat-icon-button 
-          matSuffix 
-          type="button"
-          (click)="hideNewPassword = !hideNewPassword"
-          [attr.aria-label]="'Hide password'"
-          [attr.aria-pressed]="hideNewPassword">
-          <mat-icon>{{hideNewPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-        </button>
-        <mat-error *ngIf="seguridadForm.get('newPassword')?.hasError('required')">
-          La nueva contraseña es requerida
-        </mat-error>
-        <mat-error *ngIf="seguridadForm.get('newPassword')?.hasError('minlength')">
-          Mínimo 6 caracteres
-        </mat-error>
-      </mat-form-field>
+                <!-- Nueva Contraseña -->
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Nueva Contraseña</mat-label>
+                  <input
+                    matInput
+                    [type]="hideNewPassword ? 'password' : 'text'"
+                    formControlName="newPassword"
+                    placeholder="Mínimo 6 caracteres"
+                    required
+                  />
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    type="button"
+                    (click)="hideNewPassword = !hideNewPassword"
+                    [attr.aria-label]="'Hide password'"
+                    [attr.aria-pressed]="hideNewPassword"
+                  >
+                    <mat-icon>{{
+                      hideNewPassword ? "visibility_off" : "visibility"
+                    }}</mat-icon>
+                  </button>
+                  <mat-error
+                    *ngIf="
+                      seguridadForm.get('newPassword')?.hasError('required')
+                    "
+                  >
+                    La nueva contraseña es requerida
+                  </mat-error>
+                  <mat-error
+                    *ngIf="
+                      seguridadForm.get('newPassword')?.hasError('minlength')
+                    "
+                  >
+                    Mínimo 6 caracteres
+                  </mat-error>
+                </mat-form-field>
 
-      <!-- Confirmar Contraseña -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Confirmar Nueva Contraseña</mat-label>
-        <input 
-          matInput 
-          [type]="hideConfirmPassword ? 'password' : 'text'"
-          formControlName="confirmPassword"
-          placeholder="Repite la nueva contraseña"
-          required>
-        <button 
-          mat-icon-button 
-          matSuffix 
-          type="button"
-          (click)="hideConfirmPassword = !hideConfirmPassword"
-          [attr.aria-label]="'Hide password'"
-          [attr.aria-pressed]="hideConfirmPassword">
-          <mat-icon>{{hideConfirmPassword ? 'visibility_off' : 'visibility'}}</mat-icon>
-        </button>
-        <mat-error *ngIf="seguridadForm.get('confirmPassword')?.hasError('required')">
-          Debes confirmar la contraseña
-        </mat-error>
-      </mat-form-field>
+                <!-- Confirmar Contraseña -->
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Confirmar Nueva Contraseña</mat-label>
+                  <input
+                    matInput
+                    [type]="hideConfirmPassword ? 'password' : 'text'"
+                    formControlName="confirmPassword"
+                    placeholder="Repite la nueva contraseña"
+                    required
+                  />
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    type="button"
+                    (click)="hideConfirmPassword = !hideConfirmPassword"
+                    [attr.aria-label]="'Hide password'"
+                    [attr.aria-pressed]="hideConfirmPassword"
+                  >
+                    <mat-icon>{{
+                      hideConfirmPassword ? "visibility_off" : "visibility"
+                    }}</mat-icon>
+                  </button>
+                  <mat-error
+                    *ngIf="
+                      seguridadForm.get('confirmPassword')?.hasError('required')
+                    "
+                  >
+                    Debes confirmar la contraseña
+                  </mat-error>
+                </mat-form-field>
 
-      <!-- Error de contraseñas no coinciden -->
-      <mat-error *ngIf="seguridadForm.hasError('passwordMismatch') && seguridadForm.get('confirmPassword')?.touched" 
-                 class="password-mismatch-error">
-        Las contraseñas no coinciden
-      </mat-error>
+                <!-- Error de contraseñas no coinciden -->
+                <mat-error
+                  *ngIf="
+                    seguridadForm.hasError('passwordMismatch') &&
+                    seguridadForm.get('confirmPassword')?.touched
+                  "
+                  class="password-mismatch-error"
+                >
+                  Las contraseñas no coinciden
+                </mat-error>
 
-      <!-- Botones de acción -->
-      <div class="form-actions">
-        <button 
-          mat-raised-button 
-          color="primary" 
-          type="submit"
-          [disabled]="!seguridadForm.valid || loading">
-          <mat-icon>lock</mat-icon>
-          {{ loading ? 'Guardando...' : 'Cambiar Contraseña' }}
-        </button>
-      </div>
-    </form>
-  </div>
-</mat-tab>
+                <!-- Botones de acción -->
+                <div class="form-actions">
+                  <button
+                    mat-raised-button
+                    color="primary"
+                    type="submit"
+                    [disabled]="!seguridadForm.valid || loading"
+                  >
+                    <mat-icon>lock</mat-icon>
+                    {{ loading ? "Guardando..." : "Cambiar Contraseña" }}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </mat-tab>
         </mat-tab-group>
       </mat-card>
-
     </div>
   </div>
 </div>

@@ -12,8 +12,8 @@ export interface ApiResponse<T> {
 export interface EstudianteResponse {
   id: string;
   usuarioId: string;
-  nombres: string;         // ✅ Backend usa "nombres" (plural)
-  apellidos: string;       // ✅ Backend usa "apellidos" (plural)
+  nombres: string;
+  apellidos: string;
   nombreCompleto: string;
   email: string;
   telefono?: string;
@@ -24,41 +24,52 @@ export interface EstudianteResponse {
   talla?: number;
   puntosAcumulados: number;
   avatarUrl?: string;
+  fechaRegistro?: string;      
+  ultimaConexion?: string;  
+  juegosJugados?: number;
+  juegosCompletados?: number;
+  totalSesiones?: number;
 }
 
 export interface UpdateProfileRequest {
-  nombres: string;         // ✅ Backend espera "nombres"
-  apellidos: string;       // ✅ Backend espera "apellidos"
-  email: string;           // ✅ Agregado
+  nombres: string;
+  apellidos: string;
+  email: string;
   telefono?: string;
   grado: string;
   seccion: string;
-  peso?: number;           // Frontend envía number, backend convierte a BigDecimal
-  talla?: number;          // Frontend envía number, backend convierte a BigDecimal
+  peso?: number;
+  talla?: number;   // ✅ Acepta decimales
   edad?: number;
-  avatarUrl?: string;      // ✅ Agregado por si se usa
+  avatarUrl?: string;
 }
 
 export interface EstadisticasEstudianteResponse {
-  juegoCompletados: number;
+  puntosAcumulados: number;
   puntosGanados: number;
-  canjesRealizados: number;
-  diasActivo: number;
+  puntosGastados: number;
+  juegosJugados: number;
+  juegosCompletados: number;
+  totalSesiones: number;
+  tiempoTotalJugado: number;
+  posicionRanking: number;
+  totalEstudiantes: number;
+  notificacionesNoLeidas: number;
 }
 
 @Injectable({ providedIn: 'root' })
 export class PerfilService {
-  private baseUrl = `${environment.apiUrl}/estudiantes`;
+  // ✅ CORRECCIÓN: Agregar /api/ a la URL base
+  private baseUrl = `${environment.apiUrl}/api/estudiantes`;
 
   constructor(private http: HttpClient) {}
 
   /**
    * Obtener perfil del estudiante autenticado
    * GET /api/estudiantes/perfil
-   * El interceptor agrega automáticamente el token
    */
   getMiPerfil(): Observable<ApiResponse<EstudianteResponse>> {
-    console.log('📡 GET:', `${this.baseUrl}/estudiantes/perfil`);
+    console.log('📡 GET:', `${this.baseUrl}/perfil`);
     return this.http.get<ApiResponse<EstudianteResponse>>(
       `${this.baseUrl}/perfil`
     );
@@ -70,7 +81,7 @@ export class PerfilService {
    */
   updateMiPerfil(data: UpdateProfileRequest): Observable<ApiResponse<EstudianteResponse>> {
     console.log('📡 PUT:', `${this.baseUrl}/perfil`);
-    console.log('📦 Datos:', data);
+    console.log('📦 Datos enviados:', data);
     return this.http.put<ApiResponse<EstudianteResponse>>(
       `${this.baseUrl}/perfil`,
       data
@@ -92,13 +103,14 @@ export class PerfilService {
    * GET /api/estudiantes/estadisticas
    */
   getMisEstadisticas(): Observable<ApiResponse<EstadisticasEstudianteResponse>> {
+    console.log('📡 GET Estadísticas:', `${this.baseUrl}/estadisticas`);
     return this.http.get<ApiResponse<EstadisticasEstudianteResponse>>(
       `${this.baseUrl}/estadisticas`
     );
   }
 
   /**
-   * ✅ Subir avatar
+   * Subir avatar
    * POST /api/estudiantes/avatar
    */
   uploadAvatar(file: File): Observable<ApiResponse<string>> {

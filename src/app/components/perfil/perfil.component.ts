@@ -50,7 +50,8 @@ export class PerfilComponent implements OnInit {
   selectedAvatar: string | null = null;
   avatarFile: File | null = null;
   
-  userRole: 'student' | 'teacher' = 'student';
+  // ✅ CORRECCIÓN: Solo rol student
+  userRole: 'student' = 'student';
   notificationCount = 0;
   studentPoints = 0;
   loading = false;
@@ -60,10 +61,7 @@ export class PerfilComponent implements OnInit {
   grados = ['1ro', '2do', '3ro', '4to', '5to'];
   secciones = ['A', 'B', 'C', 'D'];
 
-  // Opciones para profesores
-  materias = ['Comunicaciones', 'Matemáticas', 'Historia', 'Educación Física', 'Otra'];
-
-  // Estadísticas del usuario
+  // ✅ Estadísticas del usuario
   stats = {
     juegoCompletados: 0,
     puntosGanados: 0,
@@ -84,25 +82,12 @@ export class PerfilComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForms();
-    this.loadUserRole();
     this.loadPerfilData();
   }
 
-  loadUserRole(): void {
-    const currentUser = this.authService.getCurrentUser();
-    if (currentUser) {
-      this.userRole = currentUser.rol === 'student' ? 'student' : 'teacher';
-    }
-  }
-
   loadPerfilData(): void {
-    if (this.userRole !== 'student') {
-      this.loadMockDataForTeacher();
-      return;
-    }
-
     console.log('📡 Cargando perfil del estudiante...');
-    console.log('🎟️ Token en localStorage:', localStorage.getItem('authToken') ? '✓' : '✗');
+    console.log('🎟️ Token:', localStorage.getItem('authToken') ? '✓ EXISTE' : '✗ NO EXISTE');
 
     this.loading = true;
     this.perfilService.getMiPerfil().subscribe({
@@ -111,14 +96,21 @@ export class PerfilComponent implements OnInit {
         if (response.success && response.data) {
           this.perfilData = response.data;
           this.studentPoints = response.data.puntosAcumulados || 0;
+          
+          // ✅ Cargar estadísticas básicas desde el perfil
+          this.stats = {
+            juegoCompletados: response.data.juegosCompletados || 0,
+            puntosGanados: this.studentPoints,
+            canjesRealizados: 0,
+            diasActivo: this.calcularDiasActivo(response.data)
+          };
+          
           this.populateForm(response.data);
           this.loadEstadisticas();
           
-          // Cargar avatar si existe
           if (response.data.avatarUrl) {
             this.selectedAvatar = response.data.avatarUrl;
           } else {
-            // Cargar avatar guardado localmente
             const savedAvatar = sessionStorage.getItem('userAvatar');
             if (savedAvatar) {
               this.selectedAvatar = savedAvatar;
@@ -130,23 +122,16 @@ export class PerfilComponent implements OnInit {
       error: (error) => {
         console.error('❌ Error cargando perfil:', error);
         console.error('Status:', error.status);
-        console.error('Message:', error.error?.message);
-        console.error('Headers enviados:', error.headers);
+        console.error('URL:', error.url);
         
         if (error.status === 401) {
-          console.error('🚨 ERROR 401: Token inválido o expirado');
-          console.error('Token actual:', localStorage.getItem('authToken')?.substring(0, 20) + '...');
-          this.showMessage('Sesión expirada. Por favor inicia sesión nuevamente.', 'error');
-          
-          // Redirigir al login después de 2 segundos
+          this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
           setTimeout(() => {
             this.authService.logout();
-            this.router.navigate(['/login']);
+            this.router.navigate(['/login'], { queryParams: { role: 'student' } });
           }, 2000);
         } else {
           this.showMessage('Error al cargar el perfil', 'error');
-          // Cargar datos mock en caso de error
-          this.loadMockData();
         }
         this.loading = false;
       }
@@ -154,33 +139,50 @@ export class PerfilComponent implements OnInit {
   }
 
   loadEstadisticas(): void {
-    if (this.userRole !== 'student') return;
-
     this.loadingStats = true;
     this.perfilService.getMisEstadisticas().subscribe({
       next: (response) => {
+        console.log('✅ Estadísticas recibidas:', response);
         if (response.success && response.data) {
           this.stats = {
-            juegoCompletados: response.data.juegoCompletados || 0,
+            juegoCompletados: response.data.juegosCompletados || 0,
             puntosGanados: response.data.puntosGanados || 0,
-            canjesRealizados: response.data.canjesRealizados || 0,
-            diasActivo: response.data.diasActivo || 0
+            canjesRealizados: response.data.puntosGastados ? Math.floor(response.data.puntosGastados / 100) : 0,
+            diasActivo: this.calcularDiasDesdeRegistro()
           };
         }
         this.loadingStats = false;
       },
       error: (error) => {
-        console.error('Error cargando estadísticas:', error);
+        console.error('❌ Error cargando estadísticas:', error);
+        // No mostrar error, usar valores por defecto
         this.loadingStats = false;
       }
     });
   }
 
+  calcularDiasActivo(data: EstudianteResponse): number {
+    // Calcular días desde el primer juego
+    if (data.totalSesiones && data.totalSesiones > 0) {
+      return Math.floor(data.totalSesiones / 3); // Aproximación
+    }
+    return 0;
+  }
+
+  calcularDiasDesdeRegistro(): number {
+    if (this.perfilData) {
+      const fechaRegistro = new Date(this.perfilData.fechaRegistro || Date.now());
+      const hoy = new Date();
+      const diff = hoy.getTime() - fechaRegistro.getTime();
+      return Math.floor(diff / (1000 * 60 * 60 * 24));
+    }
+    return 0;
+  }
+
   populateForm(data: EstudianteResponse): void {
-    // ✅ Usar los nombres correctos de los campos del backend
     this.perfilForm.patchValue({
-      firstName: data.nombres,      // ✅ backend usa "nombres"
-      lastName: data.apellidos,     // ✅ backend usa "apellidos"
+      firstName: data.nombres,
+      lastName: data.apellidos,
       email: data.email,
       telefono: data.telefono || '',
       edad: data.edad || '',
@@ -191,29 +193,6 @@ export class PerfilComponent implements OnInit {
     });
   }
 
-  loadMockData(): void {
-    // Datos de ejemplo si no hay conexión al backend
-    this.perfilForm.patchValue({
-      firstName: 'Juan',
-      lastName: 'Pérez',
-      email: 'alumno@mikhuy.com',
-      telefono: '',
-      grado: '5to',
-      seccion: 'A'
-    });
-  }
-
-  loadMockDataForTeacher(): void {
-    this.perfilForm.patchValue({
-      firstName: 'María',
-      lastName: 'García',
-      email: 'profesor@mikhuy.com',
-      telefono: '',
-      materia: 'Matemáticas',
-      experiencia: '5'
-    });
-  }
-
   initForms(): void {
     // Formulario de perfil
     this.perfilForm = this.fb.group({
@@ -221,18 +200,17 @@ export class PerfilComponent implements OnInit {
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       telefono: ['', [Validators.pattern(/^[0-9]{9}$/)]],
+      // ✅ CORRECCIÓN: Permitir decimales en peso y talla
       peso: ['', [Validators.min(20), Validators.max(200)]],
       talla: ['', [Validators.min(100), Validators.max(250)]],
       edad: ['', [Validators.min(5), Validators.max(100)]],
-      grado: [''],
-      seccion: [''],
-      materia: [''],
-      experiencia: ['']
+      grado: ['5to'],
+      seccion: ['A']
     });
 
-    // Formulario de seguridad - ✅ Nombres correctos
+    // Formulario de seguridad
     this.seguridadForm = this.fb.group({
-      currentPassword: ['', Validators.required],     // ✅ Cambié oldPassword -> currentPassword
+      currentPassword: ['', Validators.required],
       newPassword: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required]
     }, { validators: this.passwordMatchValidator });
@@ -247,13 +225,11 @@ export class PerfilComponent implements OnInit {
   onAvatarSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
-      // Validar tamaño (máx 5MB)
       if (file.size > 5 * 1024 * 1024) {
         this.showMessage('La imagen no debe superar 5MB', 'error');
         return;
       }
 
-      // Validar tipo
       if (!file.type.startsWith('image/')) {
         this.showMessage('Solo se permiten archivos de imagen', 'error');
         return;
@@ -267,24 +243,7 @@ export class PerfilComponent implements OnInit {
         sessionStorage.setItem('userAvatar', e.target.result);
       };
       reader.readAsDataURL(file);
-
-      // Si tienes endpoint para subir avatar, descomenta esto:
-      // this.uploadAvatar(file);
     }
-  }
-
-  uploadAvatar(file: File): void {
-    this.perfilService.uploadAvatar(file).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.showMessage('Avatar actualizado correctamente', 'success');
-        }
-      },
-      error: (error) => {
-        console.error('Error subiendo avatar:', error);
-        this.showMessage('Error al subir el avatar', 'error');
-      }
-    });
   }
 
   removeAvatar(): void {
@@ -300,15 +259,7 @@ export class PerfilComponent implements OnInit {
       return;
     }
 
-    if (this.userRole !== 'student') {
-      this.showMessage('Perfil actualizado (modo local)', 'success');
-      return;
-    }
-
-    // ✅ Verificar token antes de enviar
     const token = localStorage.getItem('authToken');
-    console.log('🔐 Token antes de actualizar:', token ? token.substring(0, 30) + '...' : 'NO HAY TOKEN');
-    
     if (!token) {
       this.showMessage('No hay sesión activa. Inicia sesión nuevamente.', 'error');
       this.router.navigate(['/login'], { queryParams: { role: 'student' } });
@@ -317,7 +268,11 @@ export class PerfilComponent implements OnInit {
 
     this.loading = true;
 
-    // ✅ Usar la interfaz correcta del backend
+    // ✅ Convertir a números (acepta decimales)
+    const pesoValue = this.perfilForm.value.peso;
+    const tallaValue = this.perfilForm.value.talla;
+    const edadValue = this.perfilForm.value.edad;
+
     const updateData: UpdateProfileRequest = {
       nombres: this.perfilForm.value.firstName,
       apellidos: this.perfilForm.value.lastName,
@@ -325,21 +280,19 @@ export class PerfilComponent implements OnInit {
       telefono: this.perfilForm.value.telefono || undefined,
       grado: this.perfilForm.value.grado,
       seccion: this.perfilForm.value.seccion,
-      edad: this.perfilForm.value.edad || undefined,
-      peso: this.perfilForm.value.peso || undefined,
-      talla: this.perfilForm.value.talla || undefined
+      edad: edadValue ? parseFloat(edadValue) : undefined,
+      peso: pesoValue ? parseFloat(pesoValue) : undefined,
+      talla: tallaValue ? parseFloat(tallaValue) : undefined
     };
 
-    console.log('📝 Valores del formulario:', this.perfilForm.value);
-    console.log('📦 Datos a enviar (UpdateProfileRequest):', updateData);
+    console.log('📦 Datos a enviar:', updateData);
 
     this.perfilService.updateMiPerfil(updateData).subscribe({
       next: (response) => {
-        console.log('✅ Respuesta del servidor:', response);
+        console.log('✅ Perfil actualizado:', response);
         if (response.success) {
           this.showMessage('Perfil actualizado exitosamente', 'success');
           
-          // Actualizar datos locales
           const currentUser = this.authService.getCurrentUser();
           if (currentUser) {
             currentUser.name = `${updateData.nombres} ${updateData.apellidos}`;
@@ -347,24 +300,15 @@ export class PerfilComponent implements OnInit {
             this.authService.saveUser(currentUser);
           }
 
-          // Recargar perfil actualizado
           this.loadPerfilData();
         }
         this.loading = false;
       },
       error: (error) => {
         console.error('❌ Error actualizando perfil:', error);
-        console.error('❌ Status:', error.status);
-        console.error('❌ Error del servidor:', error.error);
-        console.error('❌ Mensaje:', error.error?.message);
-        console.error('❌ URL:', error.url);
-        
-        // Verificar si el token sigue existiendo después del error
-        const tokenDespues = localStorage.getItem('authToken');
-        console.error('🔐 Token después del error:', tokenDespues ? 'EXISTE' : 'SE PERDIÓ');
         
         if (error.status === 401) {
-          this.showMessage('Tu sesión ha expirado. Por favor inicia sesión nuevamente.', 'error');
+          this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
           setTimeout(() => {
             this.authService.logout();
             this.router.navigate(['/login'], { queryParams: { role: 'student' } });
@@ -393,24 +337,18 @@ export class PerfilComponent implements OnInit {
 
     this.loading = true;
 
-    // ✅ Backend espera: oldPassword, newPassword, confirmPassword
     const passwordData = {
       oldPassword: this.seguridadForm.value.currentPassword,
       newPassword: this.seguridadForm.value.newPassword,
       confirmPassword: this.seguridadForm.value.confirmPassword
     };
 
-    console.log('🔐 Cambiando contraseña...');
-
-    // ✅ Ahora usamos AuthService en lugar de PerfilService
     this.authService.cambiarContrasena(passwordData).subscribe({
       next: (response) => {
         console.log('✅ Contraseña cambiada:', response);
         if (response.success) {
           this.showMessage('Contraseña actualizada exitosamente', 'success');
           this.seguridadForm.reset();
-          
-          // Resetear estados de visibilidad
           this.hideCurrentPassword = true;
           this.hideNewPassword = true;
           this.hideConfirmPassword = true;
@@ -420,7 +358,7 @@ export class PerfilComponent implements OnInit {
       error: (error) => {
         console.error('❌ Error cambiando contraseña:', error);
         this.showMessage(
-          error.error?.message || 'Error al cambiar la contraseña. Verifica tu contraseña actual.',
+          error.error?.message || 'Error al cambiar la contraseña.',
           'error'
         );
         this.loading = false;
@@ -438,11 +376,7 @@ export class PerfilComponent implements OnInit {
   }
 
   goBack(): void {
-    if (this.userRole === 'student') {
-      this.router.navigate(['/landing-alumnos']);
-    } else {
-      this.router.navigate(['/landing-profesores']);
-    }
+    this.router.navigate(['/landing-alumnos']);
   }
 
   navigateToGames(): void {
@@ -451,10 +385,6 @@ export class PerfilComponent implements OnInit {
 
   navigateToBenefits(): void {
     this.router.navigate(['/beneficios']);
-  }
-
-  navigateToChatbot(): void {
-    this.router.navigate(['/chatbot']);
   }
 
   logout(): void {
