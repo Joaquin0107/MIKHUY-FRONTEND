@@ -220,9 +220,9 @@ export class PerfilComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       telefono: ['', [Validators.pattern(/^[0-9]{9}$/)]],
       // ✅ CORRECCIÓN: Permitir decimales en peso y talla
-      peso: ['', [Validators.min(20), Validators.max(200)]],
-      talla: ['', [Validators.min(100), Validators.max(250)]],
-      edad: ['', [Validators.min(5), Validators.max(100)]],
+      peso: ['', [Validators.min(0.50), Validators.max(200)]],
+      talla: ['', [Validators.min(0.50), Validators.max(250)]],
+      edad: ['', [Validators.min(11), Validators.max(18)]],
       grado: ['5to'],
       seccion: ['A'],
     });
