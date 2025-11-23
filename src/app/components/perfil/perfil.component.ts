@@ -57,12 +57,12 @@ export class PerfilComponent implements OnInit {
   hideConfirmPassword = true;
   selectedAvatar: string | null = null;
   avatarFile: File | null = null;
-  
+
   // ✅ Roles y contexto de visualización
   currentUserRole: 'student' | 'teacher' = 'student';
   isViewingOwnProfile = true; // Si es estudiante viendo su perfil o profesor viendo otro
   estudianteId: string | null = null; // ID del estudiante si el profesor lo está viendo
-  
+
   notificationCount = 0;
   studentPoints = 0;
   loading = false;
@@ -98,20 +98,21 @@ export class PerfilComponent implements OnInit {
   loadUserRole(): void {
     const currentUser = this.authService.getCurrentUser();
     if (currentUser) {
-      this.currentUserRole = currentUser.rol === 'teacher' ? 'teacher' : 'student';
+      this.currentUserRole =
+        currentUser.rol === 'teacher' ? 'teacher' : 'student';
       console.log('👤 Rol del usuario:', this.currentUserRole);
     }
   }
 
   checkRouteParams(): void {
     // ✅ Verificar si hay un estudianteId en los parámetros de la URL
-    this.route.queryParams.subscribe(params => {
+    this.route.queryParams.subscribe((params) => {
       this.estudianteId = params['estudianteId'] || null;
-      
+
       console.log('🔍 Parámetros de ruta:', params);
       console.log('🆔 Estudiante ID:', this.estudianteId);
       console.log('👤 Rol actual:', this.currentUserRole);
-      
+
       if (this.estudianteId && this.currentUserRole === 'teacher') {
         // 👨‍🏫 Profesor viendo perfil de un estudiante
         this.isViewingOwnProfile = false;
@@ -136,16 +137,16 @@ export class PerfilComponent implements OnInit {
         if (response.success && response.data) {
           this.perfilData = response.data;
           this.studentPoints = response.data.puntosAcumulados || 0;
-          
+
           this.stats = {
             juegosCompletados: response.data.juegosCompletados || 0,
             puntosGanados: this.studentPoints,
             canjesRealizados: 0,
             diasActivo: this.calcularDiasActivo(response.data.fechaRegistro),
           };
-          
+
           this.populateForm(response.data);
-          
+
           if (response.data.avatarUrl) {
             this.selectedAvatar = response.data.avatarUrl;
           }
@@ -157,7 +158,7 @@ export class PerfilComponent implements OnInit {
         this.showMessage('Error al cargar los datos del estudiante', 'error');
         this.loading = false;
         this.router.navigate(['/dashboards']);
-      }
+      },
     });
   }
 
@@ -288,8 +289,8 @@ export class PerfilComponent implements OnInit {
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       telefono: ['', [Validators.pattern(/^[0-9]{9}$/)]],
-      peso: ['', [Validators.min(0.50), Validators.max(200)]],
-      talla: ['', [Validators.min(0.50), Validators.max(250)]],
+      peso: ['', [Validators.min(0.5), Validators.max(200)]],
+      talla: ['', [Validators.min(0.5), Validators.max(250)]],
       edad: ['', [Validators.min(11), Validators.max(17)]],
       grado: ['5to'],
       seccion: ['A'],
@@ -344,14 +345,34 @@ export class PerfilComponent implements OnInit {
 
   guardarPerfil(): void {
     if (!this.perfilForm.valid) {
-      this.showMessage('Por favor completa todos los campos requeridos', 'error');
+      this.showMessage(
+        'Por favor completa todos los campos requeridos',
+        'error'
+      );
       return;
     }
 
-    const token = localStorage.getItem('authToken');
+    const token =
+      localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    console.log('🔐 Verificando autenticación...');
+    console.log(
+      '🎟️ Token en localStorage:',
+      localStorage.getItem('authToken') ? '✓' : '✗'
+    );
+    console.log(
+      '🎟️ Token en sessionStorage:',
+      sessionStorage.getItem('authToken') ? '✓' : '✗'
+    );
+    console.log('🎟️ Token disponible:', token ? '✓ SÍ' : '✗ NO');
     if (!token) {
-      this.showMessage('No hay sesión activa. Inicia sesión nuevamente.', 'error');
-      this.router.navigate(['/login']);
+      console.error('❌ NO HAY TOKEN - Redirigiendo a login');
+      this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
+      setTimeout(() => {
+        this.authService.logout();
+        this.router.navigate(['/login'], {
+          queryParams: { role: this.currentUserRole },
+        });
+      }, 2000);
       return;
     }
 
@@ -369,37 +390,62 @@ export class PerfilComponent implements OnInit {
       seccion: this.perfilForm.value.seccion,
       edad: edadValue ? parseInt(edadValue) : undefined,
       peso: pesoValue ? parseFloat(pesoValue) : undefined,
-      talla: tallaValue ? parseFloat(tallaValue) : undefined
+      talla: tallaValue ? parseFloat(tallaValue) : undefined,
     };
 
     console.log('📦 Datos a enviar:', updateData);
-    console.log('👤 Modo:', this.isViewingOwnProfile ? 'Propio perfil' : 'Perfil de estudiante');
+    console.log(
+      '👤 Modo:',
+      this.isViewingOwnProfile ? 'Propio perfil' : 'Perfil de estudiante'
+    );
 
-    // ✅ Si es profesor editando perfil de estudiante
     if (!this.isViewingOwnProfile && this.estudianteId) {
-      console.log('👨‍🏫 Profesor actualizando perfil del estudiante:', this.estudianteId);
-      
-      this.studentService.updateEstudiante(this.estudianteId, updateData).subscribe({
-        next: (response) => {
-          console.log('✅ Estudiante actualizado por profesor:', response);
-          this.showMessage('Perfil del estudiante actualizado exitosamente', 'success');
-          this.loading = false;
-          // Recargar datos actualizados
-          this.loadEstudianteDataForTeacher(this.estudianteId!);
-        },
-        error: (error) => {
-          console.error('❌ Error actualizando estudiante:', error);
-          this.showMessage(
-            error.error?.message || 'Error al actualizar el perfil del estudiante',
-            'error'
-          );
-          this.loading = false;
-        }
-      });
+      console.log(
+        '👨‍🏫 Profesor actualizando perfil del estudiante:',
+        this.estudianteId
+      );
+
+      this.studentService
+        .updateEstudiante(this.estudianteId, updateData)
+        .subscribe({
+          next: (response) => {
+            console.log('✅ Estudiante actualizado por profesor:', response);
+            this.showMessage(
+              'Perfil del estudiante actualizado exitosamente',
+              'success'
+            );
+            this.loading = false;
+            this.loadEstudianteDataForTeacher(this.estudianteId!);
+          },
+          error: (error) => {
+            console.error('❌ Error actualizando estudiante:', error);
+            console.error('Status:', error.status);
+            console.error('Message:', error.error?.message);
+
+            if (error.status === 401) {
+              this.showMessage(
+                'Sesión expirada. Inicia sesión nuevamente.',
+                'error'
+              );
+              setTimeout(() => {
+                this.authService.logout();
+                this.router.navigate(['/login'], {
+                  queryParams: { role: 'teacher' },
+                });
+              }, 2000);
+            } else {
+              this.showMessage(
+                error.error?.message ||
+                  'Error al actualizar el perfil del estudiante',
+                'error'
+              );
+            }
+            this.loading = false;
+          },
+        });
     } else {
-      // ✅ Estudiante actualizando su propio perfil
       console.log('👨‍🎓 Estudiante actualizando su propio perfil');
-      
+
       this.perfilService.updateMiPerfil(updateData).subscribe({
         next: (response) => {
           console.log('✅ Perfil actualizado:', response);
@@ -418,13 +464,29 @@ export class PerfilComponent implements OnInit {
         },
         error: (error) => {
           console.error('❌ Error actualizando perfil:', error);
+          console.error('Status del error:', error.status);
+          console.error('Mensaje de error:', error.error?.message);
+          console.error('URL de la petición:', error.url);
+          console.error('Error completo:', error);
 
           if (error.status === 401) {
-            this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
+            console.error('❌ ERROR 401: Token inválido o expirado');
+            this.showMessage(
+              'Sesión expirada. Inicia sesión nuevamente.',
+              'error'
+            );
             setTimeout(() => {
               this.authService.logout();
-              this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+              this.router.navigate(['/login'], {
+                queryParams: { role: 'student' },
+              });
             }, 2000);
+          } else if (error.status === 0) {
+            console.error('❌ ERROR 0: No se pudo conectar con el servidor');
+            this.showMessage(
+              'No se pudo conectar con el servidor. Verifica tu conexión.',
+              'error'
+            );
           } else {
             this.showMessage(
               error.error?.message || 'Error al actualizar el perfil',
@@ -432,7 +494,7 @@ export class PerfilComponent implements OnInit {
             );
           }
           this.loading = false;
-        }
+        },
       });
     }
   }

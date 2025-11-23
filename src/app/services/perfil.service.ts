@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
 
@@ -24,7 +24,6 @@ export interface EstudianteResponse {
   talla?: number;
   puntosAcumulados: number;
   avatarUrl?: string;
-  // Estadísticas básicas
   juegosJugados?: number;
   juegosCompletados?: number;
   totalSesiones?: number;
@@ -58,68 +57,87 @@ export interface EstadisticasEstudianteResponse {
 
 @Injectable({ providedIn: 'root' })
 export class PerfilService {
-  // ✅ CORRECCIÓN: Definir apiUrl
   private apiUrl = environment.apiUrl;
   private baseUrl = `${environment.apiUrl}/api/estudiantes`;
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtener perfil del estudiante autenticado
-   * GET /api/estudiantes/perfil
-   */
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken') || 
+                  sessionStorage.getItem('authToken');
+    
+    console.log('🔑 Token en getHeaders:', token ? '✓ EXISTE' : '✗ NO EXISTE');
+    
+    if (!token) {
+      console.error('❌ NO HAY TOKEN DISPONIBLE');
+    }
+    
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
   getMiPerfil(): Observable<ApiResponse<EstudianteResponse>> {
     console.log('📡 GET:', `${this.baseUrl}/perfil`);
+    console.log('📋 Headers:', this.getHeaders().keys());
+    
     return this.http.get<ApiResponse<EstudianteResponse>>(
-      `${this.baseUrl}/perfil`
+      `${this.baseUrl}/perfil`,
+      { headers: this.getHeaders() } // ✅ AGREGADO
     );
   }
 
-  /**
-   * Actualizar perfil del estudiante
-   * PUT /api/estudiantes/perfil
-   */
   updateMiPerfil(data: UpdateProfileRequest): Observable<ApiResponse<EstudianteResponse>> {
+    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    
     console.log('📡 PUT:', `${this.baseUrl}/perfil`);
+    console.log('🎟️ Token disponible:', token ? '✓ SÍ' : '✗ NO');
     console.log('📦 Datos enviados:', data);
+    console.log('📋 Headers completos:', this.getHeaders().keys());
+    
+    if (!token) {
+      console.error('❌ CRÍTICO: No hay token para actualizar perfil');
+      throw new Error('No hay sesión activa. Por favor inicia sesión nuevamente.');
+    }
+    
     return this.http.put<ApiResponse<EstudianteResponse>>(
       `${this.baseUrl}/perfil`,
-      data
+      data,
+      { headers: this.getHeaders() }
     );
   }
 
-  /**
-   * Obtener puntos acumulados
-   * GET /api/estudiantes/puntos
-   */
   getMisPuntos(): Observable<ApiResponse<number>> {
     return this.http.get<ApiResponse<number>>(
-      `${this.baseUrl}/puntos`
+      `${this.baseUrl}/puntos`,
+      { headers: this.getHeaders() } 
     );
   }
 
-  /**
-   * Obtener estadísticas del estudiante
-   * GET /api/estudiantes/estadisticas
-   */
   getMisEstadisticas(): Observable<ApiResponse<EstadisticasEstudianteResponse>> {
     console.log('📡 GET Estadísticas:', `${this.baseUrl}/estadisticas`);
     return this.http.get<ApiResponse<EstadisticasEstudianteResponse>>(
-      `${this.baseUrl}/estadisticas`
+      `${this.baseUrl}/estadisticas`,
+      { headers: this.getHeaders() }
     );
   }
 
-  /**
-   * Subir avatar
-   * POST /api/estudiantes/avatar
-   */
   uploadAvatar(file: File): Observable<ApiResponse<string>> {
+    const token = localStorage.getItem('authToken') || 
+                  sessionStorage.getItem('authToken');
+    
     const formData = new FormData();
     formData.append('avatar', file);
 
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+
     return this.http.post<ApiResponse<string>>(
       `${this.baseUrl}/avatar`,
-      formData
+      formData,
+      { headers }
     );
   }
 }
