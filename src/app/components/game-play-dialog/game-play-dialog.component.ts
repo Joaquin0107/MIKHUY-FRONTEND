@@ -41,7 +41,6 @@ export class GamePlayDialog implements OnInit, OnDestroy {
   tiempoTranscurrido: number = 0;
   intervalo: any;
 
-  // Variables para Nutrimental
   preguntasNutrimental: any[] = [
     {
       numero: 1,
@@ -92,7 +91,6 @@ export class GamePlayDialog implements OnInit, OnDestroy {
   esRespuestaCorrecta: boolean = false;
   tiempoInicioRespuesta: number = 0;
 
-  // Variables para Reto 7 Días
   diaActual: number = 1;
   momentoDiaActual: string = 'Desayuno';
   alimentosFrutas: number = 0;
@@ -104,9 +102,8 @@ export class GamePlayDialog implements OnInit, OnDestroy {
   emocionSeleccionada: string = '';
   notasReto: string = '';
   registrosGuardados: number = 0;
-  totalRegistros: number = 21;
+  totalRegistros: number = 7;
 
-  // Variables para Coach Exprés
   preguntasCoach: any[] = [
     { numero: 1, pregunta: '¿Qué tan importante es para ti mejorar tu alimentación?', etapa: 'Pre-contemplación' },
     { numero: 2, pregunta: '¿Consideras que tu alimentación actual necesita cambios?', etapa: 'Contemplación' },
@@ -202,7 +199,6 @@ export class GamePlayDialog implements OnInit, OnDestroy {
     }, 1000);
   }
 
-  // ==================== NUTRIMENTAL ====================
   cargarPreguntaNutrimental(): void {
     if (this.preguntaActual < this.totalPreguntas) {
       this.preguntaNutrimental = this.preguntasNutrimental[this.preguntaActual];
@@ -242,7 +238,6 @@ export class GamePlayDialog implements OnInit, OnDestroy {
     this.cargarPreguntaNutrimental();
   }
 
-  // ==================== RETO 7 DÍAS ====================
   guardarRegistroReto(): void {
     if (!this.sesionId) return;
 
@@ -309,7 +304,6 @@ export class GamePlayDialog implements OnInit, OnDestroy {
     }
   }
 
-  // ==================== COACH EXPRÉS ====================
   cargarPreguntaCoach(): void {
     if (this.preguntaCoachActual < this.totalPreguntasCoach) {
       this.preguntaCoach = this.preguntasCoach[this.preguntaCoachActual];
@@ -347,7 +341,6 @@ export class GamePlayDialog implements OnInit, OnDestroy {
     });
   }
 
-  // ==================== FINALIZACIÓN ====================
   finalizarJuego(completado: boolean): void {
     if (!this.sesionId) return;
 
@@ -382,7 +375,6 @@ export class GamePlayDialog implements OnInit, OnDestroy {
   }
 
   continuar(): void {
-    // Actualizar puntos en el servicio (sincroniza con todos los componentes)
     this.studentService.sumarPuntos(this.puntosGanadosEnSesion);
     this.dialogRef.close({ completed: true });
   }

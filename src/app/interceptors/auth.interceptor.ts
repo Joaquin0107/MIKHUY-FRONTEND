@@ -10,7 +10,6 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   
-  // ✅ URLs que NO deben llevar token
   private excludedUrls = [
     '/auth/login',
     '/auth/register',
@@ -22,7 +21,6 @@ export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     console.log('🔐 [AUTH INTERCEPTOR] Petición interceptada:', req.url);
     
-    // ✅ VERIFICAR SI LA URL DEBE SER EXCLUIDA
     const shouldExclude = this.excludedUrls.some(url => req.url.includes(url));
     
     if (shouldExclude) {
@@ -30,7 +28,6 @@ export class AuthInterceptor implements HttpInterceptor {
       return next.handle(req);
     }
     
-    // ✅ OBTENER TOKEN SOLO SI NO ES UNA URL EXCLUIDA
     const token = localStorage.getItem('authToken') || 
                   sessionStorage.getItem('authToken');
     

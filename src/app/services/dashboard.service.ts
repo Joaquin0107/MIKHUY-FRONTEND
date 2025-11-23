@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
 import { AuthService } from './auth.service';
 
-// Interfaces adaptadas a tu estructura ApiResponse
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
@@ -128,22 +127,12 @@ export interface TopEstudiante {
   posicion: number;
 }
 
-// ============================================
-// ✅ INTERFACES DE SALUD
-// ============================================
-
-/**
- * Información consolidada de salud del estudiante
- */
 export interface SaludInfo {
   medicionActual: MedicionSaludResponse | null;
   historialMediciones: MedicionSaludResponse[];
   estadisticas: EstadisticasSalud | null;
 }
 
-/**
- * Respuesta de una medición de salud
- */
 export interface MedicionSaludResponse {
   id: string;
   estudianteId: string;
@@ -155,17 +144,14 @@ export interface MedicionSaludResponse {
   notas?: string;
 }
 
-/**
- * Estadísticas calculadas de salud
- */
 export interface EstadisticasSalud {
   imcActual: number;
   estadoNutricionalActual: string;
-  variacionPeso: number; // Porcentaje de cambio
-  variacionTalla: number; // Porcentaje de cambio
+  variacionPeso: number; 
+  variacionTalla: number;
   totalMediciones: number;
-  tendencia: string; // "Mejorando" | "Estable" | "Preocupante"
-  recomendacion: string; // Mensaje personalizado
+  tendencia: string; 
+  recomendacion: string;
 }
 
 @Injectable({
@@ -180,7 +166,6 @@ export class DashboardService {
   ) {}
 
   private getHeaders(): HttpHeaders {
-    // ✅ CORREGIDO: Removido el operador opcional ?.()
     const token = this.authService.getToken() || 
                   localStorage.getItem('authToken') || 
                   sessionStorage.getItem('authToken');
@@ -191,10 +176,6 @@ export class DashboardService {
     });
   }
 
-  /**
-   * Obtener mi dashboard completo (para estudiantes)
-   * GET /api/dashboard
-   */
   getMiDashboard(): Observable<ApiResponse<DashboardEstudianteResponse>> {
     return this.http.get<ApiResponse<DashboardEstudianteResponse>>(
       this.baseUrl,
@@ -202,10 +183,6 @@ export class DashboardService {
     );
   }
 
-  /**
-   * Obtener dashboard de un estudiante específico (para profesores)
-   * GET /api/dashboard/estudiante/{id}
-   */
   getDashboardEstudiante(estudianteId: string): Observable<ApiResponse<DashboardEstudianteResponse>> {
     return this.http.get<ApiResponse<DashboardEstudianteResponse>>(
       `${this.baseUrl}/estudiante/${estudianteId}`,

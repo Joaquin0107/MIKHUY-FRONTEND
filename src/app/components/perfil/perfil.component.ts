@@ -54,22 +54,16 @@ export class PerfilComponent implements OnInit {
   hideCurrentPassword = true;
   hideNewPassword = true;
   hideConfirmPassword = true;
-
   selectedAvatar: string | null = null;
   avatarFile: File | null = null;
-
-  // ✅ CORRECCIÓN: Solo rol student
   userRole: 'student' = 'student';
   notificationCount = 0;
   studentPoints = 0;
   loading = false;
   loadingStats = false;
-
-  // Opciones para estudiantes
   grados = ['1ro', '2do', '3ro', '4to', '5to'];
   secciones = ['A', 'B', 'C', 'D'];
 
-  // ✅ Estadísticas del usuario
   stats = {
     juegosCompletados: 0,
     puntosGanados: 0,
@@ -77,7 +71,6 @@ export class PerfilComponent implements OnInit {
     diasActivo: 0,
   };
 
-  // Datos del perfil
   perfilData: EstudianteResponse | null = null;
 
   constructor(
@@ -112,7 +105,7 @@ export class PerfilComponent implements OnInit {
             juegosCompletados: response.data.juegosCompletados || 0,
             puntosGanados: this.studentPoints,
             canjesRealizados: 0,
-            diasActivo: this.calcularDiasActivo(response.data.fechaRegistro), // ✅ Usar fechaRegistro
+            diasActivo: this.calcularDiasActivo(response.data.fechaRegistro),
           };
 
           this.populateForm(response.data);
@@ -172,7 +165,6 @@ export class PerfilComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Error cargando estadísticas:', error);
-        // No mostrar error, usar valores por defecto
         this.loadingStats = false;
       },
     });
@@ -213,13 +205,11 @@ export class PerfilComponent implements OnInit {
   }
 
   initForms(): void {
-    // Formulario de perfil
     this.perfilForm = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       telefono: ['', [Validators.pattern(/^[0-9]{9}$/)]],
-      // ✅ CORRECCIÓN: Permitir decimales en peso y talla
       peso: ['', [Validators.min(0.50), Validators.max(200)]],
       talla: ['', [Validators.min(0.50), Validators.max(250)]],
       edad: ['', [Validators.min(11), Validators.max(17)]],
@@ -227,7 +217,6 @@ export class PerfilComponent implements OnInit {
       seccion: ['A'],
     });
 
-    // Formulario de seguridad
     this.seguridadForm = this.fb.group(
       {
         currentPassword: ['', Validators.required],
@@ -303,7 +292,6 @@ export class PerfilComponent implements OnInit {
     edad: edadValue ? parseInt(edadValue) : undefined,
     peso: pesoValue ? parseFloat(pesoValue) : undefined,
     talla: tallaValue ? parseFloat(tallaValue) : undefined
-    // ✅ REMOVIDO: email (no está en UpdateProfileRequest)
   };
 
   console.log('📦 Datos a enviar:', updateData);
@@ -317,7 +305,6 @@ export class PerfilComponent implements OnInit {
         const currentUser = this.authService.getCurrentUser();
         if (currentUser) {
           currentUser.name = `${updateData.nombres} ${updateData.apellidos}`;
-          // ✅ REMOVIDO: currentUser.email = updateData.email;
           this.authService.saveUser(currentUser);
         }
 

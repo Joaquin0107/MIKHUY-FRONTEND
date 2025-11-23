@@ -13,9 +13,6 @@ export class CanjeService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtener headers con token de autorización
-   */
   private getHeaders(): HttpHeaders {
     const token = sessionStorage.getItem('authToken');
     return new HttpHeaders({
@@ -24,9 +21,6 @@ export class CanjeService {
     });
   }
 
-  /**
-   * Realizar un canje
-   */
   realizarCanje(request: CanjeRequest): Observable<CanjeResponse> {
     return this.http.post<ApiResponse<CanjeResponse>>(
       this.apiUrl,
@@ -37,9 +31,6 @@ export class CanjeService {
     );
   }
 
-  /**
-   * Obtener mis canjes
-   */
   getMisCanjes(): Observable<CanjeResponse[]> {
     return this.http.get<ApiResponse<CanjeResponse[]>>(
       `${this.apiUrl}/mis-canjes`,
@@ -49,9 +40,6 @@ export class CanjeService {
     );
   }
 
-  /**
-   * Obtener mis canjes pendientes
-   */
   getMisCanjesPendientes(): Observable<CanjeResponse[]> {
     return this.http.get<ApiResponse<CanjeResponse[]>>(
       `${this.apiUrl}/pendientes`,
@@ -61,9 +49,6 @@ export class CanjeService {
     );
   }
 
-  /**
-   * Cancelar un canje
-   */
   cancelarCanje(id: string): Observable<CanjeResponse> {
     return this.http.delete<ApiResponse<CanjeResponse>>(
       `${this.apiUrl}/${id}`,

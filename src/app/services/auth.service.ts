@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
 
 export interface ChangePasswordRequest {
-  oldPassword: string;      // ✅ Backend espera "oldPassword"
+  oldPassword: string;      
   newPassword: string;
   confirmPassword: string;
 }
@@ -17,21 +17,16 @@ export interface ApiResponse<T> {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private baseUrl = `${environment.apiUrl}/api/auth`; // ✅ Incluir /api/auth
+  private baseUrl = `${environment.apiUrl}/api/auth`;
   private tokenKey = 'authToken';
   private userKey = 'currentUser';
 
   constructor(private http: HttpClient) {}
 
-  // --- Peticiones al backend ---
   login(data: { email: string; password: string }): Observable<any> {
     return this.http.post(`${this.baseUrl}/login`, data);
   }
 
-  /**
-   * ✅ Cambiar contraseña
-   * PUT /api/auth/change-password (Backend usa change-password, no cambiar-password)
-   */
   cambiarContrasena(data: ChangePasswordRequest): Observable<ApiResponse<any>> {
     console.log('🔐 Enviando cambio de contraseña:', {
       oldPassword: '***',
@@ -40,12 +35,11 @@ export class AuthService {
     });
 
     return this.http.put<ApiResponse<any>>(
-      `${this.baseUrl}/change-password`, // ✅ Endpoint correcto
+      `${this.baseUrl}/change-password`,
       data
     );
   }
 
-  // --- Token y usuario ---
   saveToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);
     console.log('✅ Token guardado');
@@ -72,7 +66,6 @@ export class AuthService {
     console.log('✅ Sesión cerrada');
   }
 
-  // --- Autenticación ---
   isLoggedIn(): boolean {
     const hasToken = !!this.getToken();
     console.log('🔍 Usuario autenticado:', hasToken);

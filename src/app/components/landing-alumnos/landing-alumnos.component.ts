@@ -40,20 +40,17 @@ export class LandingAlumnosComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    // Verificar autenticación
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/login']);
       return;
     }
 
-    // Suscribirse a los puntos en tiempo real
     this.studentService.puntos$
       .pipe(takeUntil(this.destroy$))
       .subscribe((puntos) => {
         this.studentPoints = puntos;
       });
 
-    // Cargar datos iniciales
     this.loadNotifications();
     this.loadPuntos();
   }

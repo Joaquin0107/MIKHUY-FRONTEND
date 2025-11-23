@@ -57,7 +57,6 @@ export class JuegosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Suscribirse a los puntos en tiempo real
     this.studentService.puntos$
       .pipe(takeUntil(this.destroy$))
       .subscribe(puntos => {

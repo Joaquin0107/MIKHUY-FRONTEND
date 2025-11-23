@@ -197,7 +197,6 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
             'success'
           );
 
-          // Recargar puntos y beneficios
           this.studentService
             .getMisPuntos()
             .pipe(takeUntil(this.destroy$))
@@ -272,9 +271,6 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
   }
 }
 
-// ============================================
-// Diálogo de Canje
-// ============================================
 @Component({
   selector: 'canje-dialog',
   standalone: true,

@@ -13,9 +13,6 @@ export class BeneficioService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtener headers con token de autorización
-   */
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('authToken');
     return new HttpHeaders({
@@ -24,9 +21,6 @@ export class BeneficioService {
     });
   }
 
-  /**
-   * Obtener todos los beneficios activos
-   */
   getAllActive(): Observable<Beneficio[]> {
     return this.http.get<ApiResponse<Beneficio[]>>(
       this.apiUrl,
@@ -36,9 +30,6 @@ export class BeneficioService {
     );
   }
 
-  /**
-   * Obtener beneficios disponibles para el estudiante actual
-   */
   getDisponibles(): Observable<Beneficio[]> {
     return this.http.get<ApiResponse<Beneficio[]>>(
       `${this.apiUrl}/disponibles`,
@@ -48,9 +39,6 @@ export class BeneficioService {
     );
   }
 
-  /**
-   * Obtener beneficio por ID
-   */
   getById(id: string): Observable<Beneficio> {
     return this.http.get<ApiResponse<Beneficio>>(
       `${this.apiUrl}/${id}`,
@@ -60,9 +48,6 @@ export class BeneficioService {
     );
   }
 
-  /**
-   * Obtener beneficios por categoría
-   */
   getByCategoria(categoria: string): Observable<Beneficio[]> {
     return this.http.get<ApiResponse<Beneficio[]>>(
       `${this.apiUrl}/categoria/${categoria}`,

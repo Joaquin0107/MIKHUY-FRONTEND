@@ -8,10 +8,8 @@ import { environment } from '../../environments/environment.prod';
 })
 export class ApiService {
   private baseUrl = environment.apiUrl;
-
   constructor(private http: HttpClient) {}
 
-  // Obtener headers con token
   private getHeaders(): HttpHeaders {
     const token = sessionStorage.getItem('authToken');
     return new HttpHeaders({
@@ -20,7 +18,6 @@ export class ApiService {
     });
   }
 
-  // GET
   get<T>(endpoint: string, params?: HttpParams): Observable<T> {
     return this.http.get<T>(`${this.baseUrl}${endpoint}`, {
       headers: this.getHeaders(),
@@ -28,21 +25,18 @@ export class ApiService {
     });
   }
 
-  // POST
   post<T>(endpoint: string, body: any): Observable<T> {
     return this.http.post<T>(`${this.baseUrl}${endpoint}`, body, {
       headers: this.getHeaders()
     });
   }
 
-  // PUT
   put<T>(endpoint: string, body: any): Observable<T> {
     return this.http.put<T>(`${this.baseUrl}${endpoint}`, body, {
       headers: this.getHeaders()
     });
   }
 
-  // DELETE
   delete<T>(endpoint: string): Observable<T> {
     return this.http.delete<T>(`${this.baseUrl}${endpoint}`, {
       headers: this.getHeaders()

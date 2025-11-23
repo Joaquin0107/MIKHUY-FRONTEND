@@ -27,18 +27,14 @@ export interface ErrorResponse {
 })
 export class ChatbotService {
     
-  private apiUrl = `${environment.apiUrl}/api/chatbot`;  // ⬅️ REEMPLAZADO
+  private apiUrl = `${environment.apiUrl}/api/chatbot`;
   
-  // Subject para mantener el historial del chat (opcional)
   private chatHistory$ = new BehaviorSubject<ChatMessage[]>([]);
   
   constructor(private http: HttpClient) {
     this.initializeChatHistory();
   }
 
-  /**
-   * Inicializa el historial del chat con el mensaje de bienvenida
-   */
   private initializeChatHistory(): void {
     const welcomeMessage: ChatMessage = {
       texto: '¡Hola! 👋 Soy tu asistente nutricional de MIKHUY. ¿En qué puedo ayudarte hoy?',
@@ -65,9 +61,8 @@ export class ChatbotService {
       body,
       { headers }
     ).pipe(
-      retry(1), // Reintenta una vez si falla
+      retry(1), 
       map(response => {
-        // Agregar al historial
         this.addToHistory(pregunta, true);
         this.addToHistory(response.respuesta, false);
         return response.respuesta;
@@ -119,9 +114,6 @@ export class ChatbotService {
     return this.chatHistory$.asObservable();
   }
 
-  /**
-   * Limpia el historial del chat
-   */
   limpiarHistorial(): void {
     this.initializeChatHistory();
   }
@@ -143,11 +135,9 @@ export class ChatbotService {
     let errorMessage = 'Ocurrió un error al procesar tu consulta.';
 
     if (error.error instanceof ErrorEvent) {
-      // Error del lado del cliente
       console.error('Error del cliente:', error.error.message);
       errorMessage = 'Error de conexión. Verifica tu internet.';
     } else {
-      // Error del lado del servidor
       console.error(
         `Error del servidor. Código: ${error.status}, ` +
         `Mensaje: ${error.message}`
@@ -222,8 +212,6 @@ export class ChatbotService {
    * @returns Mensaje formateado
    */
   formatearMensaje(mensaje: string): string {
-    // Aquí puedes agregar lógica para formatear el mensaje
-    // Por ejemplo, convertir URLs en links, etc.
     return mensaje.trim();
   }
 
@@ -245,9 +233,6 @@ export class ChatbotService {
     return texto;
   }
 
-  /**
-   * Descarga el historial del chat como archivo .txt
-   */
   descargarHistorial(): void {
     const contenido = this.exportarHistorial();
     const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
