@@ -770,30 +770,51 @@ export class DashboardsComponent implements OnInit {
     return 'sports_esports';
   }
 
-  getIMCAngle(imc: number): number {
-    if (!imc || imc <= 0) return 0;
+getIMCAngle(imc: number): number {
+    let angle: number;
+    const maxScaleValue = 40; // Valor máximo asumido para la escala de Obesidad
 
-    // El gauge va de 0° (derecha) a 180° (izquierda)
-    // en sentido CONTRARIO a las agujas del reloj
-
-    if (imc < 18.5) {
-      // Bajo peso: 0° - 45°
-      const ratio = imc / 18.5;
-      return ratio * 45;
-    } else if (imc < 25) {
-      // Normal: 45° - 100°
-      const ratio = (imc - 18.5) / (25 - 18.5);
-      return 45 + ratio * 55;
-    } else if (imc < 30) {
-      // Sobrepeso: 100° - 140°
-      const ratio = (imc - 25) / (30 - 25);
-      return 100 + ratio * 40;
-    } else {
-      // Obesidad: 140° - 180°
-      const ratio = Math.min(1, (imc - 30) / 10);
-      return 140 + ratio * 40;
+    // Manejo de valores nulos, cero o negativos
+    if (!imc || imc <= 0) {
+        // En el extremo derecho, el ángulo absoluto es 0. La rotación necesaria es -90.
+        return -90; 
     }
-  }
+
+    // 1. Bajo peso: 0° - 45° (IMC 0 a 18.5)
+    if (imc < 18.5) {
+        // Calcula el ángulo absoluto (0 a 45) y luego resta 90 para la rotación.
+        angle = (imc / 18.5) * 45;
+        return angle - 90;
+    } 
+    
+    // 2. Normal: 45° - 100° (IMC 18.5 a 25)
+    else if (imc < 25) {
+        // Calcula el ángulo absoluto (45 a 100) y luego resta 90.
+        // Amplitud del segmento: 55° (100 - 45)
+        angle = 45 + ((imc - 18.5) / 6.5) * 55;
+        return angle - 90;
+    } 
+    
+    // 3. Sobrepeso: 100° - 140° (IMC 25 a 30)
+    else if (imc < 30) {
+        // Calcula el ángulo absoluto (100 a 140) y luego resta 90.
+        // Amplitud del segmento: 40° (140 - 100)
+        angle = 100 + ((imc - 25) / 5) * 40;
+        return angle - 90;
+    } 
+    
+    // 4. Obesidad: 140° - 180° (IMC 30 en adelante)
+    else {
+        // Calcula el ángulo absoluto, limitado a 180, y luego resta 90.
+        // Asumimos un rango de 10 unidades (hasta maxScaleValue=40) para los últimos 40°
+        const percentage = Math.min(1, (imc - 30) / (maxScaleValue - 30));
+        angle = 140 + percentage * 40;
+        
+        // Aseguramos el límite máximo antes de la rotación
+        angle = Math.min(angle, 180); 
+        return angle - 90;
+    }
+}
 
   // 📊 VERIFICACIÓN:
   // IMC 18.0  → 43.78°  ✅ Fin de zona azul
