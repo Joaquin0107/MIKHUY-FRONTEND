@@ -219,7 +219,6 @@ export class DashboardsComponent implements OnInit {
         if (response.success && response.data) {
           this.dashboardData = response.data;
 
-          // 🔍 DEBUG: Verificar datos de salud
           console.log('Dashboard Data:', this.dashboardData);
           console.log('Salud Info:', this.dashboardData.salud);
           console.log(
@@ -257,10 +256,6 @@ export class DashboardsComponent implements OnInit {
       );
     }
   }
-
-  // ========================================================
-  // SISTEMA DE ALERTAS DE SALUD
-  // ========================================================
 
   verificarAlertasSalud(saludInfo: SaludInfo | null | undefined): void {
     if (!saludInfo?.medicionActual || !saludInfo?.estadisticas) {
@@ -322,10 +317,6 @@ export class DashboardsComponent implements OnInit {
     });
   }
 
-  // ========================================================
-  // GENERAR REPORTE PDF CON ANÁLISIS DE SALUD
-  // ========================================================
-
   async descargarReporte(): Promise<void> {
     if (!this.selectedStudent || !this.dashboardData) {
       this.snackBar.open('No hay datos para generar el reporte', 'Cerrar', {
@@ -347,7 +338,6 @@ export class DashboardsComponent implements OnInit {
       const pageHeight = pdf.internal.pageSize.getHeight();
       let yPosition = 20;
 
-      // PORTADA
       pdf.setFillColor(72, 163, 243);
       pdf.rect(0, 0, pageWidth, 60, 'F');
 
@@ -360,7 +350,6 @@ export class DashboardsComponent implements OnInit {
       pdf.setFont('helvetica', 'normal');
       pdf.text('Plataforma MIKHUY', pageWidth / 2, 45, { align: 'center' });
 
-      // DATOS DEL ESTUDIANTE
       yPosition = 80;
       pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(20);
@@ -381,7 +370,6 @@ export class DashboardsComponent implements OnInit {
         yPosition
       );
 
-      // ANÁLISIS DE SALUD
       if (this.dashboardData.salud?.medicionActual) {
         yPosition += 15;
         pdf.setFillColor(255, 235, 238);
@@ -437,7 +425,6 @@ export class DashboardsComponent implements OnInit {
             );
           }
 
-          // ALERTAS
           yPosition += 12;
           if (this.tieneAlertasSalud(stats)) {
             pdf.setFillColor(255, 243, 224);
@@ -457,7 +444,6 @@ export class DashboardsComponent implements OnInit {
         }
       }
 
-      // ESTADÍSTICAS GENERALES
       yPosition += 20;
       pdf.setFillColor(232, 245, 253);
       pdf.rect(15, yPosition - 5, pageWidth - 30, 25, 'F');
@@ -484,7 +470,6 @@ export class DashboardsComponent implements OnInit {
         yPosition
       );
 
-      // GRÁFICAS DE SALUD
       if (this.dashboardData.salud?.historialMediciones?.length > 0) {
         pdf.addPage();
         yPosition = 20;
@@ -509,7 +494,6 @@ export class DashboardsComponent implements OnInit {
         await this.addHealthChartToPDF(pdf, yPosition, 'imc');
       }
 
-      // RECOMENDACIONES
       pdf.addPage();
       yPosition = 20;
 
@@ -527,7 +511,6 @@ export class DashboardsComponent implements OnInit {
       const splitText = pdf.splitTextToSize(recomendaciones, pageWidth - 40);
       pdf.text(splitText, 20, yPosition);
 
-      // PIE DE PÁGINA
       const totalPages = pdf.internal.pages.length - 1;
       for (let i = 1; i <= totalPages; i++) {
         pdf.setPage(i);
@@ -759,10 +742,6 @@ export class DashboardsComponent implements OnInit {
     });
   }
 
-  // ========================================================
-  // FUNCIONES PARA GRÁFICOS
-  // ========================================================
-
   getJuegoData(nombreJuego: string): JuegoResponse | null {
     if (!this.dashboardData || !this.dashboardData.juegos) return null;
 
@@ -791,10 +770,6 @@ export class DashboardsComponent implements OnInit {
     return 'sports_esports';
   }
 
-  // ========================================================
-  // MÉTODOS PARA GRÁFICAS DE SALUD - CORREGIDOS
-  // ========================================================
-
   getIMCAngle(imc: number): number {
     if (!imc) return 0;
 
@@ -822,12 +797,6 @@ export class DashboardsComponent implements OnInit {
     }
   }
 
-  // ========================================================
-  // MÉTODOS MEJORADOS PARA MANEJAR 1 SOLA MEDICIÓN
-  // Reemplazar en dashboards.component.ts
-  // ========================================================
-
-  // ✅ CORREGIDO: Gráfico de Peso - Maneja 1 medición
   getWeightChartPoints(): string {
     if (
       !this.dashboardData?.salud?.historialMediciones ||
@@ -842,7 +811,6 @@ export class DashboardsComponent implements OnInit {
         new Date(b.fechaRegistro).getTime()
     );
 
-    // Si solo hay 1 medición, no dibujar línea
     if (mediciones.length < 2) {
       console.log(
         '⚠️ Solo hay 1 medición de peso. Se necesitan al menos 2 para el gráfico.'
@@ -883,7 +851,6 @@ export class DashboardsComponent implements OnInit {
         new Date(b.fechaRegistro).getTime()
     );
 
-    // Si solo hay 1 medición, retornar array vacío
     if (mediciones.length < 2) {
       return [];
     }
@@ -905,7 +872,6 @@ export class DashboardsComponent implements OnInit {
     }));
   }
 
-  // ✅ CORREGIDO: Gráfico de Talla - Maneja 1 medición
   getHeightChartPoints(): string {
     if (
       !this.dashboardData?.salud?.historialMediciones ||
@@ -920,7 +886,6 @@ export class DashboardsComponent implements OnInit {
         new Date(b.fechaRegistro).getTime()
     );
 
-    // Si solo hay 1 medición, no dibujar línea
     if (mediciones.length < 2) {
       console.log(
         '⚠️ Solo hay 1 medición de talla. Se necesitan al menos 2 para el gráfico.'
@@ -961,7 +926,6 @@ export class DashboardsComponent implements OnInit {
         new Date(b.fechaRegistro).getTime()
     );
 
-    // Si solo hay 1 medición, retornar array vacío
     if (mediciones.length < 2) {
       return [];
     }
@@ -983,7 +947,6 @@ export class DashboardsComponent implements OnInit {
     }));
   }
 
-  // ✅ CORREGIDO: Gráfico de IMC - Maneja 1 medición
   getIMCChartPoints(): string {
     if (
       !this.dashboardData?.salud?.historialMediciones ||
@@ -998,7 +961,6 @@ export class DashboardsComponent implements OnInit {
         new Date(b.fechaRegistro).getTime()
     );
 
-    // Si solo hay 1 medición, no dibujar línea
     if (mediciones.length < 2) {
       console.log(
         '⚠️ Solo hay 1 medición de IMC. Se necesitan al menos 2 para el gráfico.'
@@ -1032,7 +994,6 @@ export class DashboardsComponent implements OnInit {
         new Date(b.fechaRegistro).getTime()
     );
 
-    // Si solo hay 1 medición, retornar array vacío
     if (mediciones.length < 2) {
       return [];
     }
@@ -1048,7 +1009,6 @@ export class DashboardsComponent implements OnInit {
     }));
   }
 
-  // ✅ MEJORADO: Mapeo de IMC a coordenada Y
   private mapIMCToY(imc: number): number {
     const chartHeight = 140;
     const startY = 20;
@@ -1168,9 +1128,6 @@ export class DashboardsComponent implements OnInit {
   }
 }
 
-// ============================================
-// DIÁLOGO DE ALERTAS DE SALUD
-// ============================================
 @Component({
   selector: 'alerta-salud-dialog',
   standalone: true,
@@ -1408,9 +1365,6 @@ export class AlertaSaludDialog {
   }
 }
 
-// ============================================
-// EMAIL DIALOG COMPONENT
-// ============================================
 @Component({
   selector: 'email-dialog',
   standalone: true,
@@ -2011,7 +1965,6 @@ export class EmailDialog implements OnInit {
     });
   }
 
-  // Drag & Drop handlers
   onDragOver(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();

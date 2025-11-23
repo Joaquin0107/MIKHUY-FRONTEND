@@ -623,3 +623,36 @@ input[type="number"]::-webkit-inner-spin-button {
 ::ng-deep .snackbar-error .mat-mdc-snack-bar-label {
   color: white !important;
 }
+
+.teacher-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #7BC67E 0%, #5FB83D 100%);
+  padding: 0.5rem 1.25rem;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(123, 198, 126, 0.3);
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.teacher-badge mat-icon {
+  color: white;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 768px) {
+  .teacher-badge {
+    padding: 0.4rem 1rem;
+    font-size: 0.8rem;
+  }
+
+  .teacher-badge span {
+    display: none; 
+  }
+}

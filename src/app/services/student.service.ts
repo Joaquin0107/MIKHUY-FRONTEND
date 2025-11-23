@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
 import { Estudiante } from '../models/estudiante.model';
+import { UpdateProfileRequest } from './perfil.service';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -55,6 +56,9 @@ export interface StudentListResponse {
   peso?: number;
   puntosAcumulados: number;
   avatarUrl?: string;
+  juegosCompletados?: number; 
+  totalSesiones?: number; 
+  fechaRegistro?: string; 
 }
 
 @Injectable({
@@ -63,25 +67,19 @@ export interface StudentListResponse {
 export class StudentService {
   private apiUrl = `${environment.apiUrl}/api/estudiantes`;
 
-  // BehaviorSubject para mantener los puntos sincronizados
   private puntosSubject = new BehaviorSubject<number>(0);
   public puntos$ = this.puntosSubject.asObservable();
 
-  // BehaviorSubject para notificaciones
   private notificacionesSubject = new BehaviorSubject<Notificacion[]>([]);
   public notificaciones$ = this.notificacionesSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    // Cargar puntos iniciales desde localStorage si existen
     const puntosGuardados = localStorage.getItem('studentPoints');
     if (puntosGuardados) {
       this.puntosSubject.next(parseInt(puntosGuardados));
     }
   }
 
-  /**
-   * Método privado para obtener headers con token
-   */
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('authToken') || 
                   sessionStorage.getItem('authToken');
@@ -92,9 +90,6 @@ export class StudentService {
     });
   }
 
-  /**
-   * Obtener puntos actuales del estudiante desde el servidor
-   */
   getMisPuntos(): Observable<ApiResponse<number>> {
     return this.http.get<ApiResponse<number>>(`${this.apiUrl}/puntos`).pipe(
       tap(response => {
@@ -109,9 +104,6 @@ export class StudentService {
     return this.http.get<Estudiante>(`${this.apiUrl}/perfil`);
   }
 
-  /**
-   * Obtener notificaciones del estudiante
-   */
   getMisNotificaciones(): Observable<ApiResponse<Notificacion[]>> {
     return this.http.get<ApiResponse<Notificacion[]>>(`${this.apiUrl}/mis-notificaciones`).pipe(
       tap(response => {
@@ -122,33 +114,21 @@ export class StudentService {
     );
   }
 
-  /**
-   * Actualizar puntos localmente y en el BehaviorSubject
-   */
   actualizarPuntos(puntos: number): void {
     this.puntosSubject.next(puntos);
     localStorage.setItem('studentPoints', puntos.toString());
   }
 
-  /**
-   * Sumar puntos a los actuales (útil después de completar un juego)
-   */
   sumarPuntos(puntosGanados: number): void {
     const puntosActuales = this.puntosSubject.value;
     const nuevosPuntos = puntosActuales + puntosGanados;
     this.actualizarPuntos(nuevosPuntos);
   }
 
-  /**
-   * Obtener puntos actuales (valor sincrónico)
-   */
   getPuntosActuales(): number {
     return this.puntosSubject.value;
   }
 
-  /**
-   * Refrescar puntos desde el servidor
-   */
   refrescarPuntos(): void {
     this.getMisPuntos().subscribe({
       next: (response) => {
@@ -160,9 +140,6 @@ export class StudentService {
     });
   }
 
-  /**
-   * Marcar notificación como leída
-   */
   marcarNotificacionLeida(notificacionId: string): Observable<ApiResponse<void>> {
     return this.http.put<ApiResponse<void>>(
       `${this.apiUrl}/notificaciones/${notificacionId}/leer`,
@@ -179,70 +156,65 @@ export class StudentService {
     );
   }
 
-  /**
-   * Limpiar datos (útil para logout)
-   */
   limpiarDatos(): void {
     this.puntosSubject.next(0);
     this.notificacionesSubject.next([]);
     localStorage.removeItem('studentPoints');
   }
 
-  // ========================================================
-  // MÉTODOS PARA DASHBOARD (PROFESORES)
-  // ========================================================
-
-  /**
-   * Obtener todos los estudiantes (para profesores)
-   * GET /api/estudiantes
-   */
   getAll(): Observable<ApiResponse<StudentListResponse[]>> {
     return this.http.get<ApiResponse<StudentListResponse[]>>(
-      this.apiUrl,  // ✅ CAMBIADO: this.baseUrl → this.apiUrl
+      this.apiUrl,
       { headers: this.getHeaders() }
     );
   }
 
-  /**
-   * Obtener estudiantes por grado
-   * GET /api/estudiantes/grado/{grado}
-   */
+  getById(estudianteId: string): Observable<ApiResponse<StudentListResponse>> {
+    console.log('📡 GET: Obteniendo estudiante:', estudianteId);
+    return this.http.get<ApiResponse<StudentListResponse>>(
+      `${this.apiUrl}/${estudianteId}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
   getByGrado(grado: string): Observable<ApiResponse<StudentListResponse[]>> {
     return this.http.get<ApiResponse<StudentListResponse[]>>(
-      `${this.apiUrl}/grado/${grado}`,  // ✅ CAMBIADO: this.baseUrl → this.apiUrl
+      `${this.apiUrl}/grado/${grado}`,
       { headers: this.getHeaders() }
     );
   }
 
-  /**
-   * Obtener estudiantes por grado y sección
-   * GET /api/estudiantes/grado/{grado}/seccion/{seccion}
-   */
   getByGradoAndSeccion(grado: string, seccion: string): Observable<ApiResponse<StudentListResponse[]>> {
     return this.http.get<ApiResponse<StudentListResponse[]>>(
-      `${this.apiUrl}/grado/${grado}/seccion/${seccion}`,  // ✅ CAMBIADO: this.baseUrl → this.apiUrl
+      `${this.apiUrl}/grado/${grado}/seccion/${seccion}`,
       { headers: this.getHeaders() }
     );
   }
 
-  /**
-   * Obtener ranking completo
-   * GET /api/estudiantes/ranking
-   */
   getRanking(): Observable<ApiResponse<RankingResponse>> {
     return this.http.get<ApiResponse<RankingResponse>>(
-      `${this.apiUrl}/ranking`,  // ✅ CAMBIADO: this.baseUrl → this.apiUrl
+      `${this.apiUrl}/ranking`,
       { headers: this.getHeaders() }
     );
   }
 
-  /**
-   * Obtener estadísticas de un estudiante
-   * GET /api/estudiantes/{id}/estadisticas
-   */
   getEstadisticas(estudianteId: string): Observable<ApiResponse<any>> {
     return this.http.get<ApiResponse<any>>(
-      `${this.apiUrl}/${estudianteId}/estadisticas`,  // ✅ CAMBIADO: this.baseUrl → this.apiUrl
+      `${this.apiUrl}/${estudianteId}/estadisticas`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  updateEstudiante(
+    estudianteId: string, 
+    data: UpdateProfileRequest
+  ): Observable<ApiResponse<StudentListResponse>> {
+    console.log('👨‍🏫 PUT: Profesor actualizando estudiante:', estudianteId);
+    console.log('📦 Datos enviados:', data);
+    
+    return this.http.put<ApiResponse<StudentListResponse>>(
+      `${this.apiUrl}/${estudianteId}/perfil`,
+      data,
       { headers: this.getHeaders() }
     );
   }

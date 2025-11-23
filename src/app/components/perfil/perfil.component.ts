@@ -18,12 +18,13 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   PerfilService,
   EstudianteResponse,
   UpdateProfileRequest,
 } from '../../services/perfil.service';
+import { StudentService } from '../../services/student.service';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -56,7 +57,12 @@ export class PerfilComponent implements OnInit {
   hideConfirmPassword = true;
   selectedAvatar: string | null = null;
   avatarFile: File | null = null;
-  userRole: 'student' = 'student';
+  
+  // ✅ Roles y contexto de visualización
+  currentUserRole: 'student' | 'teacher' = 'student';
+  isViewingOwnProfile = true; // Si es estudiante viendo su perfil o profesor viendo otro
+  estudianteId: string | null = null; // ID del estudiante si el profesor lo está viendo
+  
   notificationCount = 0;
   studentPoints = 0;
   loading = false;
@@ -76,14 +82,83 @@ export class PerfilComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private router: Router,
+    private route: ActivatedRoute,
     private perfilService: PerfilService,
+    private studentService: StudentService,
     private authService: AuthService,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.initForms();
-    this.loadPerfilData();
+    this.loadUserRole();
+    this.checkRouteParams();
+  }
+
+  loadUserRole(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.currentUserRole = currentUser.rol === 'teacher' ? 'teacher' : 'student';
+      console.log('👤 Rol del usuario:', this.currentUserRole);
+    }
+  }
+
+  checkRouteParams(): void {
+    // ✅ Verificar si hay un estudianteId en los parámetros de la URL
+    this.route.queryParams.subscribe(params => {
+      this.estudianteId = params['estudianteId'] || null;
+      
+      console.log('🔍 Parámetros de ruta:', params);
+      console.log('🆔 Estudiante ID:', this.estudianteId);
+      console.log('👤 Rol actual:', this.currentUserRole);
+      
+      if (this.estudianteId && this.currentUserRole === 'teacher') {
+        // 👨‍🏫 Profesor viendo perfil de un estudiante
+        this.isViewingOwnProfile = false;
+        console.log('👨‍🏫 MODO: Profesor viendo perfil de estudiante');
+        this.loadEstudianteDataForTeacher(this.estudianteId);
+      } else {
+        // 👨‍🎓 Estudiante viendo su propio perfil
+        this.isViewingOwnProfile = true;
+        console.log('👨‍🎓 MODO: Estudiante viendo su propio perfil');
+        this.loadPerfilData();
+      }
+    });
+  }
+
+  loadEstudianteDataForTeacher(estudianteId: string): void {
+    console.log('👨‍🏫 Profesor cargando perfil de estudiante:', estudianteId);
+    this.loading = true;
+
+    this.studentService.getById(estudianteId).subscribe({
+      next: (response) => {
+        console.log('✅ Datos del estudiante obtenidos:', response);
+        if (response.success && response.data) {
+          this.perfilData = response.data;
+          this.studentPoints = response.data.puntosAcumulados || 0;
+          
+          this.stats = {
+            juegosCompletados: response.data.juegosCompletados || 0,
+            puntosGanados: this.studentPoints,
+            canjesRealizados: 0,
+            diasActivo: this.calcularDiasActivo(response.data.fechaRegistro),
+          };
+          
+          this.populateForm(response.data);
+          
+          if (response.data.avatarUrl) {
+            this.selectedAvatar = response.data.avatarUrl;
+          }
+        }
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('❌ Error cargando estudiante:', error);
+        this.showMessage('Error al cargar los datos del estudiante', 'error');
+        this.loading = false;
+        this.router.navigate(['/dashboards']);
+      }
+    });
   }
 
   loadPerfilData(): void {
@@ -147,6 +222,9 @@ export class PerfilComponent implements OnInit {
   }
 
   loadEstadisticas(): void {
+    // ✅ Solo cargar estadísticas si es el propio perfil
+    if (!this.isViewingOwnProfile) return;
+
     this.loadingStats = true;
     this.perfilService.getMisEstadisticas().subscribe({
       next: (response) => {
@@ -265,72 +343,99 @@ export class PerfilComponent implements OnInit {
   }
 
   guardarPerfil(): void {
-  if (!this.perfilForm.valid) {
-    this.showMessage('Por favor completa todos los campos requeridos', 'error');
-    return;
-  }
-
-  const token = localStorage.getItem('authToken');
-  if (!token) {
-    this.showMessage('No hay sesión activa. Inicia sesión nuevamente.', 'error');
-    this.router.navigate(['/login'], { queryParams: { role: 'student' } });
-    return;
-  }
-
-  this.loading = true;
-
-  const pesoValue = this.perfilForm.value.peso;
-  const tallaValue = this.perfilForm.value.talla;
-  const edadValue = this.perfilForm.value.edad;
-
-  const updateData: UpdateProfileRequest = {
-    nombres: this.perfilForm.value.firstName,
-    apellidos: this.perfilForm.value.lastName,
-    telefono: this.perfilForm.value.telefono || undefined,
-    grado: this.perfilForm.value.grado,
-    seccion: this.perfilForm.value.seccion,
-    edad: edadValue ? parseInt(edadValue) : undefined,
-    peso: pesoValue ? parseFloat(pesoValue) : undefined,
-    talla: tallaValue ? parseFloat(tallaValue) : undefined
-  };
-
-  console.log('📦 Datos a enviar:', updateData);
-
-  this.perfilService.updateMiPerfil(updateData).subscribe({
-    next: (response) => {
-      console.log('✅ Perfil actualizado:', response);
-      if (response.success) {
-        this.showMessage('Perfil actualizado exitosamente', 'success');
-
-        const currentUser = this.authService.getCurrentUser();
-        if (currentUser) {
-          currentUser.name = `${updateData.nombres} ${updateData.apellidos}`;
-          this.authService.saveUser(currentUser);
-        }
-
-        this.loadPerfilData();
-      }
-      this.loading = false;
-    },
-    error: (error) => {
-      console.error('❌ Error actualizando perfil:', error);
-
-      if (error.status === 401) {
-        this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
-        setTimeout(() => {
-          this.authService.logout();
-          this.router.navigate(['/login'], { queryParams: { role: 'student' } });
-        }, 2000);
-      } else {
-        this.showMessage(
-          error.error?.message || 'Error al actualizar el perfil',
-          'error'
-        );
-      }
-      this.loading = false;
+    if (!this.perfilForm.valid) {
+      this.showMessage('Por favor completa todos los campos requeridos', 'error');
+      return;
     }
-  });
-}
+
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      this.showMessage('No hay sesión activa. Inicia sesión nuevamente.', 'error');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    this.loading = true;
+
+    const pesoValue = this.perfilForm.value.peso;
+    const tallaValue = this.perfilForm.value.talla;
+    const edadValue = this.perfilForm.value.edad;
+
+    const updateData: UpdateProfileRequest = {
+      nombres: this.perfilForm.value.firstName,
+      apellidos: this.perfilForm.value.lastName,
+      telefono: this.perfilForm.value.telefono || undefined,
+      grado: this.perfilForm.value.grado,
+      seccion: this.perfilForm.value.seccion,
+      edad: edadValue ? parseInt(edadValue) : undefined,
+      peso: pesoValue ? parseFloat(pesoValue) : undefined,
+      talla: tallaValue ? parseFloat(tallaValue) : undefined
+    };
+
+    console.log('📦 Datos a enviar:', updateData);
+    console.log('👤 Modo:', this.isViewingOwnProfile ? 'Propio perfil' : 'Perfil de estudiante');
+
+    // ✅ Si es profesor editando perfil de estudiante
+    if (!this.isViewingOwnProfile && this.estudianteId) {
+      console.log('👨‍🏫 Profesor actualizando perfil del estudiante:', this.estudianteId);
+      
+      this.studentService.updateEstudiante(this.estudianteId, updateData).subscribe({
+        next: (response) => {
+          console.log('✅ Estudiante actualizado por profesor:', response);
+          this.showMessage('Perfil del estudiante actualizado exitosamente', 'success');
+          this.loading = false;
+          // Recargar datos actualizados
+          this.loadEstudianteDataForTeacher(this.estudianteId!);
+        },
+        error: (error) => {
+          console.error('❌ Error actualizando estudiante:', error);
+          this.showMessage(
+            error.error?.message || 'Error al actualizar el perfil del estudiante',
+            'error'
+          );
+          this.loading = false;
+        }
+      });
+    } else {
+      // ✅ Estudiante actualizando su propio perfil
+      console.log('👨‍🎓 Estudiante actualizando su propio perfil');
+      
+      this.perfilService.updateMiPerfil(updateData).subscribe({
+        next: (response) => {
+          console.log('✅ Perfil actualizado:', response);
+          if (response.success) {
+            this.showMessage('Perfil actualizado exitosamente', 'success');
+
+            const currentUser = this.authService.getCurrentUser();
+            if (currentUser) {
+              currentUser.name = `${updateData.nombres} ${updateData.apellidos}`;
+              this.authService.saveUser(currentUser);
+            }
+
+            this.loadPerfilData();
+          }
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('❌ Error actualizando perfil:', error);
+
+          if (error.status === 401) {
+            this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
+            setTimeout(() => {
+              this.authService.logout();
+              this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+            }, 2000);
+          } else {
+            this.showMessage(
+              error.error?.message || 'Error al actualizar el perfil',
+              'error'
+            );
+          }
+          this.loading = false;
+        }
+      });
+    }
+  }
 
   cambiarContrasena(): void {
     if (!this.seguridadForm.valid) {
@@ -387,7 +492,11 @@ export class PerfilComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/landing-alumnos']);
+    if (this.currentUserRole === 'teacher') {
+      this.router.navigate(['/dashboards']);
+    } else {
+      this.router.navigate(['/landing-alumnos']);
+    }
   }
 
   navigateToGames(): void {

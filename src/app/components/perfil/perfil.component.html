@@ -1,71 +1,68 @@
 <div class="perfil-container">
   <!-- Header -->
   <header class="perfil-header">
-    <div class="header-left">
-      <button mat-icon-button class="back-btn" (click)="goBack()">
-        <mat-icon>arrow_back</mat-icon>
-      </button>
-      <img
-        src="assets/images/MIKHUY.png"
-        alt="MIKHUY Logo"
-        class="header-logo"
-      />
-    </div>
+  <div class="header-left">
+    <button mat-icon-button class="back-btn" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="header-logo">
+  </div>
 
-    <div class="header-center">
-      <h1>Mi Perfil</h1>
-    </div>
+  <div class="header-center">
+    <!-- ✅ Cambiar título según contexto -->
+    <h1>{{ isViewingOwnProfile ? 'Mi Perfil' : 'Perfil del Estudiante' }}</h1>
+  </div>
 
-    <div class="header-right">
-      <button
-        mat-raised-button
-        class="games-btn"
-        (click)="navigateToGames()"
-        *ngIf="userRole === 'student'"
-      >
+  <div class="header-right">
+    <!-- ✅ Botones SOLO para estudiantes viendo su propio perfil -->
+    <ng-container *ngIf="isViewingOwnProfile && currentUserRole === 'student'">
+      <button mat-raised-button class="games-btn" (click)="navigateToGames()">
         <mat-icon>sports_esports</mat-icon>
         JUEGOS
       </button>
-      <button
-        mat-raised-button
-        class="benefits-btn"
-        (click)="navigateToBenefits()"
-        *ngIf="userRole === 'student'"
-      >
+      <button mat-raised-button class="benefits-btn" (click)="navigateToBenefits()">
         <mat-icon>card_giftcard</mat-icon>
         BENEFICIOS
       </button>
 
-      <div class="points-display" *ngIf="userRole === 'student'">
+      <!-- ✅ Puntos SOLO visibles para estudiantes viendo su propio perfil -->
+      <div class="points-display">
         <mat-icon class="points-icon">stars</mat-icon>
-        <span class="points-value">{{ studentPoints }}</span>
+        <span class="points-value">{{studentPoints}}</span>
       </div>
+    </ng-container>
 
-      <!--Apartado de Notificaciones (a futuro)-->
-      <mat-menu #notificationMenu="matMenu" class="notification-menu">
-        <div class="notification-header">
-          <h3>Notificaciones</h3>
-        </div>
-        <div class="notification-content">
-          <div class="empty-notifications">
-            <mat-icon>notifications_off</mat-icon>
-            <p>No tienes notificaciones</p>
-          </div>
-        </div>
-      </mat-menu>
-
-      <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
-        <mat-icon>menu</mat-icon>
-      </button>
-
-      <mat-menu #menu="matMenu" class="user-menu">
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>Salir</span>
-        </button>
-      </mat-menu>
+    <!-- ✅ Indicador de modo profesor -->
+    <div class="teacher-badge" *ngIf="!isViewingOwnProfile && currentUserRole === 'teacher'">
+      <mat-icon>school</mat-icon>
+      <span>Vista de Profesor</span>
     </div>
-  </header>
+
+    <!-- Apartado de Notificaciones (a futuro) -->
+    <mat-menu #notificationMenu="matMenu" class="notification-menu">
+      <div class="notification-header">
+        <h3>Notificaciones</h3>
+      </div>
+      <div class="notification-content">
+        <div class="empty-notifications">
+          <mat-icon>notifications_off</mat-icon>
+          <p>No tienes notificaciones</p>
+        </div>
+      </div>
+    </mat-menu>
+
+    <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <mat-menu #menu="matMenu" class="user-menu">
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Salir</span>
+      </button>
+    </mat-menu>
+  </div>
+</header>
 
   <!-- Loading Spinner -->
   <div class="loading-container" *ngIf="loading">
@@ -80,7 +77,7 @@
       <mat-card class="profile-card">
         <div class="profile-header">
           <!-- Avatar solo para estudiantes -->
-          <div class="avatar-section" *ngIf="userRole === 'student'">
+          <div class="avatar-section" *ngIf="currentUserRole === 'student'">
             <div class="avatar-circle" [class.has-image]="selectedAvatar">
               <img *ngIf="selectedAvatar" [src]="selectedAvatar" alt="Avatar" />
               <mat-icon *ngIf="!selectedAvatar">account_circle</mat-icon>
@@ -95,7 +92,7 @@
             </button>
           </div>
 
-          <div class="profile-actions" *ngIf="userRole === 'student'">
+          <div class="profile-actions" *ngIf="currentUserRole === 'student'">
             <input
               type="file"
               #avatarInput
@@ -118,13 +115,13 @@
               {{ perfilForm.value.firstName }} {{ perfilForm.value.lastName }}
             </h2>
             <p class="role-badge">
-              {{ userRole === "student" ? "Estudiante" : "Profesor" }}
+              {{ currentUserRole === "student" ? "Estudiante" : "Profesor" }}
             </p>
           </div>
         </div>
 
         <!-- Stats (Solo para estudiantes) -->
-        <div class="stats-section" *ngIf="userRole === 'student'">
+        <div class="stats-section" *ngIf="currentUserRole === 'student'">
           <mat-divider></mat-divider>
           <div class="stats-grid" *ngIf="!loadingStats">
             <div class="stat-item">
@@ -281,7 +278,7 @@
                 </div>
 
                 <!-- Datos Académicos (Estudiantes) -->
-                <ng-container *ngIf="userRole === 'student'">
+                <ng-container *ngIf="currentUserRole === 'student'">
                   <div class="section-title">
                     <mat-icon>school</mat-icon>
                     <h3>Datos Académicos</h3>

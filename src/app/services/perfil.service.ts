@@ -12,35 +12,34 @@ export interface ApiResponse<T> {
 export interface EstudianteResponse {
   id: string;
   usuarioId: string;
-  email: string;
   nombres: string;
   apellidos: string;
   nombreCompleto: string;
+  email: string;
   telefono?: string;
-  avatarUrl?: string;
-  edad?: number;
   grado: string;
   seccion: string;
-  talla?: number;
+  edad?: number;
   peso?: number;
-  imc?: number;
+  talla?: number;
   puntosAcumulados: number;
+  avatarUrl?: string;
+  // Estadísticas básicas
   juegosJugados?: number;
   juegosCompletados?: number;
   totalSesiones?: number;
-  fechaRegistro?: string;      // ✅ AGREGADO
-  ultimaConexion?: string;     // ✅ AGREGADO
+  fechaRegistro?: string;
 }
 
 export interface UpdateProfileRequest {
-  nombres?: string;
-  apellidos?: string;
+  nombres: string;
+  apellidos: string;
   telefono?: string;
-  grado?: string;
-  seccion?: string;
-  edad?: number;
+  grado: string;
+  seccion: string;
   peso?: number;
   talla?: number;
+  edad?: number;
   avatarUrl?: string;
 }
 
@@ -59,26 +58,68 @@ export interface EstadisticasEstudianteResponse {
 
 @Injectable({ providedIn: 'root' })
 export class PerfilService {
-  // ✅ CORREGIDO: Usar environment sin .prod
+  // ✅ CORRECCIÓN: Definir apiUrl
+  private apiUrl = environment.apiUrl;
   private baseUrl = `${environment.apiUrl}/api/estudiantes`;
 
   constructor(private http: HttpClient) {}
 
+  /**
+   * Obtener perfil del estudiante autenticado
+   * GET /api/estudiantes/perfil
+   */
   getMiPerfil(): Observable<ApiResponse<EstudianteResponse>> {
     console.log('📡 GET:', `${this.baseUrl}/perfil`);
-    return this.http.get<ApiResponse<EstudianteResponse>>(`${this.baseUrl}/perfil`);
+    return this.http.get<ApiResponse<EstudianteResponse>>(
+      `${this.baseUrl}/perfil`
+    );
   }
 
+  /**
+   * Actualizar perfil del estudiante
+   * PUT /api/estudiantes/perfil
+   */
   updateMiPerfil(data: UpdateProfileRequest): Observable<ApiResponse<EstudianteResponse>> {
-    console.log('📡 PUT:', `${this.baseUrl}/perfil`, data);
-    return this.http.put<ApiResponse<EstudianteResponse>>(`${this.baseUrl}/perfil`, data);
+    console.log('📡 PUT:', `${this.baseUrl}/perfil`);
+    console.log('📦 Datos enviados:', data);
+    return this.http.put<ApiResponse<EstudianteResponse>>(
+      `${this.baseUrl}/perfil`,
+      data
+    );
   }
 
+  /**
+   * Obtener puntos acumulados
+   * GET /api/estudiantes/puntos
+   */
   getMisPuntos(): Observable<ApiResponse<number>> {
-    return this.http.get<ApiResponse<number>>(`${this.baseUrl}/puntos`);
+    return this.http.get<ApiResponse<number>>(
+      `${this.baseUrl}/puntos`
+    );
   }
 
+  /**
+   * Obtener estadísticas del estudiante
+   * GET /api/estudiantes/estadisticas
+   */
   getMisEstadisticas(): Observable<ApiResponse<EstadisticasEstudianteResponse>> {
-    return this.http.get<ApiResponse<EstadisticasEstudianteResponse>>(`${this.baseUrl}/estadisticas`);
+    console.log('📡 GET Estadísticas:', `${this.baseUrl}/estadisticas`);
+    return this.http.get<ApiResponse<EstadisticasEstudianteResponse>>(
+      `${this.baseUrl}/estadisticas`
+    );
+  }
+
+  /**
+   * Subir avatar
+   * POST /api/estudiantes/avatar
+   */
+  uploadAvatar(file: File): Observable<ApiResponse<string>> {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    return this.http.post<ApiResponse<string>>(
+      `${this.baseUrl}/avatar`,
+      formData
+    );
   }
 }
