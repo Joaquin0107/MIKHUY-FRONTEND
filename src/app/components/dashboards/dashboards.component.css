@@ -1294,12 +1294,25 @@
 .gauge-svg {
   width: 200px;
   height: 120px;
+  overflow: visible;
 }
 
 .gauge-segment {
-  fill: none;
-  stroke-width: 20;
-  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.gauge-segment:hover {
+  opacity: 1 !important;
+}
+
+/* Animación suave de la aguja */
+.gauge-needle-group {
+  transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transform-origin: 100px 100px;
+}
+
+.gauge-segment.bajo-peso {
+  stroke: #42a5f5;
 }
 
 .gauge-segment.bajo-peso {

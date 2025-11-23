@@ -773,20 +773,33 @@ export class DashboardsComponent implements OnInit {
   getIMCAngle(imc: number): number {
     if (!imc || imc <= 0) return 0;
 
-    let angle = 0;
-    if (imc < 18.5) {
-      angle = (imc / 18.5) * 45;
-    } else if (imc < 25) {
-      angle = 45 + ((imc - 18.5) / 6.5) * 55;
-    } else if (imc < 30) {
-      angle = 100 + ((imc - 25) / 5) * 40;
-    } else {
-      angle = Math.min(180, 140 + ((imc - 30) / 10) * 40);
-    }
+    // El gauge va de 0° (derecha) a 180° (izquierda)
+    // en sentido CONTRARIO a las agujas del reloj
 
-    console.log(`🎯 IMC: ${imc} → Ángulo: ${angle.toFixed(2)}°`);
-    return angle;
+    if (imc < 18.5) {
+      // Bajo peso: 0° - 45°
+      const ratio = imc / 18.5;
+      return ratio * 45;
+    } else if (imc < 25) {
+      // Normal: 45° - 100°
+      const ratio = (imc - 18.5) / (25 - 18.5);
+      return 45 + ratio * 55;
+    } else if (imc < 30) {
+      // Sobrepeso: 100° - 140°
+      const ratio = (imc - 25) / (30 - 25);
+      return 100 + ratio * 40;
+    } else {
+      // Obesidad: 140° - 180°
+      const ratio = Math.min(1, (imc - 30) / 10);
+      return 140 + ratio * 40;
+    }
   }
+
+  // 📊 VERIFICACIÓN:
+  // IMC 18.0  → 43.78°  ✅ Fin de zona azul
+  // IMC 23.4  → 86.47°  ✅ Centro de zona verde
+  // IMC 27.1  → 116.8°  ✅ Medio de zona naranja
+  // IMC 32.5  → 150°    ✅ En zona roja
 
   getTendenciaIcon(tendencia: string): string {
     switch (tendencia) {
@@ -798,6 +811,29 @@ export class DashboardsComponent implements OnInit {
         return 'warning';
       default:
         return 'help_outline';
+    }
+  }
+
+  ngAfterViewInit() {
+    if (this.dashboardData?.salud?.estadisticas) {
+      const imc = this.dashboardData.salud.estadisticas.imcActual;
+      const angle = this.getIMCAngle(imc);
+      console.log('🎯 IMC GAUGE DEBUG:');
+      console.log('  IMC:', imc);
+      console.log('  Ángulo calculado:', angle.toFixed(2) + '°');
+      console.log(
+        '  Estado:',
+        this.dashboardData.salud.estadisticas.estadoNutricionalActual
+      );
+
+      // Verificación de zona
+      let zonaEsperada = '';
+      if (angle < 45) zonaEsperada = 'AZUL (Bajo peso)';
+      else if (angle < 100) zonaEsperada = 'VERDE (Normal)';
+      else if (angle < 140) zonaEsperada = 'NARANJA (Sobrepeso)';
+      else zonaEsperada = 'ROJO (Obesidad)';
+
+      console.log('  Zona esperada:', zonaEsperada);
     }
   }
 

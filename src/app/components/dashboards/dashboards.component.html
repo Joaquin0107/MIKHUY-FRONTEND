@@ -603,45 +603,123 @@
             ><div class="health-summary">
               <!-- IMC Gauge -->
               <div class="imc-gauge" *ngIf="salud.estadisticas as stats">
-                <svg viewBox="0 0 200 120" class="gauge-svg">
-                  <!-- Bajo peso: 0° - 45° -->
+                <svg
+                  viewBox="0 0 200 120"
+                  class="gauge-svg"
+                  style="background: #f8f9fa"
+                >
+                  <!-- Fondo gris del gauge completo -->
                   <path
-                    d="M 20 100 A 80 80 0 0 1 56.57 43.43"
-                    class="gauge-segment bajo-peso"
+                    d="M 20 100 A 80 80 0 0 1 180 100"
+                    fill="none"
+                    stroke="#e0e0e0"
+                    stroke-width="20"
                   />
 
-                  <!-- Normal: 45° - 100° -->
+                  <!-- Segmentos de colores superpuestos -->
+
+                  <!-- Bajo peso: 0-45° (Azul) -->
                   <path
-                    d="M 56.57 43.43 A 80 80 0 0 1 156.57 36.57"
-                    class="gauge-segment normal"
+                    d="M 180 100 A 80 80 0 0 0 156.57 43.43"
+                    fill="none"
+                    stroke="#42A5F5"
+                    stroke-width="20"
+                    stroke-linecap="round"
                   />
 
-                  <!-- Sobrepeso: 100° - 140° -->
+                  <!-- Normal: 45-100° (Verde) -->
                   <path
-                    d="M 156.57 36.57 A 80 80 0 0 1 176.93 73.21"
-                    class="gauge-segment sobrepeso"
+                    d="M 156.57 43.43 A 80 80 0 0 0 86.07 25.85"
+                    fill="none"
+                    stroke="#66BB6A"
+                    stroke-width="20"
                   />
 
-                  <!-- Obesidad: 140° - 180° -->
+                  <!-- Sobrepeso: 100-140° (Naranja) -->
                   <path
-                    d="M 176.93 73.21 A 80 80 0 0 1 180 100"
-                    class="gauge-segment obesidad"
+                    d="M 86.07 25.85 A 80 80 0 0 0 38.56 48.56"
+                    fill="none"
+                    stroke="#FFA726"
+                    stroke-width="20"
                   />
 
-                  <!-- Aguja -->
+                  <!-- Obesidad: 140-180° (Rojo) -->
+                  <path
+                    d="M 38.56 48.56 A 80 80 0 0 0 20 100"
+                    fill="none"
+                    stroke="#EF5350"
+                    stroke-width="20"
+                    stroke-linecap="round"
+                  />
+
+                  <!-- Etiquetas de referencia -->
+                  <text
+                    x="175"
+                    y="105"
+                    font-size="10"
+                    fill="#666"
+                    text-anchor="middle"
+                  >
+                    0
+                  </text>
+                  <text
+                    x="155"
+                    y="48"
+                    font-size="10"
+                    fill="#666"
+                    text-anchor="middle"
+                  >
+                    18.5
+                  </text>
+                  <text
+                    x="85"
+                    y="22"
+                    font-size="10"
+                    fill="#666"
+                    text-anchor="middle"
+                  >
+                    25
+                  </text>
+                  <text
+                    x="40"
+                    y="52"
+                    font-size="10"
+                    fill="#666"
+                    text-anchor="middle"
+                  >
+                    30
+                  </text>
+
+                  <!-- Aguja animada -->
                   <g
+                    class="gauge-needle-group"
                     [attr.transform]="
                       'rotate(' + getIMCAngle(stats.imcActual) + ' 100 100)'
                     "
                   >
+                    <!-- Sombra de la aguja -->
                     <line
                       x1="100"
                       y1="100"
                       x2="100"
-                      y2="30"
-                      class="gauge-needle"
+                      y2="36"
+                      stroke="rgba(0,0,0,0.2)"
+                      stroke-width="4"
+                      stroke-linecap="round"
                     />
-                    <circle cx="100" cy="100" r="6" class="gauge-center" />
+                    <!-- Aguja principal -->
+                    <line
+                      x1="100"
+                      y1="100"
+                      x2="100"
+                      y2="35"
+                      stroke="#333"
+                      stroke-width="3"
+                      stroke-linecap="round"
+                    />
+                    <!-- Centro de la aguja -->
+                    <circle cx="100" cy="100" r="7" fill="#333" />
+                    <circle cx="100" cy="100" r="4" fill="white" />
                   </g>
                 </svg>
                 <div class="imc-info">
