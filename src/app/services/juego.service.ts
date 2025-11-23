@@ -76,10 +76,15 @@ export class JuegosService {
   }
 
   getRankingPorJuego(juegoId: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${juegoId}/ranking`, {
-      headers: this.getHeaders(),
+    const token = localStorage.getItem('authToken');
+    return this.http.get<any>(`${environment.apiUrl}/api/estudiantes/ranking`, {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }),
     });
   }
+
   getTotalPuntos(juegos: JuegoResponse[]): number {
     return juegos.reduce((total, j) => total + (j.puntosGanados || 0), 0);
   }
