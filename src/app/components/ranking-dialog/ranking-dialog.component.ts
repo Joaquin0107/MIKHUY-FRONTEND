@@ -33,18 +33,18 @@ import { MatBadgeModule } from '@angular/material/badge';
         </button>
       </div>
 
+      <!-- Stats Info (fuera de mat-dialog-content) -->
+      <div class="stats-info" *ngIf="data.totalEstudiantes">
+        <mat-icon>group</mat-icon>
+        <span>{{ data.totalEstudiantes }} estudiante{{ data.totalEstudiantes !== 1 ? 's' : '' }} participando</span>
+      </div>
+
       <!-- Content -->
       <mat-dialog-content>
-        <!-- Stats Info -->
-        <div class="stats-info" *ngIf="data.totalEstudiantes">
-          <mat-icon>group</mat-icon>
-          <span>{{ data.totalEstudiantes }} estudiante{{ data.totalEstudiantes !== 1 ? 's' : '' }} participando</span>
-        </div>
-
         <!-- Ranking List -->
         <div class="ranking-container" *ngIf="data.ranking && data.ranking.length > 0; else sinDatos">
           <div class="ranking-item" 
-               *ngFor="let item of data.ranking; let i = index"
+               *ngFor="let item of data.ranking"
                [class.top-1]="item.posicion === 1"
                [class.top-2]="item.posicion === 2"
                [class.top-3]="item.posicion === 3"
@@ -187,24 +187,18 @@ import { MatBadgeModule } from '@angular/material/badge';
     }
 
     /* ========== CONTENT ========== */
-    mat-dialog-content {
-      padding: 0 !important;
-      margin: 0 !important;
-      max-height: 60vh;
-      overflow-y: auto;
-    }
-
     .stats-info {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem 1rem;
+      padding: 0.75rem 1.25rem;
       background: #E3F2FD;
-      border-radius: 8px;
-      margin-bottom: 1.25rem;
+      border-radius: 0;
+      margin: 0 -24px;
       font-size: 0.9rem;
       color: #1976D2;
       font-weight: 500;
+      border-bottom: 1px solid #e0e0e0;
     }
 
     .stats-info mat-icon {
@@ -214,20 +208,27 @@ import { MatBadgeModule } from '@angular/material/badge';
       color: #48A3F3;
     }
 
+    mat-dialog-content {
+      padding: 0 !important;
+      margin: 0 !important;
+      max-height: 450px;
+      overflow-y: auto;
+    }
+
     /* ========== RANKING LIST ========== */
     .ranking-container {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
+      padding: 0.75rem 1.25rem;
     }
 
     .ranking-item {
-      display: flex;
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
       align-items: center;
       gap: 1rem;
-      padding: 1rem;
+      padding: 0.875rem;
+      margin-bottom: 0.625rem;
       background: #F8F9FA;
-      border-radius: 12px;
+      border-radius: 10px;
       border: 2px solid transparent;
       transition: all 0.3s ease;
     }
@@ -265,13 +266,12 @@ import { MatBadgeModule } from '@angular/material/badge';
     .position-badge {
       width: 50px;
       height: 50px;
-      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       background: white;
       border-radius: 50%;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
     .trophy-icon {
@@ -300,7 +300,6 @@ import { MatBadgeModule } from '@angular/material/badge';
 
     /* Student Info */
     .student-info {
-      flex: 1;
       min-width: 0;
     }
 
@@ -308,10 +307,13 @@ import { MatBadgeModule } from '@angular/material/badge';
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       color: #333;
       margin-bottom: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .me-badge {
@@ -324,8 +326,8 @@ import { MatBadgeModule } from '@angular/material/badge';
     .student-meta {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.85rem;
+      gap: 0.4rem;
+      font-size: 0.8rem;
       color: #666;
     }
 
@@ -350,21 +352,21 @@ import { MatBadgeModule } from '@angular/material/badge';
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      flex-shrink: 0;
     }
 
     .points-value {
-      font-size: 1.5rem;
+      font-size: 1.35rem;
       font-weight: 700;
       color: #FFB74D;
       line-height: 1;
     }
 
     .points-label {
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       color: #999;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      margin-top: 0.15rem;
     }
 
     /* ========== EMPTY STATE ========== */
@@ -398,21 +400,21 @@ import { MatBadgeModule } from '@angular/material/badge';
 
     /* ========== MI POSICIÓN CARD ========== */
     .mi-posicion-card {
-      margin-top: 1.5rem;
-      padding: 1.25rem;
+      margin: 0.75rem 1.25rem 0;
+      padding: 1rem;
       background: linear-gradient(135deg, #E3F2FD 0%, #F0F7FF 100%);
       border: 2px solid #48A3F3;
-      border-radius: 12px;
+      border-radius: 10px;
     }
 
     .card-header {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
       font-weight: 600;
       color: #1976D2;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
     .card-header mat-icon {
@@ -424,43 +426,47 @@ import { MatBadgeModule } from '@angular/material/badge';
     .card-content {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
+      gap: 1rem;
     }
 
     .position-circle {
-      width: 70px;
-      height: 70px;
+      width: 60px;
+      height: 60px;
       background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 16px rgba(72, 163, 243, 0.4);
+      box-shadow: 0 4px 12px rgba(72, 163, 243, 0.3);
       flex-shrink: 0;
     }
 
     .big-number {
-      font-size: 1.5rem;
+      font-size: 1.4rem;
       font-weight: 700;
       color: white;
     }
 
     .position-details {
       flex: 1;
+      min-width: 0;
     }
 
     .position-details h4 {
-      margin: 0 0 0.5rem;
-      font-size: 1.1rem;
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
       color: #333;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .detail-row {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.25rem;
-      font-size: 0.9rem;
+      gap: 0.4rem;
+      margin-bottom: 0.2rem;
+      font-size: 0.85rem;
       color: #666;
     }
 
@@ -473,19 +479,20 @@ import { MatBadgeModule } from '@angular/material/badge';
 
     /* ========== ACTIONS ========== */
     mat-dialog-actions {
-      padding: 1rem 0 0 !important;
-      margin: 1rem 0 0 0 !important;
+      padding: 0.875rem 0 0 !important;
+      margin: 0.875rem 0 0 0 !important;
       border-top: 1px solid #eee;
       display: flex;
       justify-content: center;
     }
 
     mat-dialog-actions button {
-      min-width: 180px;
-      height: 42px;
+      min-width: 160px;
+      height: 40px;
       border-radius: 8px !important;
       font-weight: 600;
       background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%) !important;
+      font-size: 0.9rem;
     }
 
     mat-dialog-actions button mat-icon {
@@ -600,7 +607,6 @@ export class RankingInlineDialog {
   ) {}
 
   isInTopRanking(position: number): boolean {
-    // Verifica si la posición está en los primeros N elementos mostrados
     const topCount = Math.min(10, this.data.ranking?.length || 0);
     return position <= topCount;
   }

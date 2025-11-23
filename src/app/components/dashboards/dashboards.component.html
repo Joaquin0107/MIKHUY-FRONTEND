@@ -589,221 +589,355 @@
       </div>
       <!-- ========== FIN GRÁFICOS DE JUEGOS ========== -->
 
-   <!-- ========== SECCIÓN DE SALUD COMPLETA ========== -->
-<ng-container *ngIf="dashboardData?.salud as salud">
-  
-  <!-- Estado de Salud Actual -->
-  <mat-card class="health-summary-card" *ngIf="salud.medicionActual">
-    <mat-card-header>
-      <mat-card-title>
-        <mat-icon>favorite</mat-icon>
-        Estado de Salud
-      </mat-card-title>
-    </mat-card-header>
-    <mat-card-content>
-      <div class="health-summary">
-        <!-- IMC Gauge -->
-        <div class="imc-gauge" *ngIf="salud.estadisticas as stats">
-          <svg viewBox="0 0 200 120" class="gauge-svg">
-            <path d="M 20 100 A 80 80 0 0 1 100 20" class="gauge-segment bajo-peso" />
-            <path d="M 100 20 A 80 80 0 0 1 140 35" class="gauge-segment normal" />
-            <path d="M 140 35 A 80 80 0 0 1 165 65" class="gauge-segment sobrepeso" />
-            <path d="M 165 65 A 80 80 0 0 1 180 100" class="gauge-segment obesidad" />
-            <g [attr.transform]="'rotate(' + getIMCAngle(stats.imcActual || 0) + ' 100 100)'">
-              <line x1="100" y1="100" x2="100" y2="35" class="gauge-needle" />
-              <circle cx="100" cy="100" r="6" class="gauge-center" />
-            </g>
-          </svg>
-          <div class="imc-info">
-            <h3>{{stats.imcActual | number:'1.1-1'}}</h3>
-            <p class="imc-label">Índice de Masa Corporal</p>
-            <span class="estado-badge" 
-                  [ngClass]="{
-                    'bajo-peso': stats.estadoNutricionalActual === 'Bajo peso',
-                    'normal': stats.estadoNutricionalActual === 'Normal',
-                    'sobrepeso': stats.estadoNutricionalActual === 'Sobrepeso',
-                    'obesidad': stats.estadoNutricionalActual === 'Obesidad'
-                  }">
-              {{stats.estadoNutricionalActual}}
-            </span>
-          </div>
-        </div>
+      <!-- ========== SECCIÓN DE SALUD COMPLETA ========== -->
+      <ng-container *ngIf="dashboardData?.salud as salud">
+        <!-- Estado de Salud Actual -->
+        <mat-card class="health-summary-card" *ngIf="salud.medicionActual">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>favorite</mat-icon>
+              Estado de Salud
+            </mat-card-title>
+          </mat-card-header>
+          <mat-card-content
+            ><div class="health-summary">
+              <!-- IMC Gauge -->
+              <div class="imc-gauge" *ngIf="salud.estadisticas as stats">
+                <svg viewBox="0 0 200 120" class="gauge-svg">
+                  <path
+                    d="M 20 100 A 80 80 0 0 1 100 20"
+                    class="gauge-segment bajo-peso"
+                  />
+                  <path
+                    d="M 100 20 A 80 80 0 0 1 140 35"
+                    class="gauge-segment normal"
+                  />
+                  <path
+                    d="M 140 35 A 80 80 0 0 1 165 65"
+                    class="gauge-segment sobrepeso"
+                  />
+                  <path
+                    d="M 165 65 A 80 80 0 0 1 180 100"
+                    class="gauge-segment obesidad"
+                  />
+                  <g
+                    [attr.transform]="
+                      'rotate(' +
+                      getIMCAngle(stats.imcActual || 0) +
+                      ' 100 100)'
+                    "
+                  >
+                    <line
+                      x1="100"
+                      y1="100"
+                      x2="100"
+                      y2="35"
+                      class="gauge-needle"
+                    />
+                    <circle cx="100" cy="100" r="6" class="gauge-center" />
+                  </g>
+                </svg>
+                <div class="imc-info">
+                  <h3>{{ stats.imcActual | number : "1.1-1" }}</h3>
+                  <p class="imc-label">Índice de Masa Corporal</p>
+                  <span
+                    class="estado-badge"
+                    [ngClass]="{
+                      'bajo-peso':
+                        stats.estadoNutricionalActual === 'Bajo peso',
+                      normal: stats.estadoNutricionalActual === 'Normal',
+                      sobrepeso: stats.estadoNutricionalActual === 'Sobrepeso',
+                      obesidad: stats.estadoNutricionalActual === 'Obesidad'
+                    }"
+                  >
+                    {{ stats.estadoNutricionalActual }}
+                  </span>
+                </div>
+              </div>
 
-        <!-- Mediciones Actuales -->
-        <div class="mediciones-actuales">
-          <!-- PESO -->
-          <div class="medicion-card">
-            <mat-icon>monitor_weight</mat-icon>
-            <div class="medicion-info">
-              <h4>{{salud.medicionActual.peso}} kg</h4>
-              <p>Peso</p>
-              <ng-container *ngIf="salud.estadisticas as stats">
-                <span class="variacion" 
-                      [ngClass]="{
-                        'positivo': stats.variacionPeso > 0,
-                        'negativo': stats.variacionPeso < 0
-                      }"
-                      *ngIf="stats.variacionPeso !== 0">
-                  <mat-icon>{{stats.variacionPeso > 0 ? 'trending_up' : 'trending_down'}}</mat-icon>
-                  {{stats.variacionPeso > 0 ? '+' : ''}}{{stats.variacionPeso | number:'1.1-1'}}%
-                </span>
-              </ng-container>
+              <!-- Mediciones Actuales -->
+              <div class="mediciones-actuales">
+                <!-- PESO -->
+                <div class="medicion-card">
+                  <mat-icon>monitor_weight</mat-icon>
+                  <div class="medicion-info">
+                    <h4>{{ salud.medicionActual.peso }} kg</h4>
+                    <p>Peso</p>
+                    <ng-container *ngIf="salud.estadisticas as stats">
+                      <span
+                        class="variacion"
+                        [ngClass]="{
+                          positivo: stats.variacionPeso > 0,
+                          negativo: stats.variacionPeso < 0
+                        }"
+                        *ngIf="stats.variacionPeso !== 0"
+                      >
+                        <mat-icon>{{
+                          stats.variacionPeso > 0
+                            ? "trending_up"
+                            : "trending_down"
+                        }}</mat-icon>
+                        {{ stats.variacionPeso > 0 ? "+" : ""
+                        }}{{ stats.variacionPeso | number : "1.1-1" }}%
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+
+                <!-- TALLA - ✅ CORREGIDO -->
+                <div class="medicion-card">
+                  <mat-icon>height</mat-icon>
+                  <div class="medicion-info">
+                    <h4>{{ salud.medicionActual.talla }} cm</h4>
+                    <p>Talla</p>
+                    <ng-container *ngIf="salud.estadisticas as stats">
+                      <!-- ✅ CLASE CORRECTA: talla-up para color VERDE -->
+                      <span
+                        class="variacion talla-up"
+                        *ngIf="stats.variacionTalla > 0"
+                      >
+                        <mat-icon>trending_up</mat-icon>
+                        +{{ stats.variacionTalla | number : "1.1-1" }}%
+                      </span>
+                    </ng-container>
+                  </div>
+                </div>
+
+                <!-- TENDENCIA -->
+                <div class="medicion-card" *ngIf="salud.estadisticas as stats">
+                  <mat-icon>{{ getTendenciaIcon(stats.tendencia) }}</mat-icon>
+                  <div class="medicion-info">
+                    <h4>{{ stats.tendencia }}</h4>
+                    <p>Tendencia</p>
+                    <span class="mediciones-count"
+                      >{{ stats.totalMediciones }} mediciones</span
+                    >
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          <!-- TALLA - ✅ CORREGIDO -->
-          <div class="medicion-card">
-            <mat-icon>height</mat-icon>
-            <div class="medicion-info">
-              <h4>{{salud.medicionActual.talla}} cm</h4>
-              <p>Talla</p>
-              <ng-container *ngIf="salud.estadisticas as stats">
-                <!-- ✅ CLASE CORRECTA: talla-up para color VERDE -->
-                <span class="variacion talla-up" *ngIf="stats.variacionTalla > 0">
-                  <mat-icon>trending_up</mat-icon>
-                  +{{stats.variacionTalla | number:'1.1-1'}}%
-                </span>
-              </ng-container>
+            <!-- Recomendación -->
+            <div
+              class="health-recommendation"
+              *ngIf="salud.estadisticas as stats"
+            >
+              <mat-icon>info</mat-icon>
+              <p>{{ stats.recomendacion }}</p>
             </div>
-          </div>
+          </mat-card-content>
+        </mat-card>
 
-          <!-- TENDENCIA -->
-          <div class="medicion-card" *ngIf="salud.estadisticas as stats">
-            <mat-icon>{{getTendenciaIcon(stats.tendencia)}}</mat-icon>
-            <div class="medicion-info">
-              <h4>{{stats.tendencia}}</h4>
-              <p>Tendencia</p>
-              <span class="mediciones-count">{{stats.totalMediciones}} mediciones</span>
-            </div>
-          </div>
-        </div>
-      </div>
+        <!-- Gráficas de Evolución -->
+        <ng-container *ngIf="salud.historialMediciones as mediciones">
+          <!-- ✅ MENSAJE cuando solo hay 1 medición -->
+          <mat-card
+            class="chart-card"
+            *ngIf="mediciones.length === 1"
+            style="margin-bottom: 2rem"
+          >
+            <mat-card-content>
+              <div class="empty-state" style="padding: 2rem">
+                <mat-icon style="color: #ffb74d">show_chart</mat-icon>
+                <h3>Primera Medición Registrada</h3>
+                <p>
+                  Se necesitan al menos 2 mediciones para mostrar los gráficos
+                  de evolución.<br />
+                  Los gráficos se generarán automáticamente con la próxima
+                  medición.
+                </p>
+              </div>
+            </mat-card-content>
+          </mat-card>
 
-      <!-- Recomendación -->
-      <div class="health-recommendation" *ngIf="salud.estadisticas as stats">
-        <mat-icon>info</mat-icon>
-        <p>{{stats.recomendacion}}</p>
-      </div>
-    </mat-card-content>
-  </mat-card>
-
-  <!-- Gráficas de Evolución -->
-  <ng-container *ngIf="salud.historialMediciones as mediciones">
-    <!-- ✅ MENSAJE cuando solo hay 1 medición -->
-    <mat-card class="chart-card" *ngIf="mediciones.length === 1" style="margin-bottom: 2rem;">
-      <mat-card-content>
-        <div class="empty-state" style="padding: 2rem;">
-          <mat-icon style="color: #FFB74D;">show_chart</mat-icon>
-          <h3>Primera Medición Registrada</h3>
-          <p>Se necesitan al menos 2 mediciones para mostrar los gráficos de evolución.<br>
-          Los gráficos se generarán automáticamente con la próxima medición.</p>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- ✅ GRÁFICOS solo cuando hay 2 o más mediciones -->
-    <div class="health-charts-grid" *ngIf="mediciones.length >= 2">
-      
-      <!-- Gráfica de Peso -->
-      <mat-card class="chart-card">
-        <mat-card-header>
-          <mat-card-title>Evolución de Peso</mat-card-title>
-          <span class="data-source">Últimas {{mediciones.length}} mediciones</span>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="line-chart-container">
-            <svg viewBox="0 0 400 200" class="line-chart">
-              <line x1="40" y1="20" x2="40" y2="160" class="grid-line" />
-              <line x1="40" y1="160" x2="380" y2="160" class="grid-line" />
-              <polyline [attr.points]="getWeightChartPoints()" class="chart-line peso-line" />
-              <circle *ngFor="let point of getWeightPoints(); let i = index"
+          <!-- ✅ GRÁFICOS solo cuando hay 2 o más mediciones -->
+          <div class="health-charts-grid" *ngIf="mediciones.length >= 2">
+            <!-- Gráfica de Peso -->
+            <mat-card class="chart-card">
+              <mat-card-header>
+                <mat-card-title>Evolución de Peso</mat-card-title>
+                <span class="data-source"
+                  >Últimas {{ mediciones.length }} mediciones</span
+                >
+              </mat-card-header>
+              <mat-card-content>
+                <div class="line-chart-container">
+                  <svg viewBox="0 0 400 200" class="line-chart">
+                    <line x1="40" y1="20" x2="40" y2="160" class="grid-line" />
+                    <line
+                      x1="40"
+                      y1="160"
+                      x2="380"
+                      y2="160"
+                      class="grid-line"
+                    />
+                    <polyline
+                      [attr.points]="getWeightChartPoints()"
+                      class="chart-line peso-line"
+                    />
+                    <circle
+                      *ngFor="let point of getWeightPoints(); let i = index"
                       [attr.cx]="point.x"
                       [attr.cy]="point.y"
                       r="4"
                       class="chart-point peso-point"
-                      [matTooltip]="point.peso + ' kg - ' + point.fecha">
-              </circle>
-              <text x="15" y="25" class="chart-label">kg</text>
-            </svg>
-          </div>
-        </mat-card-content>
-      </mat-card>
+                      [matTooltip]="point.peso + ' kg - ' + point.fecha"
+                    ></circle>
+                    <text x="15" y="25" class="chart-label">kg</text>
+                  </svg>
+                </div>
+              </mat-card-content>
+            </mat-card>
 
-      <!-- Gráfica de Talla -->
-      <mat-card class="chart-card">
-        <mat-card-header>
-          <mat-card-title>Evolución de Talla</mat-card-title>
-          <span class="data-source">Últimas {{mediciones.length}} mediciones</span>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="line-chart-container">
-            <svg viewBox="0 0 400 200" class="line-chart">
-              <line x1="40" y1="20" x2="40" y2="160" class="grid-line" />
-              <line x1="40" y1="160" x2="380" y2="160" class="grid-line" />
-              <polyline [attr.points]="getHeightChartPoints()" class="chart-line talla-line" />
-              <circle *ngFor="let point of getHeightPoints(); let i = index"
+            <!-- Gráfica de Talla -->
+            <mat-card class="chart-card">
+              <mat-card-header>
+                <mat-card-title>Evolución de Talla</mat-card-title>
+                <span class="data-source"
+                  >Últimas {{ mediciones.length }} mediciones</span
+                >
+              </mat-card-header>
+              <mat-card-content>
+                <div class="line-chart-container">
+                  <svg viewBox="0 0 400 200" class="line-chart">
+                    <line x1="40" y1="20" x2="40" y2="160" class="grid-line" />
+                    <line
+                      x1="40"
+                      y1="160"
+                      x2="380"
+                      y2="160"
+                      class="grid-line"
+                    />
+                    <polyline
+                      [attr.points]="getHeightChartPoints()"
+                      class="chart-line talla-line"
+                    />
+                    <circle
+                      *ngFor="let point of getHeightPoints(); let i = index"
                       [attr.cx]="point.x"
                       [attr.cy]="point.y"
                       r="4"
                       class="chart-point talla-point"
-                      [matTooltip]="point.talla + ' cm - ' + point.fecha">
-              </circle>
-              <text x="15" y="25" class="chart-label">cm</text>
-            </svg>
-          </div>
-        </mat-card-content>
-      </mat-card>
+                      [matTooltip]="point.talla + ' cm - ' + point.fecha"
+                    ></circle>
+                    <text x="15" y="25" class="chart-label">cm</text>
+                  </svg>
+                </div>
+              </mat-card-content>
+            </mat-card>
 
-      <!-- Gráfica de IMC -->
-      <mat-card class="chart-card">
-        <mat-card-header>
-          <mat-card-title>Evolución del IMC</mat-card-title>
-          <span class="data-source">Últimas {{mediciones.length}} mediciones</span>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="line-chart-container">
-            <svg viewBox="0 0 400 200" class="line-chart">
-              <rect x="40" y="20" width="340" height="35" class="imc-zone bajo-peso" opacity="0.1" />
-              <rect x="40" y="55" width="340" height="50" class="imc-zone normal" opacity="0.1" />
-              <rect x="40" y="105" width="340" height="30" class="imc-zone sobrepeso" opacity="0.1" />
-              <rect x="40" y="135" width="340" height="25" class="imc-zone obesidad" opacity="0.1" />
-              <line x1="40" y1="20" x2="40" y2="160" class="grid-line" />
-              <line x1="40" y1="160" x2="380" y2="160" class="grid-line" />
-              <text x="45" y="40" class="zone-label">Bajo peso (&lt;18.5)</text>
-              <text x="45" y="80" class="zone-label">Normal (18.5-25)</text>
-              <text x="45" y="120" class="zone-label">Sobrepeso (25-30)</text>
-              <text x="45" y="150" class="zone-label">Obesidad (&gt;30)</text>
-              <polyline [attr.points]="getIMCChartPoints()" class="chart-line imc-line" />
-              <circle *ngFor="let point of getIMCPoints(); let i = index"
+            <!-- Gráfica de IMC -->
+            <mat-card class="chart-card">
+              <mat-card-header>
+                <mat-card-title>Evolución del IMC</mat-card-title>
+                <span class="data-source"
+                  >Últimas {{ mediciones.length }} mediciones</span
+                >
+              </mat-card-header>
+              <mat-card-content>
+                <div class="line-chart-container">
+                  <svg viewBox="0 0 400 200" class="line-chart">
+                    <rect
+                      x="40"
+                      y="20"
+                      width="340"
+                      height="35"
+                      class="imc-zone bajo-peso"
+                      opacity="0.1"
+                    />
+                    <rect
+                      x="40"
+                      y="55"
+                      width="340"
+                      height="50"
+                      class="imc-zone normal"
+                      opacity="0.1"
+                    />
+                    <rect
+                      x="40"
+                      y="105"
+                      width="340"
+                      height="30"
+                      class="imc-zone sobrepeso"
+                      opacity="0.1"
+                    />
+                    <rect
+                      x="40"
+                      y="135"
+                      width="340"
+                      height="25"
+                      class="imc-zone obesidad"
+                      opacity="0.1"
+                    />
+                    <line x1="40" y1="20" x2="40" y2="160" class="grid-line" />
+                    <line
+                      x1="40"
+                      y1="160"
+                      x2="380"
+                      y2="160"
+                      class="grid-line"
+                    />
+                    <text x="45" y="40" class="zone-label">
+                      Bajo peso (&lt;18.5)
+                    </text>
+                    <text x="45" y="80" class="zone-label">
+                      Normal (18.5-25)
+                    </text>
+                    <text x="45" y="120" class="zone-label">
+                      Sobrepeso (25-30)
+                    </text>
+                    <text x="45" y="150" class="zone-label">
+                      Obesidad (&gt;30)
+                    </text>
+                    <polyline
+                      [attr.points]="getIMCChartPoints()"
+                      class="chart-line imc-line"
+                    />
+                    <circle
+                      *ngFor="let point of getIMCPoints(); let i = index"
                       [attr.cx]="point.x"
                       [attr.cy]="point.y"
                       r="4"
                       [attr.class]="'chart-point imc-point ' + point.estado"
-                      [matTooltip]="'IMC: ' + point.imc + ' (' + point.estado + ') - ' + point.fecha">
-              </circle>
-              <text x="15" y="25" class="chart-label">IMC</text>
-            </svg>
+                      [matTooltip]="
+                        'IMC: ' +
+                        point.imc +
+                        ' (' +
+                        point.estado +
+                        ') - ' +
+                        point.fecha
+                      "
+                    ></circle>
+                    <text x="15" y="25" class="chart-label">IMC</text>
+                  </svg>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </ng-container>
+      </ng-container>
+      <!-- ========== FIN SECCIÓN DE SALUD ========== -->
+
+      <!-- Empty state para salud -->
+      <mat-card
+        class="health-empty-card"
+        *ngIf="!dashboardData?.salud?.medicionActual"
+      >
+        <mat-card-content>
+          <div class="empty-state">
+            <mat-icon>monitor_heart</mat-icon>
+            <h3>No hay mediciones de salud registradas</h3>
+            <p>
+              Actualiza el peso y talla del estudiante en su perfil para
+              comenzar el seguimiento.
+            </p>
+            <button mat-raised-button color="primary" (click)="openProfile()">
+              <mat-icon>edit</mat-icon>
+              Ir al Perfil
+            </button>
           </div>
         </mat-card-content>
       </mat-card>
-
     </div>
-  </ng-container>
-
-</ng-container>
-<!-- ========== FIN SECCIÓN DE SALUD ========== -->
-
-<!-- Empty state para salud -->
-<mat-card class="health-empty-card" *ngIf="!dashboardData?.salud?.medicionActual">
-  <mat-card-content>
-    <div class="empty-state">
-      <mat-icon>monitor_heart</mat-icon>
-      <h3>No hay mediciones de salud registradas</h3>
-      <p>Actualiza el peso y talla del estudiante en su perfil para comenzar el seguimiento.</p>
-      <button mat-raised-button color="primary" (click)="openProfile()">
-        <mat-icon>edit</mat-icon>
-        Ir al Perfil
-      </button>
-    </div>
-  </mat-card-content>
-</mat-card>
+  </div>
+</div>
