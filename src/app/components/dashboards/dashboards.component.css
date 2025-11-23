@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
 .dashboards-container {
   min-height: 100vh;
   background: #f8f9fa;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 /* ========== HEADER ========== */
@@ -64,7 +64,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-  background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%) !important;
+  background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%) !important;
   color: white !important;
 }
 
@@ -88,7 +88,7 @@
 
 .icon-btn:hover {
   background: #f8f9fa;
-  border-color: #48A3F3;
+  border-color: #48a3f3;
 }
 
 .icon-btn mat-icon {
@@ -96,7 +96,7 @@
 }
 
 .notifications-btn mat-icon {
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 /* ========== LOADING & ERROR ========== */
@@ -146,7 +146,7 @@
 .notification-header {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid #e0e0e0;
-  background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%);
+  background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%);
 }
 
 .notification-header h3 {
@@ -190,7 +190,7 @@
 }
 
 .notification-item mat-icon {
-  color: #48A3F3;
+  color: #48a3f3;
   flex-shrink: 0;
 }
 
@@ -232,7 +232,7 @@
 }
 
 .search-box mat-icon {
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .search-box input {
@@ -241,7 +241,7 @@
   outline: none;
   font-size: 0.95rem;
   background: transparent;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .student-list {
@@ -264,7 +264,7 @@
 
 .student-list mat-list-item.active {
   background: #e3f2fd;
-  border-left: 4px solid #48A3F3;
+  border-left: 4px solid #48a3f3;
 }
 
 .student-item {
@@ -320,7 +320,7 @@
 .points-badge {
   display: inline-block;
   background: #e3f2fd;
-  color: #48A3F3;
+  color: #48a3f3;
   padding: 0.15rem 0.5rem;
   border-radius: 12px;
   font-size: 0.75rem;
@@ -361,7 +361,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 4px solid #48A3F3;
+  border: 4px solid #48a3f3;
   box-shadow: 0 4px 12px rgba(72, 163, 243, 0.3);
 }
 
@@ -412,7 +412,7 @@
 }
 
 .stat-item .value.highlight {
-  color: #48A3F3;
+  color: #48a3f3;
   font-size: 1.1rem;
 }
 
@@ -424,7 +424,8 @@
   border-top: 1px solid #e0e0e0;
 }
 
-.download-btn, .email-btn {
+.download-btn,
+.email-btn {
   font-weight: 600 !important;
   padding: 0 1.5rem !important;
   transition: all 0.3s !important;
@@ -432,20 +433,22 @@
 }
 
 .download-btn {
-  background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%) !important;
+  background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%) !important;
   color: white !important;
 }
 
 .email-btn {
-  background: linear-gradient(135deg, #7BC67E 0%, #5FB83D 100%) !important;
+  background: linear-gradient(135deg, #7bc67e 0%, #5fb83d 100%) !important;
   color: white !important;
 }
 
-.download-btn mat-icon, .email-btn mat-icon {
+.download-btn mat-icon,
+.email-btn mat-icon {
   margin-right: 0.5rem;
 }
 
-.download-btn:hover, .email-btn:hover {
+.download-btn:hover,
+.email-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
 }
@@ -483,19 +486,19 @@
 }
 
 .stat-icon.points {
-  color: #FFB74D;
+  color: #ffb74d;
 }
 
 .stat-icon.games {
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .stat-icon.sessions {
-  color: #7BC67E;
+  color: #7bc67e;
 }
 
 .stat-icon.ranking {
-  color: #9C27B0;
+  color: #9c27b0;
 }
 
 .stat-content h3 {
@@ -533,13 +536,18 @@
 }
 
 .chart-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(72, 163, 243, 0.1), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(72, 163, 243, 0.1),
+    transparent
+  );
   transition: left 0.5s ease;
 }
 
@@ -648,14 +656,14 @@
 }
 
 .detail-item mat-icon {
-  color: #48A3F3;
+  color: #48a3f3;
   font-size: 28px;
   width: 28px;
   height: 28px;
 }
 
 .detail-item.success mat-icon {
-  color: #7BC67E;
+  color: #7bc67e;
 }
 
 .detail-item strong {
@@ -699,15 +707,15 @@
 }
 
 .donut-segment.protein {
-  stroke: #4285F4;
+  stroke: #4285f4;
 }
 
 .donut-segment.carbs {
-  stroke: #7BC67E;
+  stroke: #7bc67e;
 }
 
 .donut-segment.fat {
-  stroke: #FFB74D;
+  stroke: #ffb74d;
 }
 
 .donut-center {
@@ -715,7 +723,7 @@
   font-weight: 700;
   fill: #333;
   text-anchor: middle;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .chart-legend {
@@ -744,15 +752,15 @@
 }
 
 .protein-color {
-  background: #4285F4;
+  background: #4285f4;
 }
 
 .carbs-color {
-  background: #7BC67E;
+  background: #7bc67e;
 }
 
 .fat-color {
-  background: #FFB74D;
+  background: #ffb74d;
 }
 
 /* Game Progress */
@@ -771,7 +779,7 @@
   font-size: 48px !important;
   width: 48px !important;
   height: 48px !important;
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .progress-header h3 {
@@ -799,14 +807,14 @@
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #48A3F3, #5bb3ff);
+  background: linear-gradient(90deg, #48a3f3, #5bb3ff);
   border-radius: 14px;
   transition: width 0.5s ease;
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .progress-bar.coach {
-  background: linear-gradient(90deg, #9C27B0, #BA68C8);
+  background: linear-gradient(90deg, #9c27b0, #ba68c8);
 }
 
 .game-stats {
@@ -831,7 +839,7 @@
 }
 
 .game-stat-item mat-icon {
-  color: #48A3F3;
+  color: #48a3f3;
   font-size: 26px;
   width: 26px;
   height: 26px;
@@ -868,7 +876,7 @@
 }
 
 .game-name mat-icon {
-  color: #48A3F3;
+  color: #48a3f3;
   font-size: 26px;
   width: 26px;
   height: 26px;
@@ -884,14 +892,14 @@
 
 .game-bar {
   height: 100%;
-  background: linear-gradient(90deg, #48A3F3, #5bb3ff);
+  background: linear-gradient(90deg, #48a3f3, #5bb3ff);
   border-radius: 12px;
   transition: width 0.5s ease;
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
 .game-bar.completed {
-  background: linear-gradient(90deg, #7BC67E, #5FB83D);
+  background: linear-gradient(90deg, #7bc67e, #5fb83d);
 }
 
 .game-percentage {
@@ -935,7 +943,7 @@
 }
 
 .stage-circle.active .stage-number {
-  background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%);
+  background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%);
   color: white;
   transform: scale(1.15);
   box-shadow: 0 4px 16px rgba(72, 163, 243, 0.5);
@@ -951,7 +959,7 @@
 }
 
 .stage-circle.active p {
-  color: #48A3F3;
+  color: #48a3f3;
   font-weight: 600;
 }
 
@@ -965,7 +973,7 @@
 }
 
 .stage-connector.active {
-  background: #48A3F3;
+  background: #48a3f3;
 }
 
 .current-stage-info {
@@ -975,14 +983,14 @@
   padding: 1rem 1.25rem;
   background: #e3f2fd;
   border-radius: 10px;
-  border-left: 4px solid #48A3F3;
+  border-left: 4px solid #48a3f3;
 }
 
 .current-stage-info mat-icon {
   font-size: 38px;
   width: 38px;
   height: 38px;
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .current-stage-info strong {
@@ -1030,11 +1038,11 @@
   font-size: 34px !important;
   width: 34px !important;
   height: 34px !important;
-  color: #7BC67E;
+  color: #7bc67e;
 }
 
 .session-icon.completed {
-  color: #7BC67E !important;
+  color: #7bc67e !important;
 }
 
 .session-details {
@@ -1062,7 +1070,7 @@
   display: block;
   font-size: 1.1rem;
   font-weight: 700;
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .session-points small {
@@ -1116,7 +1124,7 @@
 }
 
 .ranking-position.top3 {
-  background: linear-gradient(135deg, #FFB74D, #FF9800);
+  background: linear-gradient(135deg, #ffb74d, #ff9800);
   color: white;
   box-shadow: 0 4px 12px rgba(255, 183, 77, 0.4);
 }
@@ -1133,7 +1141,7 @@
 .ranking-points {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .my-ranking {
@@ -1144,15 +1152,15 @@
   margin-top: 1rem;
   background: #e3f2fd;
   border-radius: 12px;
-  border: 2px solid #48A3F3;
+  border: 2px solid #48a3f3;
 }
 
 .my-ranking mat-icon {
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .my-ranking strong {
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 /* ========== BENEFITS ========== */
@@ -1192,7 +1200,7 @@
   object-fit: cover;
   border-radius: 50%;
   margin-bottom: 0.75rem;
-  border: 3px solid #48A3F3;
+  border: 3px solid #48a3f3;
 }
 
 .benefit-item h4 {
@@ -1205,7 +1213,7 @@
 .benefit-points {
   font-size: 1.05rem;
   font-weight: 700;
-  color: #48A3F3;
+  color: #48a3f3;
   margin: 0.25rem 0;
 }
 
@@ -1238,7 +1246,7 @@
 
 /* Info Icon */
 .info-icon {
-  color: #48A3F3;
+  color: #48a3f3;
   cursor: help;
   font-size: 22px;
   width: 22px;
@@ -1260,7 +1268,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .health-summary-card mat-card-title mat-icon {
@@ -1295,19 +1303,19 @@
 }
 
 .gauge-segment.bajo-peso {
-  stroke: #42A5F5;
+  stroke: #42a5f5;
 }
 
 .gauge-segment.normal {
-  stroke: #66BB6A;
+  stroke: #66bb6a;
 }
 
 .gauge-segment.sobrepeso {
-  stroke: #FFA726;
+  stroke: #ffa726;
 }
 
 .gauge-segment.obesidad {
-  stroke: #EF5350;
+  stroke: #ef5350;
 }
 
 .gauge-needle {
@@ -1349,23 +1357,23 @@
 }
 
 .estado-badge.bajo-peso {
-  background: #E3F2FD;
-  color: #1976D2;
+  background: #e3f2fd;
+  color: #1976d2;
 }
 
 .estado-badge.normal {
-  background: #E8F5E9;
-  color: #388E3C;
+  background: #e8f5e9;
+  color: #388e3c;
 }
 
 .estado-badge.sobrepeso {
-  background: #FFF3E0;
-  color: #F57C00;
+  background: #fff3e0;
+  color: #f57c00;
 }
 
 .estado-badge.obesidad {
-  background: #FFEBEE;
-  color: #D32F2F;
+  background: #ffebee;
+  color: #d32f2f;
 }
 
 /* Mediciones Actuales */
@@ -1381,15 +1389,15 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1.25rem;
-  background: #F8F9FA;
+  background: #f8f9fa;
   border-radius: 12px;
   transition: all 0.3s;
   border: 2px solid transparent;
 }
 
 .medicion-card:hover {
-  background: #E3F2FD;
-  border-color: #48A3F3;
+  background: #e3f2fd;
+  border-color: #48a3f3;
   transform: translateY(-2px);
 }
 
@@ -1397,7 +1405,7 @@
   font-size: 36px;
   width: 36px;
   height: 36px;
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .medicion-info {
@@ -1436,7 +1444,7 @@
 
 /* ✅ CORRECCIÓN: Flecha VERDE para crecimiento en talla */
 .variacion.talla-up {
-  background: #E8F5E9 !important;
+  background: #e8f5e9 !important;
   color: #4caf50 !important;
 }
 
@@ -1446,7 +1454,7 @@
 
 /* ✅ Flecha ROJA para aumento de peso */
 .variacion.positivo {
-  background: #FFEBEE;
+  background: #ffebee;
   color: #f44336;
 }
 
@@ -1456,7 +1464,7 @@
 
 /* ✅ Flecha VERDE para disminución de peso */
 .variacion.negativo {
-  background: #E8F5E9;
+  background: #e8f5e9;
   color: #4caf50;
 }
 
@@ -1478,13 +1486,13 @@
   gap: 1rem;
   margin-top: 1.5rem;
   padding: 1.25rem;
-  background: #E3F2FD;
+  background: #e3f2fd;
   border-radius: 12px;
-  border-left: 4px solid #48A3F3;
+  border-left: 4px solid #48a3f3;
 }
 
 .health-recommendation mat-icon {
-  color: #48A3F3;
+  color: #48a3f3;
   font-size: 28px;
   width: 28px;
   height: 28px;
@@ -1559,7 +1567,7 @@
 
 .chart-point:hover {
   r: 6 !important;
-  filter: drop-shadow(0 0 6px rgba(0,0,0,0.4));
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.4));
 }
 
 .peso-point {
@@ -1578,33 +1586,33 @@
 }
 
 .imc-point.bajo-peso {
-  fill: #42A5F5;
+  fill: #42a5f5;
 }
 
 .imc-point.normal {
-  fill: #66BB6A;
+  fill: #66bb6a;
 }
 
 .imc-point.sobrepeso {
-  fill: #FFA726;
+  fill: #ffa726;
 }
 
 .imc-point.obesidad {
-  fill: #EF5350;
+  fill: #ef5350;
 }
 
 .chart-label {
   font-size: 12px;
   fill: #666;
   font-weight: 600;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 .zone-label {
   font-size: 9px;
   fill: #999;
   font-weight: 500;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 /* Zonas del IMC */
@@ -1618,19 +1626,19 @@
 }
 
 .imc-zone.bajo-peso {
-  fill: #42A5F5;
+  fill: #42a5f5;
 }
 
 .imc-zone.normal {
-  fill: #66BB6A;
+  fill: #66bb6a;
 }
 
 .imc-zone.sobrepeso {
-  fill: #FFA726;
+  fill: #ffa726;
 }
 
 .imc-zone.obesidad {
-  fill: #EF5350;
+  fill: #ef5350;
 }
 
 /* Health Empty State */
@@ -1649,7 +1657,7 @@
   font-size: 100px;
   width: 100px;
   height: 100px;
-  color: #FFB74D;
+  color: #ffb74d;
 }
 
 .health-empty-card .empty-state h3 {
@@ -1728,7 +1736,7 @@
 }
 
 .chart-container.loading::after {
-  content: 'Cargando datos...';
+  content: "Cargando datos...";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -1792,7 +1800,8 @@
     flex-direction: column;
   }
 
-  .download-btn, .email-btn {
+  .download-btn,
+  .email-btn {
     width: 100%;
   }
 
@@ -1803,20 +1812,20 @@
   .charts-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .game-comparison-item {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .game-name {
     min-width: 100%;
   }
-  
+
   .game-bar-container {
     width: 100%;
   }
-  
+
   .game-percentage {
     width: 100%;
     text-align: left;
@@ -1830,7 +1839,7 @@
     flex-wrap: wrap;
     justify-content: center;
   }
-  
+
   .stage-circle p {
     font-size: 0.65rem;
   }

@@ -771,16 +771,24 @@ export class DashboardsComponent implements OnInit {
   }
 
   getIMCAngle(imc: number): number {
-    if (!imc) return 0;
+    if (!imc || imc <= 0) return 0;
 
     if (imc < 18.5) {
-      return (imc / 18.5) * 45;
+      // Bajo peso: 0° - 45°
+      const percentage = imc / 18.5;
+      return percentage * 45;
     } else if (imc < 25) {
-      return 45 + ((imc - 18.5) / 6.5) * 55;
+      // Normal: 45° - 100°
+      const percentage = (imc - 18.5) / (25 - 18.5);
+      return 45 + percentage * 55;
     } else if (imc < 30) {
-      return 100 + ((imc - 25) / 5) * 40;
+      // Sobrepeso: 100° - 140°
+      const percentage = (imc - 25) / (30 - 25);
+      return 100 + percentage * 40;
     } else {
-      return Math.min(180, 140 + ((imc - 30) / 10) * 40);
+      // Obesidad: 140° - 180°
+      const percentage = Math.min(1, (imc - 30) / 10);
+      return 140 + percentage * 40;
     }
   }
 

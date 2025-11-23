@@ -604,27 +604,34 @@
               <!-- IMC Gauge -->
               <div class="imc-gauge" *ngIf="salud.estadisticas as stats">
                 <svg viewBox="0 0 200 120" class="gauge-svg">
+                  <!-- Bajo peso: 0° - 45° (Azul) -->
                   <path
                     d="M 20 100 A 80 80 0 0 1 100 20"
                     class="gauge-segment bajo-peso"
                   />
+
+                  <!-- Normal: 45° - 100° (Verde) -->
                   <path
                     d="M 100 20 A 80 80 0 0 1 140 35"
                     class="gauge-segment normal"
                   />
+
+                  <!-- Sobrepeso: 100° - 140° (Naranja) -->
                   <path
                     d="M 140 35 A 80 80 0 0 1 165 65"
                     class="gauge-segment sobrepeso"
                   />
+
+                  <!-- Obesidad: 140° - 180° (Rojo) -->
                   <path
                     d="M 165 65 A 80 80 0 0 1 180 100"
                     class="gauge-segment obesidad"
                   />
+
+                  <!-- Aguja -->
                   <g
                     [attr.transform]="
-                      'rotate(' +
-                      getIMCAngle(stats.imcActual || 0) +
-                      ' 100 100)'
+                      'rotate(' + getIMCAngle(stats.imcActual) + ' 100 100)'
                     "
                   >
                     <line
