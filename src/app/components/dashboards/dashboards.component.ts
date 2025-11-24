@@ -770,43 +770,42 @@ export class DashboardsComponent implements OnInit {
     return 'sports_esports';
   }
 
-getIMCAngle(imc: number): number {
-  if (!imc || imc <= 0) {
-    return 0; // Extremo izquierdo (180° en el sistema rotado)
-  }
+  getIMCAngle(imc: number): number {
+    if (!imc || imc <= 0) {
+      return 0; // Extremo izquierdo
+    }
 
-  let angle: number;
-  if (imc < 18.5) {
-    const percent = imc / 18.5;
-    angle = percent * 23; // De 0° a 23°
-    return angle;
-  } 
-  
-  // 2. Normal: 23° a 65° (42° de rango) - IMC 18.5 a 25
-  else if (imc < 25) {
-    const percent = (imc - 18.5) / (25 - 18.5);
-    angle = 23 + (percent * 42); // De 23° a 65°
-    return angle;
-  } 
-  
-  // 3. Sobrepeso: 65° a 115° (50° de rango) - IMC 25 a 30
-  else if (imc < 30) {
-    const percent = (imc - 25) / (30 - 25);
-    angle = 65 + (percent * 50); // De 65° a 115°
-    return angle;
-  } 
-  
-  // 4. Obesidad: 115° a 180° (65° de rango) - IMC 30 a 40+
-  else {
-    const maxIMC = 40; // Valor máximo para la escala
-    const percent = Math.min(1, (imc - 30) / (maxIMC - 30));
-    angle = 115 + (percent * 65); // De 115° a 180°
-    
-    // Aseguramos que no pase de 180°
-    angle = Math.min(angle, 180);
-    return angle;
+    let angle: number;
+
+    // 1. 🔵 BAJO PESO: 0° a 23° - IMC 0 a 18.5
+    if (imc < 18.5) {
+      const percent = imc / 18.5;
+      angle = percent * 23;
+      return Math.min(angle, 23); 
+    }
+
+    // 2. 🟢 NORMAL: 23° a 65° - IMC 18.5 a 25
+    else if (imc < 25) {
+      const percent = (imc - 18.5) / 6.5;
+      angle = 23 + percent * 42;
+      return Math.max(23, Math.min(angle, 65)); 
+    }
+
+    // 3. 🟠 SOBREPESO: 65° a 115° - IMC 25 a 30
+    else if (imc < 30) {
+      const percent = (imc - 25) / 5;
+      angle = 65 + percent * 50;
+      return Math.max(65, Math.min(angle, 115)); 
+    }
+
+    // 4. 🔴 OBESIDAD: 115° a 180° - IMC ≥ 30
+    else {
+      const maxIMC = 40;
+      const percent = Math.min(1, (imc - 30) / (maxIMC - 30));
+      angle = 115 + percent * 65;
+      return Math.max(115, Math.min(angle, 180)); 
+    }
   }
-}
 
   getTendenciaIcon(tendencia: string): string {
     switch (tendencia) {

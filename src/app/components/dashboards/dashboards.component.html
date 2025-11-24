@@ -604,7 +604,16 @@
               <!-- IMC Gauge -->
               <div class="imc-gauge" *ngIf="salud.estadisticas as stats">
                 <svg viewBox="0 0 200 120" class="gauge-svg">
-                  <!-- 1. BAJO PESO (Azul) - De 180° a 157° (23° de arco) -->
+                  <!-- Base del semicírculo (línea guía invisible) -->
+                  <path
+                    d="M 20,100 A 80,80 0 0,1 180,100"
+                    fill="none"
+                    stroke="#F0F0F0"
+                    stroke-width="22"
+                    stroke-linecap="round"
+                  />
+
+                  <!-- 1. 🔵 BAJO PESO (Azul) - 0° a 23° | IMC 0 - 18.5 -->
                   <path
                     d="M 20,100 A 80,80 0 0,1 43.43,43.43"
                     fill="none"
@@ -613,7 +622,7 @@
                     stroke-linecap="round"
                   />
 
-                  <!-- 2. NORMAL (Verde) - De 157° a 115° (42° de arco) -->
+                  <!-- 2. 🟢 NORMAL (Verde) - 23° a 65° | IMC 18.5 - 25 -->
                   <path
                     d="M 43.43,43.43 A 80,80 0 0,1 100,20"
                     fill="none"
@@ -622,7 +631,7 @@
                     stroke-linecap="round"
                   />
 
-                  <!-- 3. SOBREPESO (Naranja) - De 115° a 65° (50° de arco) -->
+                  <!-- 3. 🟠 SOBREPESO (Naranja) - 65° a 115° | IMC 25 - 30 -->
                   <path
                     d="M 100,20 A 80,80 0 0,1 156.57,43.43"
                     fill="none"
@@ -631,7 +640,7 @@
                     stroke-linecap="round"
                   />
 
-                  <!-- 4. OBESIDAD (Rojo) - De 65° a 0° (65° de arco) -->
+                  <!-- 4. 🔴 OBESIDAD (Rojo) - 115° a 180° | IMC 30+ -->
                   <path
                     d="M 156.57,43.43 A 80,80 0 0,1 180,100"
                     fill="none"
@@ -639,38 +648,21 @@
                     stroke-width="20"
                     stroke-linecap="round"
                   />
-
-                  <!-- Líneas de referencia (marcas) -->
-                  <line
-                    x1="20"
-                    y1="100"
-                    x2="28"
-                    y2="100"
-                    stroke="#999"
-                    stroke-width="1.5"
-                    opacity="0.5"
+                  <circle
+                    cx="43.43"
+                    cy="43.43"
+                    r="3"
+                    fill="#fff"
+                    opacity="0.7"
                   />
-                  <line
-                    x1="100"
-                    y1="20"
-                    x2="100"
-                    y2="28"
-                    stroke="#999"
-                    stroke-width="1.5"
-                    opacity="0.5"
+                  <circle cx="100" cy="20" r="3" fill="#fff" opacity="0.7" />
+                  <circle
+                    cx="156.57"
+                    cy="43.43"
+                    r="3"
+                    fill="#fff"
+                    opacity="0.7"
                   />
-                  <line
-                    x1="180"
-                    y1="100"
-                    x2="172"
-                    y2="100"
-                    stroke="#999"
-                    stroke-width="1.5"
-                    opacity="0.5"
-                  />
-
-                  <!-- AGUJA con rotación desde -90° a 90° -->
-                  <!-- La aguja inicialmente apunta hacia ARRIBA (a las 12) y rota desde ahí -->
                   <g
                     [attr.transform]="
                       'rotate(' +
@@ -678,86 +670,82 @@
                       ' 100 100)'
                     "
                   >
-                    <!-- Sombra de la aguja -->
                     <line
                       x1="100"
                       y1="100"
-                      x2="170"
+                      x2="168"
                       y2="100"
                       stroke="rgba(0,0,0,0.15)"
                       stroke-width="4"
                       stroke-linecap="round"
                       transform="translate(1.5, 1.5)"
                     />
-
-                    <!-- Aguja principal -->
                     <line
                       x1="100"
                       y1="100"
-                      x2="170"
+                      x2="168"
                       y2="100"
                       stroke="#2C3E50"
                       stroke-width="3"
                       stroke-linecap="round"
                     />
-
-                    <!-- Punta de la aguja (círculo pequeño) -->
-                    <circle cx="170" cy="100" r="4" fill="#2C3E50" />
-
-                    <!-- Centro de la aguja (base) -->
+                    <circle cx="168" cy="100" r="4" fill="#2C3E50" />
                     <circle cx="100" cy="100" r="8" fill="#2C3E50" />
                     <circle cx="100" cy="100" r="5" fill="white" />
                     <circle cx="100" cy="100" r="2" fill="#2C3E50" />
                   </g>
-
-                  <!-- Etiquetas de valores IMC -->
                   <text
-                    x="15"
+                    x="12"
                     y="108"
                     font-size="8"
-                    fill="#666"
+                    fill="#999"
                     font-family="Poppins, sans-serif"
+                    font-weight="500"
                   >
                     0
                   </text>
                   <text
-                    x="40"
-                    y="38"
+                    x="36"
+                    y="36"
                     font-size="8"
-                    fill="#666"
+                    fill="#999"
                     font-family="Poppins, sans-serif"
+                    font-weight="500"
                   >
                     18.5
                   </text>
                   <text
                     x="98"
-                    y="16"
+                    y="14"
                     font-size="8"
-                    fill="#666"
+                    fill="#999"
                     font-family="Poppins, sans-serif"
                     text-anchor="middle"
+                    font-weight="500"
                   >
                     25
                   </text>
                   <text
-                    x="158"
-                    y="38"
+                    x="164"
+                    y="36"
                     font-size="8"
-                    fill="#666"
+                    fill="#999"
                     font-family="Poppins, sans-serif"
                     text-anchor="end"
+                    font-weight="500"
                   >
                     30
                   </text>
                   <text
-                    x="185"
+                    x="188"
                     y="108"
                     font-size="8"
-                    fill="#666"
+                    fill="#999"
                     font-family="Poppins, sans-serif"
                     text-anchor="end"
+                    font-weight="500"
                   >
-                    40+
+                    40
                   </text>
                 </svg>
 
@@ -778,7 +766,6 @@
                   </span>
                 </div>
               </div>
-
               <!-- Mediciones Actuales -->
               <div class="mediciones-actuales">
                 <!-- PESO -->
