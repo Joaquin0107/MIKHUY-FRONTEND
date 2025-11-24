@@ -773,56 +773,46 @@ export class DashboardsComponent implements OnInit {
   getIMCAngle(imc: number): number {
     // Manejo de valores nulos o inválidos
     if (!imc || imc <= 0) {
-      return 180; // Extremo izquierdo (inicio)
+      return -90; // Extremo izquierdo
     }
 
     let angle: number;
 
-    // Semicírculo de 180° a 0° (izquierda a derecha)
-    // El ángulo se calcula de forma inversa porque SVG rota en sentido horario
+    // IMPORTANTE: La aguja rota desde -90° (izquierda) hasta 90° (derecha)
+    // Total: 180° de semicírculo
 
-    // 1. Bajo peso: 180° a 157° (23° de rango) - IMC 0 a 18.5
+    // 1. Bajo peso: -90° a -67° (23° de rango) - IMC 0 a 18.5
     if (imc < 18.5) {
       const percent = imc / 18.5;
-      angle = 180 - percent * 23; // 180° -> 157°
+      angle = -90 + percent * 23; // De -90° a -67°
       return angle;
     }
 
-    // 2. Normal: 157° a 115° (42° de rango) - IMC 18.5 a 25
+    // 2. Normal: -67° a -25° (42° de rango) - IMC 18.5 a 25
     else if (imc < 25) {
       const percent = (imc - 18.5) / (25 - 18.5);
-      angle = 157 - percent * 42; // 157° -> 115°
+      angle = -67 + percent * 42; // De -67° a -25°
       return angle;
     }
 
-    // 3. Sobrepeso: 115° a 65° (50° de rango) - IMC 25 a 30
+    // 3. Sobrepeso: -25° a 25° (50° de rango) - IMC 25 a 30
     else if (imc < 30) {
       const percent = (imc - 25) / (30 - 25);
-      angle = 115 - percent * 50; // 115° -> 65°
+      angle = -25 + percent * 50; // De -25° a 25°
       return angle;
     }
 
-    // 4. Obesidad: 65° a 0° (65° de rango) - IMC 30 a 40+
+    // 4. Obesidad: 25° a 90° (65° de rango) - IMC 30 a 40+
     else {
       const maxIMC = 40; // Valor máximo para la escala
       const percent = Math.min(1, (imc - 30) / (maxIMC - 30));
-      angle = 65 - percent * 65; // 65° -> 0°
+      angle = 25 + percent * 65; // De 25° a 90°
 
-      // Aseguramos que no baje de 0°
-      angle = Math.max(angle, 0);
+      // Aseguramos que no pase de 90°
+      angle = Math.min(angle, 90);
       return angle;
     }
   }
-
-  // 🎯 VERIFICACIÓN DE VALORES:
-  // IMC 15.0  → -68.9° ✅ Zona azul (bajo peso)
-  // IMC 18.5  → -45.0° ✅ Inicio zona verde
-  // IMC 22.0  → -15.4° ✅ Centro zona verde
-  // IMC 25.0  → 10.0°  ✅ Inicio zona naranja
-  // IMC 27.5  → 30.0°  ✅ Centro zona naranja
-  // IMC 30.0  → 50.0°  ✅ Inicio zona roja
-  // IMC 35.0  → 70.0°  ✅ Zona roja
-  // IMC 40+   → 90.0°  ✅ Límite máximo
 
   getTendenciaIcon(tendencia: string): string {
     switch (tendencia) {
