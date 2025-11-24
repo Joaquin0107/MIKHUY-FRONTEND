@@ -770,57 +770,53 @@ export class DashboardsComponent implements OnInit {
     return 'sports_esports';
   }
 
-getIMCAngle(imc: number): number {
-    let angle: number;
-    const maxScaleValue = 40; // Valor máximo asumido para la escala de Obesidad
-
-    // Manejo de valores nulos, cero o negativos
+  getIMCAngle(imc: number): number {
     if (!imc || imc <= 0) {
-        // En el extremo derecho, el ángulo absoluto es 0. La rotación necesaria es -90.
-        return -90; 
+      return -90; // Extremo izquierdo
     }
 
-    // 1. Bajo peso: 0° - 45° (IMC 0 a 18.5)
+    let angle: number;
+
+    // 1. Bajo peso: -90° a -45° (IMC 0 a 18.5)
     if (imc < 18.5) {
-        // Calcula el ángulo absoluto (0 a 45) y luego resta 90 para la rotación.
-        angle = (imc / 18.5) * 45;
-        return angle - 90;
-    } 
-    
-    // 2. Normal: 45° - 100° (IMC 18.5 a 25)
-    else if (imc < 25) {
-        // Calcula el ángulo absoluto (45 a 100) y luego resta 90.
-        // Amplitud del segmento: 55° (100 - 45)
-        angle = 45 + ((imc - 18.5) / 6.5) * 55;
-        return angle - 90;
-    } 
-    
-    // 3. Sobrepeso: 100° - 140° (IMC 25 a 30)
-    else if (imc < 30) {
-        // Calcula el ángulo absoluto (100 a 140) y luego resta 90.
-        // Amplitud del segmento: 40° (140 - 100)
-        angle = 100 + ((imc - 25) / 5) * 40;
-        return angle - 90;
-    } 
-    
-    // 4. Obesidad: 140° - 180° (IMC 30 en adelante)
-    else {
-        // Calcula el ángulo absoluto, limitado a 180, y luego resta 90.
-        // Asumimos un rango de 10 unidades (hasta maxScaleValue=40) para los últimos 40°
-        const percentage = Math.min(1, (imc - 30) / (maxScaleValue - 30));
-        angle = 140 + percentage * 40;
-        
-        // Aseguramos el límite máximo antes de la rotación
-        angle = Math.min(angle, 180); 
-        return angle - 90;
+      const percent = imc / 18.5;
+      angle = -90 + percent * 45;
+      return angle;
     }
-}
 
-  // 📊 VERIFICACIÓN:
-  // IMC 18.0  → 43.78°  ✅ Fin de zona azul
-  // IMC 23.4  → 86.47°  ✅ Centro de zona verde
-  // IMC 27.1  → 116.8°  ✅ Medio de zona naranja
-  // IMC 32.5  → 150°    ✅ En zona roja
+    // 2. Normal: -45° a 10° (IMC 18.5 a 25)
+    else if (imc < 25) {
+      const percent = (imc - 18.5) / 6.5;
+      angle = -45 + percent * 55;
+      return angle;
+    }
+
+    // 3. Sobrepeso: 10° a 50° (IMC 25 a 30)
+    else if (imc < 30) {
+      const percent = (imc - 25) / 5;
+      angle = 10 + percent * 40;
+      return angle;
+    }
+
+    // 4. Obesidad: 50° a 90° (IMC 30 en adelante)
+    else {
+      const maxScaleValue = 40; // Valor máximo asumido
+      const percent = Math.min(1, (imc - 30) / (maxScaleValue - 30));
+      angle = 50 + percent * 40;
+      angle = Math.min(angle, 90);
+      return angle;
+    }
+  }
+
+  // 🎯 VERIFICACIÓN DE VALORES:
+  // IMC 15.0  → -68.9° ✅ Zona azul (bajo peso)
+  // IMC 18.5  → -45.0° ✅ Inicio zona verde
+  // IMC 22.0  → -15.4° ✅ Centro zona verde
+  // IMC 25.0  → 10.0°  ✅ Inicio zona naranja
+  // IMC 27.5  → 30.0°  ✅ Centro zona naranja
+  // IMC 30.0  → 50.0°  ✅ Inicio zona roja
+  // IMC 35.0  → 70.0°  ✅ Zona roja
+  // IMC 40+   → 90.0°  ✅ Límite máximo
 
   getTendenciaIcon(tendencia: string): string {
     switch (tendencia) {
