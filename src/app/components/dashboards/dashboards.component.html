@@ -670,17 +670,20 @@
                   />
 
                   <!-- AGUJA con rotación desde -90° a 90° -->
+                  <!-- La aguja inicialmente apunta hacia ARRIBA (a las 12) y rota desde ahí -->
                   <g
                     [attr.transform]="
-                      'rotate(' + getIMCAngle(stats.imcActual) + ' 100 100)'
+                      'rotate(' +
+                      (getIMCAngle(stats.imcActual) - 90) +
+                      ' 100 100)'
                     "
                   >
                     <!-- Sombra de la aguja -->
                     <line
                       x1="100"
                       y1="100"
-                      x2="100"
-                      y2="32"
+                      x2="170"
+                      y2="100"
                       stroke="rgba(0,0,0,0.15)"
                       stroke-width="4"
                       stroke-linecap="round"
@@ -691,15 +694,15 @@
                     <line
                       x1="100"
                       y1="100"
-                      x2="100"
-                      y2="32"
+                      x2="170"
+                      y2="100"
                       stroke="#2C3E50"
                       stroke-width="3"
                       stroke-linecap="round"
                     />
 
                     <!-- Punta de la aguja (círculo pequeño) -->
-                    <circle cx="100" cy="32" r="4" fill="#2C3E50" />
+                    <circle cx="170" cy="100" r="4" fill="#2C3E50" />
 
                     <!-- Centro de la aguja (base) -->
                     <circle cx="100" cy="100" r="8" fill="#2C3E50" />

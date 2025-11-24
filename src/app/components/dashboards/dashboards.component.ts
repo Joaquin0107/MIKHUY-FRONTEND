@@ -770,49 +770,43 @@ export class DashboardsComponent implements OnInit {
     return 'sports_esports';
   }
 
-  getIMCAngle(imc: number): number {
-    // Manejo de valores nulos o inválidos
-    if (!imc || imc <= 0) {
-      return -90; // Extremo izquierdo
-    }
-
-    let angle: number;
-
-    // IMPORTANTE: La aguja rota desde -90° (izquierda) hasta 90° (derecha)
-    // Total: 180° de semicírculo
-
-    // 1. Bajo peso: -90° a -67° (23° de rango) - IMC 0 a 18.5
-    if (imc < 18.5) {
-      const percent = imc / 18.5;
-      angle = -90 + percent * 23; // De -90° a -67°
-      return angle;
-    }
-
-    // 2. Normal: -67° a -25° (42° de rango) - IMC 18.5 a 25
-    else if (imc < 25) {
-      const percent = (imc - 18.5) / (25 - 18.5);
-      angle = -67 + percent * 42; // De -67° a -25°
-      return angle;
-    }
-
-    // 3. Sobrepeso: -25° a 25° (50° de rango) - IMC 25 a 30
-    else if (imc < 30) {
-      const percent = (imc - 25) / (30 - 25);
-      angle = -25 + percent * 50; // De -25° a 25°
-      return angle;
-    }
-
-    // 4. Obesidad: 25° a 90° (65° de rango) - IMC 30 a 40+
-    else {
-      const maxIMC = 40; // Valor máximo para la escala
-      const percent = Math.min(1, (imc - 30) / (maxIMC - 30));
-      angle = 25 + percent * 65; // De 25° a 90°
-
-      // Aseguramos que no pase de 90°
-      angle = Math.min(angle, 90);
-      return angle;
-    }
+getIMCAngle(imc: number): number {
+  if (!imc || imc <= 0) {
+    return 0; // Extremo izquierdo (180° en el sistema rotado)
   }
+
+  let angle: number;
+  if (imc < 18.5) {
+    const percent = imc / 18.5;
+    angle = percent * 23; // De 0° a 23°
+    return angle;
+  } 
+  
+  // 2. Normal: 23° a 65° (42° de rango) - IMC 18.5 a 25
+  else if (imc < 25) {
+    const percent = (imc - 18.5) / (25 - 18.5);
+    angle = 23 + (percent * 42); // De 23° a 65°
+    return angle;
+  } 
+  
+  // 3. Sobrepeso: 65° a 115° (50° de rango) - IMC 25 a 30
+  else if (imc < 30) {
+    const percent = (imc - 25) / (30 - 25);
+    angle = 65 + (percent * 50); // De 65° a 115°
+    return angle;
+  } 
+  
+  // 4. Obesidad: 115° a 180° (65° de rango) - IMC 30 a 40+
+  else {
+    const maxIMC = 40; // Valor máximo para la escala
+    const percent = Math.min(1, (imc - 30) / (maxIMC - 30));
+    angle = 115 + (percent * 65); // De 115° a 180°
+    
+    // Aseguramos que no pase de 180°
+    angle = Math.min(angle, 180);
+    return angle;
+  }
+}
 
   getTendenciaIcon(tendencia: string): string {
     switch (tendencia) {
