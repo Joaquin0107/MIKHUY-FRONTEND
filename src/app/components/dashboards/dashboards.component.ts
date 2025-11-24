@@ -771,39 +771,45 @@ export class DashboardsComponent implements OnInit {
   }
 
   getIMCAngle(imc: number): number {
+    // Manejo de valores nulos o inválidos
     if (!imc || imc <= 0) {
-      return -90; // Extremo izquierdo
+      return 180; // Extremo izquierdo (inicio)
     }
 
     let angle: number;
 
-    // 1. Bajo peso: -90° a -45° (IMC 0 a 18.5)
+    // Semicírculo de 180° a 0° (izquierda a derecha)
+    // El ángulo se calcula de forma inversa porque SVG rota en sentido horario
+
+    // 1. Bajo peso: 180° a 157° (23° de rango) - IMC 0 a 18.5
     if (imc < 18.5) {
       const percent = imc / 18.5;
-      angle = -90 + percent * 45;
+      angle = 180 - percent * 23; // 180° -> 157°
       return angle;
     }
 
-    // 2. Normal: -45° a 10° (IMC 18.5 a 25)
+    // 2. Normal: 157° a 115° (42° de rango) - IMC 18.5 a 25
     else if (imc < 25) {
-      const percent = (imc - 18.5) / 6.5;
-      angle = -45 + percent * 55;
+      const percent = (imc - 18.5) / (25 - 18.5);
+      angle = 157 - percent * 42; // 157° -> 115°
       return angle;
     }
 
-    // 3. Sobrepeso: 10° a 50° (IMC 25 a 30)
+    // 3. Sobrepeso: 115° a 65° (50° de rango) - IMC 25 a 30
     else if (imc < 30) {
-      const percent = (imc - 25) / 5;
-      angle = 10 + percent * 40;
+      const percent = (imc - 25) / (30 - 25);
+      angle = 115 - percent * 50; // 115° -> 65°
       return angle;
     }
 
-    // 4. Obesidad: 50° a 90° (IMC 30 en adelante)
+    // 4. Obesidad: 65° a 0° (65° de rango) - IMC 30 a 40+
     else {
-      const maxScaleValue = 40; // Valor máximo asumido
-      const percent = Math.min(1, (imc - 30) / (maxScaleValue - 30));
-      angle = 50 + percent * 40;
-      angle = Math.min(angle, 90);
+      const maxIMC = 40; // Valor máximo para la escala
+      const percent = Math.min(1, (imc - 30) / (maxIMC - 30));
+      angle = 65 - percent * 65; // 65° -> 0°
+
+      // Aseguramos que no baje de 0°
+      angle = Math.max(angle, 0);
       return angle;
     }
   }
