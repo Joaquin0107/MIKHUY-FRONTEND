@@ -22,6 +22,7 @@
   <!-- Contenido - Lado derecho -->
   <div class="content-section">
     <div class="content-wrapper">
+
       <!-- Sección de Logo -->
       <div class="logo-section">
         <img
@@ -34,7 +35,7 @@
         <p class="tagline">Aprende, Juega y Crece Saludable</p>
       </div>
 
-      <!-- Btones de selección de rol -->
+      <!-- Botones de selección de rol -->
       <div class="role-selection">
         <button
           mat-raised-button
@@ -68,25 +69,7 @@
           </div>
         </button>
       </div>
-      <!--
-      <button
-  mat-raised-button
-  class="role-btn admin-btn"
-  matRipple
-  (click)="navigateToLogin('admin')"
->
 
-<div class="btn-content">
-    <mat-icon class="btn-icon">admin_panel_settings</mat-icon>
-    <div class="btn-text">
-      <h2>Administrador</h2>
-      <p>Panel de gestión</p>
-    </div>
-    <mat-icon class="btn-arrow">arrow_forward</mat-icon>
-  </div>
-</button>
-<br><br>
--->
       <!-- Características -->
       <div class="features">
         <div class="feature-item">
@@ -102,6 +85,15 @@
           <span>Recompensas</span>
         </div>
       </div>
+
+      <!-- Términos y Privacidad -->
+      <div class="terms-text">
+        Al ingresar, aceptas nuestros
+        <a class="terms-link" (click)="openTerms()">Términos y Condiciones</a>
+        y nuestra
+        <a class="terms-link" (click)="openPrivacy()">Política de Privacidad</a>.
+      </div>
+
     </div>
   </div>
 </div>
