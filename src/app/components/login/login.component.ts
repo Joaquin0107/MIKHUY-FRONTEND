@@ -59,7 +59,6 @@ export class LoginComponent implements OnInit {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      rememberMe: [false],
     });
   }
 
@@ -88,13 +87,12 @@ export class LoginComponent implements OnInit {
 
         if (res?.success && res.data?.token) {
           const rol = res.data.user?.rol;
-          
+
           console.log('✅ Login exitoso');
           console.log('🎟️ Token recibido:', res.data.token ? '✓' : '✗');
           console.log('👤 Usuario:', res.data.user);
           console.log('🎭 Rol del usuario:', rol);
 
-          // 🔒 Validar que el rol del usuario coincida con el rol esperado por la pantalla
           if (rol !== this.userRole) {
             console.warn(`⚠️ Rol no coincide. Esperado: ${this.userRole}, Recibido: ${rol}`);
             alert(`Este usuario pertenece al rol "${rol}" y no puede ingresar desde el login de "${this.userRole}".`);
@@ -102,14 +100,12 @@ export class LoginComponent implements OnInit {
             return;
           }
 
-          // ✅ Guardar token
           this.authService.saveToken(res.data.token);
           console.log('💾 Token guardado');
 
-          // Verificar que se guardó correctamente
           const tokenGuardado = localStorage.getItem('authToken');
           console.log('🔍 Verificación - Token en localStorage:', tokenGuardado ? '✓' : '✗');
-          
+
           if (!tokenGuardado) {
             console.error('❌ ERROR: El token NO se guardó en localStorage');
             alert('Error al guardar la sesión. Intenta nuevamente.');
@@ -117,17 +113,14 @@ export class LoginComponent implements OnInit {
             return;
           }
 
-          // ✅ Guardar usuario
           this.authService.saveUser(res.data.user);
           console.log('💾 Usuario guardado');
 
-          // Verificar usuario guardado
           const usuarioGuardado = localStorage.getItem('currentUser');
           console.log('🔍 Verificación - Usuario en localStorage:', usuarioGuardado ? '✓' : '✗');
 
           this.loading = false;
 
-          // ✅ Redirigir según rol
           if (rol === 'student') {
             console.log('➡️ Redirigiendo a landing-alumnos');
             this.router.navigate(['/landing-alumnos']);
@@ -149,7 +142,7 @@ export class LoginComponent implements OnInit {
         console.error('Status:', err.status);
         console.error('Message:', err.error?.message);
         console.error('Error completo:', err);
-        
+
         if (err.status === 401) {
           alert('Credenciales incorrectas. Verifica tu email y contraseña.');
         } else if (err.status === 0) {
@@ -169,19 +162,6 @@ export class LoginComponent implements OnInit {
   goToRegister(): void {
     this.router.navigate(['/registro'], {
       queryParams: { role: this.userRole },
-    });
-  }
-
-  forgotPassword(): void {
-    const dialogRef = this.dialog.open(ForgotPasswordDialog, {
-      width: '450px',
-      data: { role: this.userRole },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        alert(`Se ha enviado un correo de recuperación a ${result}`);
-      }
     });
   }
 }
@@ -226,105 +206,4 @@ export class LoginComponent implements OnInit {
 })
 export class AccessDeniedDialog {
   constructor(@Inject(MAT_DIALOG_DATA) public message: string) {}
-}
-
-@Component({
-  selector: 'forgot-password-dialog',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatInputModule,
-    MatFormFieldModule,
-    MatIconModule,
-  ],
-  template: `
-    <div class="dialog-container">
-      <h2 mat-dialog-title>
-        <mat-icon>lock_reset</mat-icon> Recuperar Contraseña
-      </h2>
-      <mat-dialog-content>
-        <p>
-          Ingresa tu correo electrónico y te enviaremos un enlace para
-          restablecer tu contraseña.
-        </p>
-        <form [formGroup]="recoveryForm">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Correo Electrónico</mat-label>
-            <input
-              matInput
-              type="email"
-              formControlName="email"
-              autocomplete="email"
-            />
-            <mat-error *ngIf="recoveryForm.get('email')?.hasError('required')">
-              El correo es requerido
-            </mat-error>
-            <mat-error *ngIf="recoveryForm.get('email')?.hasError('email')">
-              Ingresa un correo válido
-            </mat-error>
-          </mat-form-field>
-        </form>
-      </mat-dialog-content>
-      <mat-dialog-actions align="end">
-        <button mat-button mat-dialog-close>Cancelar</button>
-        <button
-          mat-raised-button
-          [mat-dialog-close]="recoveryForm.value.email"
-          [disabled]="!recoveryForm.valid"
-          class="send-btn"
-        >
-          <mat-icon>send</mat-icon> Enviar
-        </button>
-      </mat-dialog-actions>
-    </div>
-  `,
-  styles: [
-    `
-      .dialog-container {
-        font-family: 'Poppins', sans-serif;
-        max-width: 400px;
-        padding: 24px;
-      }
-      h2 {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #48a3f3;
-        font-weight: 600;
-        margin: 0;
-      }
-      .full-width {
-        width: 100%;
-      }
-      .send-btn {
-        background: linear-gradient(
-          135deg,
-          #48a3f3 0%,
-          #5bb3ff 100%
-        ) !important;
-        color: white !important;
-        font-weight: 600 !important;
-      }
-      .send-btn:hover:not([disabled]) {
-        box-shadow: 0 4px 12px rgba(72, 163, 243, 0.3);
-      }
-    `,
-  ],
-})
-export class ForgotPasswordDialog implements OnInit {
-  recoveryForm!: FormGroup;
-
-  constructor(
-    private fb: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) public data: any
-  ) {}
-
-  ngOnInit(): void {
-    this.recoveryForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-    });
-  }
 }
