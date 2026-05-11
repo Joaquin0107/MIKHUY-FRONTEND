@@ -311,7 +311,7 @@
                   </div>
                 </ng-container>
 
-                <div class="form-actions">
+                <div class="form-actions" *ngIf="currentUserRole === 'student'">
                   <button
                     mat-raised-button
                     color="primary"

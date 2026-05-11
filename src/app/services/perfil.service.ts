@@ -102,7 +102,7 @@ export class PerfilService {
       throw new Error('No hay sesión activa. Por favor inicia sesión nuevamente.');
     }
     
-    return this.http.put<ApiResponse<EstudianteResponse>>(
+    return this.http.patch<ApiResponse<EstudianteResponse>>(
       `${this.baseUrl}/perfil`,
       data,
       { headers: this.getHeaders() }
