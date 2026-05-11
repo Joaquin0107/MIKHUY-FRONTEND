@@ -33,6 +33,7 @@ export interface EstudianteResponse {
 export interface UpdateProfileRequest {
   nombres: string;
   apellidos: string;
+  email: string;
   telefono?: string;
   grado: string;
   seccion: string;

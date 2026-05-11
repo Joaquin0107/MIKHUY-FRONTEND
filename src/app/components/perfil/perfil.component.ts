@@ -385,6 +385,7 @@ export class PerfilComponent implements OnInit {
     const updateData: UpdateProfileRequest = {
       nombres: this.perfilForm.value.firstName,
       apellidos: this.perfilForm.value.lastName,
+      email: this.perfilForm.value.email,
       telefono: this.perfilForm.value.telefono || undefined,
       grado: this.perfilForm.value.grado,
       seccion: this.perfilForm.value.seccion,
