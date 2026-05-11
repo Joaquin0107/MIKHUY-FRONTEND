@@ -277,7 +277,7 @@ export class PerfilComponent implements OnInit {
       telefono: data.telefono || '',
       edad: data.edad || '',
       peso: data.peso || '',
-      talla: data.talla ? (data.talla / 100).toFixed(2) : '',
+      talla: data.talla || '',
       grado: data.grado || '5to',
       seccion: data.seccion || 'A',
     });
