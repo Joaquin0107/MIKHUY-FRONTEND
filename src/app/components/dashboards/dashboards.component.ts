@@ -318,231 +318,669 @@ export class DashboardsComponent implements OnInit {
   }
 
   async descargarReporte(): Promise<void> {
-    if (!this.selectedStudent || !this.dashboardData) {
-      this.snackBar.open('No hay datos para generar el reporte', 'Cerrar', {
-        duration: 3000,
-      });
-      return;
-    }
-
-    this.isGeneratingPDF = true;
-    this.snackBar.open('Generando reporte PDF completo...', '', {
-      duration: 2000,
-    });
-
-    try {
-      await this.waitForLibraries();
-
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      let yPosition = 20;
-
-      pdf.setFillColor(72, 163, 243);
-      pdf.rect(0, 0, pageWidth, 60, 'F');
-
-      pdf.setTextColor(255, 255, 255);
-      pdf.setFontSize(28);
+  if (!this.selectedStudent || !this.dashboardData) {
+    this.snackBar.open('No hay datos para generar el reporte', 'Cerrar', { duration: 3000 });
+    return;
+  }
+ 
+  this.isGeneratingPDF = true;
+  this.snackBar.open('Generando reporte PDF...', '', { duration: 2000 });
+ 
+  try {
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const PW = pdf.internal.pageSize.getWidth();   // 210
+    const PH = pdf.internal.pageSize.getHeight();  // 297
+ 
+    // ── Paleta de colores ──────────────────────────────────────
+    const BLUE       = [48, 130, 220] as [number,number,number];
+    const BLUE_LIGHT = [232, 242, 255] as [number,number,number];
+    const GREEN      = [76, 175, 80]   as [number,number,number];
+    const GREEN_LIGHT= [232, 245, 233] as [number,number,number];
+    const ORANGE     = [255, 152, 0]   as [number,number,number];
+    const RED        = [244, 67, 54]   as [number,number,number];
+    const GRAY_BG    = [248, 249, 250] as [number,number,number];
+    const GRAY_LINE  = [220, 220, 220] as [number,number,number];
+    const TEXT_DARK  = [33, 37, 41]    as [number,number,number];
+    const TEXT_GRAY  = [108, 117, 125] as [number,number,number];
+    const WHITE      = [255, 255, 255] as [number,number,number];
+ 
+    // ── Helpers ────────────────────────────────────────────────
+    const setFill   = (c: [number,number,number]) => pdf.setFillColor(c[0], c[1], c[2]);
+    const setStroke = (c: [number,number,number]) => pdf.setDrawColor(c[0], c[1], c[2]);
+    const setTxt    = (c: [number,number,number]) => pdf.setTextColor(c[0], c[1], c[2]);
+ 
+    // Dibuja un rectángulo con radio (simulado con rect normal en jsPDF básico)
+    const roundRect = (x: number, y: number, w: number, h: number,
+                       fill: [number,number,number], stroke?: [number,number,number], r = 3) => {
+      setFill(fill);
+      if (stroke) { setStroke(stroke); pdf.roundedRect(x, y, w, h, r, r, 'FD'); }
+      else { pdf.roundedRect(x, y, w, h, r, r, 'F'); }
+    };
+ 
+    // Chip / badge de texto
+    const badge = (x: number, y: number, label: string,
+                   bg: [number,number,number], fg: [number,number,number], w = 40) => {
+      roundRect(x, y - 4, w, 7, bg, undefined, 3);
+      setTxt(fg);
+      pdf.setFontSize(7.5);
       pdf.setFont('helvetica', 'bold');
-      pdf.text('REPORTE NUTRICIONAL', pageWidth / 2, 30, { align: 'center' });
-
-      pdf.setFontSize(16);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('Plataforma MIKHUY', pageWidth / 2, 45, { align: 'center' });
-
-      yPosition = 80;
-      pdf.setTextColor(0, 0, 0);
-      pdf.setFontSize(20);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text(
-        `${this.selectedStudent.nombre} ${this.selectedStudent.apellido}`,
-        20,
-        yPosition
-      );
-
-      yPosition += 10;
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`Edad: ${this.selectedStudent.edad} años`, 20, yPosition);
-      pdf.text(
-        `Grado: ${this.selectedStudent.grado} - Sección ${this.selectedStudent.seccion}`,
-        80,
-        yPosition
-      );
-
-      if (this.dashboardData.salud?.medicionActual) {
-        yPosition += 15;
-        pdf.setFillColor(255, 235, 238);
-        pdf.rect(15, yPosition - 5, pageWidth - 30, 60, 'F');
-
-        pdf.setFontSize(16);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(72, 163, 243);
-        pdf.text('❤️ ANÁLISIS DE SALUD', 20, yPosition);
-
-        yPosition += 10;
-        pdf.setFontSize(11);
-        pdf.setFont('helvetica', 'normal');
-        pdf.setTextColor(0, 0, 0);
-
-        const medicion = this.dashboardData.salud.medicionActual;
-        const stats = this.dashboardData.salud.estadisticas;
-
-        pdf.text(`Peso: ${medicion.peso} kg`, 20, yPosition);
-        pdf.text(`Talla: ${medicion.talla} cm`, 70, yPosition);
-        if (stats) {
-          pdf.text(`IMC: ${stats.imcActual.toFixed(1)}`, 120, yPosition);
-        }
-
-        yPosition += 8;
-
-        if (stats) {
-          const estadoColor = this.getEstadoColor(
-            stats.estadoNutricionalActual
-          );
-          pdf.setTextColor(estadoColor.r, estadoColor.g, estadoColor.b);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text(`Estado: ${stats.estadoNutricionalActual}`, 20, yPosition);
-
-          pdf.setTextColor(0, 0, 0);
-          pdf.setFont('helvetica', 'normal');
-          pdf.text(`Tendencia: ${stats.tendencia}`, 80, yPosition);
-          pdf.text(`Mediciones: ${stats.totalMediciones}`, 130, yPosition);
-
-          yPosition += 8;
-
-          const variacionPesoText =
-            stats.variacionPeso > 0
-              ? `↑ +${stats.variacionPeso.toFixed(1)}%`
-              : `↓ ${stats.variacionPeso.toFixed(1)}%`;
-          pdf.text(`Variación peso: ${variacionPesoText}`, 20, yPosition);
-
-          if (stats.variacionTalla > 0) {
-            pdf.text(
-              `Variación talla: ↑ +${stats.variacionTalla.toFixed(1)}%`,
-              90,
-              yPosition
-            );
-          }
-
-          yPosition += 12;
-          if (this.tieneAlertasSalud(stats)) {
-            pdf.setFillColor(255, 243, 224);
-            pdf.rect(15, yPosition - 5, pageWidth - 30, 15, 'F');
-
-            pdf.setFontSize(10);
-            pdf.setFont('helvetica', 'bold');
-            pdf.setTextColor(244, 67, 54);
-            pdf.text('⚠️ ALERTAS:', 20, yPosition);
-
-            pdf.setFont('helvetica', 'normal');
-            pdf.setTextColor(0, 0, 0);
-            const alertaText = this.getAlertaTexto(stats);
-            const splitAlerta = pdf.splitTextToSize(alertaText, pageWidth - 50);
-            pdf.text(splitAlerta, 45, yPosition);
-          }
-        }
-      }
-
-      yPosition += 20;
-      pdf.setFillColor(232, 245, 253);
-      pdf.rect(15, yPosition - 5, pageWidth - 30, 25, 'F');
-
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(72, 163, 243);
-      pdf.text('📊 Estadísticas Generales', 20, yPosition);
-
-      yPosition += 8;
-      pdf.setFontSize(10);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(0, 0, 0);
-
-      const stats = this.dashboardData.estadisticas;
-      pdf.text(`Puntos Ganados: ${stats.puntosGanados}`, 20, yPosition);
-      pdf.text(`Juegos Completados: ${stats.juegosCompletados}`, 80, yPosition);
-
-      yPosition += 6;
-      pdf.text(`Total Sesiones: ${stats.totalSesiones}`, 20, yPosition);
-      pdf.text(
-        `Posición Ranking: #${stats.posicionRanking} de ${stats.totalEstudiantes}`,
-        80,
-        yPosition
-      );
-
-      if (this.dashboardData.salud?.historialMediciones?.length > 0) {
-        pdf.addPage();
-        yPosition = 20;
-
-        pdf.setFontSize(18);
-        pdf.setFont('helvetica', 'bold');
-        pdf.setTextColor(72, 163, 243);
-        pdf.text('📈 Evolución de Indicadores de Salud', 20, yPosition);
-
-        yPosition += 15;
-
-        await this.addHealthChartToPDF(pdf, yPosition, 'peso');
-        yPosition += 50;
-
-        await this.addHealthChartToPDF(pdf, yPosition, 'talla');
-        yPosition += 50;
-
-        if (yPosition > 200) {
-          pdf.addPage();
-          yPosition = 20;
-        }
-        await this.addHealthChartToPDF(pdf, yPosition, 'imc');
-      }
-
-      pdf.addPage();
-      yPosition = 20;
-
+      pdf.text(label, x + w / 2, y + 0.5, { align: 'center' });
+    };
+ 
+    // Línea horizontal decorativa
+    const hLine = (y: number, x1 = 15, x2 = PW - 15, color = GRAY_LINE) => {
+      setStroke(color);
+      pdf.setLineWidth(0.3);
+      pdf.line(x1, y, x2, y);
+    };
+ 
+    // Pequeño círculo indicador de color (bullet)
+    const dot = (x: number, y: number, color: [number,number,number], r = 2) => {
+      setFill(color);
+      pdf.circle(x, y, r, 'F');
+    };
+ 
+    // Número grande en caja stat
+    const statBox = (x: number, y: number, w: number, h: number,
+                     value: string, label: string, accent: [number,number,number]) => {
+      roundRect(x, y, w, h, GRAY_BG, undefined, 4);
+      // barra izquierda de color
+      setFill(accent);
+      pdf.roundedRect(x, y, 2.5, h, 1, 1, 'F');
+      // valor
+      setTxt(accent);
       pdf.setFontSize(18);
       pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(72, 163, 243);
-      pdf.text('💡 Recomendaciones y Conclusiones', 20, yPosition);
-
-      yPosition += 15;
-      pdf.setFontSize(11);
+      pdf.text(value, x + w / 2, y + h * 0.48, { align: 'center', baseline: 'middle' });
+      // label
+      setTxt(TEXT_GRAY);
+      pdf.setFontSize(7.5);
       pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(0, 0, 0);
-
-      const recomendaciones = this.generarRecomendacionesCompletas();
-      const splitText = pdf.splitTextToSize(recomendaciones, pageWidth - 40);
-      pdf.text(splitText, 20, yPosition);
-
-      const totalPages = pdf.internal.pages.length - 1;
-      for (let i = 1; i <= totalPages; i++) {
-        pdf.setPage(i);
-        pdf.setFontSize(8);
-        pdf.setTextColor(150, 150, 150);
-        pdf.text(
-          `Generado el ${new Date().toLocaleDateString(
-            'es-ES'
-          )} - Página ${i} de ${totalPages}`,
-          pageWidth / 2,
-          pageHeight - 10,
-          { align: 'center' }
-        );
+      pdf.text(label, x + w / 2, y + h - 4, { align: 'center' });
+    };
+ 
+    // ══════════════════════════════════════════════════════════
+    //  PÁGINA 1
+    // ══════════════════════════════════════════════════════════
+ 
+    // — Header con gradiente simulado —
+    setFill(BLUE);
+    pdf.rect(0, 0, PW, 45, 'F');
+    // Acento decorativo esquina
+    setFill([30, 100, 180]);
+    // Triángulo decorativo esquina superior derecha
+    setFill([30, 100, 180]);
+    pdf.lines(
+      [[60, 0], [-60, 45], [-60, -45]],  // dx,dy relativos
+      PW - 60, 0, [1, 1], 'F', true
+    );
+ 
+    setTxt(WHITE);
+    pdf.setFontSize(22);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('REPORTE NUTRICIONAL', 20, 18);
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Plataforma MIKHUY  |  Sistema de Seguimiento Estudiantil', 20, 28);
+ 
+    // Fecha en header
+    pdf.setFontSize(8);
+    setTxt([200, 225, 255]);
+    pdf.text(`Generado: ${new Date().toLocaleDateString('es-ES', { day:'2-digit', month:'long', year:'numeric' })}`, 20, 38);
+ 
+    // — Sección Perfil del Estudiante —
+    let y = 55;
+ 
+    // Avatar placeholder (círculo)
+    setFill(BLUE_LIGHT);
+    pdf.circle(25, y + 14, 12, 'F');
+    setFill(BLUE);
+    pdf.circle(25, y + 11, 5, 'F');
+    pdf.circle(25, y + 20, 8, 'F');  // silueta
+ 
+    // Nombre y datos básicos
+    setTxt(TEXT_DARK);
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(`${this.selectedStudent.nombre} ${this.selectedStudent.apellido}`, 42, y + 8);
+ 
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    setTxt(TEXT_GRAY);
+    pdf.text(`Edad: ${this.selectedStudent.edad} años`, 42, y + 16);
+    pdf.text(`Grado: ${this.selectedStudent.grado} — Sección ${this.selectedStudent.seccion}`, 42, y + 23);
+ 
+    // Badge puntos acumulados
+    badge(42, y + 30, `${this.dashboardData.estadisticas.puntosGanados} pts`, BLUE_LIGHT, BLUE, 35);
+ 
+    hLine(y + 38);
+    y += 46;
+ 
+    // — Sección ANÁLISIS DE SALUD —
+    if (this.dashboardData.salud?.medicionActual) {
+      const med   = this.dashboardData.salud.medicionActual;
+      const stats = this.dashboardData.salud.estadisticas;
+ 
+      // Título de sección con barra lateral
+      setFill(RED);
+      pdf.rect(15, y, 3, 8, 'F');
+      setTxt(TEXT_DARK);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('ANÁLISIS DE SALUD', 21, y + 6.5);
+      y += 14;
+ 
+      // Fondo de la tarjeta
+      roundRect(15, y, PW - 30, 52, GRAY_BG, undefined, 5);
+ 
+      // — Mini gauge IMC —
+      const cx = 45, cy = y + 26, r = 18;
+ 
+      // Helper: dibuja un arco grueso como polilínea de segmentos
+      // startDeg / endDeg en grados (0 = derecha, 180 = izquierda, como Math.cos/sin)
+      const drawArcStroke = (
+        acx: number, acy: number, ar: number,
+        startDeg: number, endDeg: number,
+        color: [number,number,number], lineW: number,
+        steps = 20
+      ) => {
+        setStroke(color);
+        pdf.setLineWidth(lineW);
+        for (let i = 0; i < steps; i++) {
+          const a1 = ((startDeg + (endDeg - startDeg) * i / steps) * Math.PI) / 180;
+          const a2 = ((startDeg + (endDeg - startDeg) * (i + 1) / steps) * Math.PI) / 180;
+          pdf.line(
+            acx + ar * Math.cos(a1), acy + ar * Math.sin(a1),
+            acx + ar * Math.cos(a2), acy + ar * Math.sin(a2)
+          );
+        }
+      };
+ 
+      // 4 zonas del semicírculo (180° → 360°)
+      // Bajo peso: 180-225 | Normal: 225-270 | Sobrepeso: 270-315 | Obesidad: 315-360
+      const gaugeSegments = [
+        { start: 180, end: 225, color: [66, 165, 245]  as [number,number,number] }, // azul
+        { start: 225, end: 270, color: [102, 187, 106] as [number,number,number] }, // verde
+        { start: 270, end: 315, color: [255, 167, 38]  as [number,number,number] }, // naranja
+        { start: 315, end: 360, color: [239, 83, 80]   as [number,number,number] }, // rojo
+      ];
+      gaugeSegments.forEach(seg => drawArcStroke(cx, cy, r, seg.start, seg.end, seg.color, 4.5));
+ 
+      // Aguja del IMC
+      const imc = stats?.imcActual || 0;
+      const imcNorm = Math.min(Math.max((imc - 10) / 35, 0), 1);
+      const needleAngle = (180 + imcNorm * 180) * (Math.PI / 180);
+      const nx = cx + (r - 4) * Math.cos(needleAngle);
+      const ny = cy + (r - 4) * Math.sin(needleAngle);
+      setStroke(TEXT_DARK);
+      pdf.setLineWidth(1);
+      pdf.line(cx, cy, nx, ny);
+      setFill(TEXT_DARK);
+      pdf.circle(cx, cy, 2, 'F');
+ 
+      // Texto IMC
+      setTxt(TEXT_DARK);
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(imc.toFixed(1), cx, cy + 10, { align: 'center' });
+      pdf.setFontSize(6.5);
+      pdf.setFont('helvetica', 'normal');
+      setTxt(TEXT_GRAY);
+      pdf.text('IMC', cx, cy + 15, { align: 'center' });
+ 
+      // Estado badge debajo del gauge
+      const estadoColor = this.getEstadoColor(stats?.estadoNutricionalActual || '');
+      const badgeBg: [number,number,number] = [
+        estadoColor.r + 40, estadoColor.g + 40, estadoColor.b + 40
+      ].map(v => Math.min(v, 255)) as [number,number,number];
+      const ac: [number,number,number] = [estadoColor.r, estadoColor.g, estadoColor.b];
+      badge(cx - 18, cy + 22, stats?.estadoNutricionalActual || '', badgeBg, ac, 36);
+ 
+      // — Datos de medición a la derecha del gauge —
+      const rx = 82;
+      const dataItems = [
+        { label: 'Peso',        value: `${med.peso} kg`,         color: BLUE  },
+        { label: 'Talla',       value: `${med.talla} cm`,        color: GREEN },
+        { label: 'Tendencia',   value: stats?.tendencia || '-',  color: ORANGE},
+        { label: 'Mediciones',  value: String(stats?.totalMediciones || 0), color: [150,150,150] as [number,number,number] },
+      ];
+      dataItems.forEach((item, i) => {
+        const ix = rx + (i % 2) * 58;
+        const iy = y + 6 + Math.floor(i / 2) * 22;
+        dot(ix, iy + 3, item.color, 2);
+        setTxt(TEXT_GRAY);
+        pdf.setFontSize(7.5);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(item.label, ix + 5, iy + 4);
+        setTxt(TEXT_DARK);
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(item.value, ix + 5, iy + 13);
+      });
+ 
+      // Variaciones
+      if (stats) {
+        const vy = y + 52;
+        const vxPeso  = rx;
+        const vxTalla = rx + 58;
+ 
+        if (stats.variacionPeso !== 0) {
+          const vpColor: [number,number,number] = stats.variacionPeso > 0 ? RED : GREEN;
+          const vpSign  = stats.variacionPeso > 0 ? '▲' : '▼';
+          setFill(vpColor);
+          pdf.setFontSize(7);
+          pdf.setFont('helvetica', 'bold');
+          // flecha como texto ASCII seguro
+          setTxt(vpColor);
+          pdf.text(`${vpSign} ${Math.abs(stats.variacionPeso).toFixed(1)}% vs anterior`, vxPeso, vy);
+        }
+        if (stats.variacionTalla > 0) {
+          setTxt(GREEN);
+          pdf.setFontSize(7);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`▲ +${stats.variacionTalla.toFixed(1)}% crecimiento`, vxTalla, vy);
+        }
       }
-
-      const fileName = `Reporte_Completo_${this.selectedStudent.nombre}_${
-        this.selectedStudent.apellido
-      }_${Date.now()}.pdf`;
-      pdf.save(fileName);
-
-      this.snackBar.open('✅ Reporte PDF generado exitosamente', 'Cerrar', {
-        duration: 3000,
-      });
-      this.isGeneratingPDF = false;
-    } catch (error) {
-      console.error('Error generando PDF:', error);
-      this.snackBar.open('❌ Error al generar el reporte PDF', 'Cerrar', {
-        duration: 3000,
-      });
-      this.isGeneratingPDF = false;
+ 
+      y += 58;
+ 
+      // — Recomendación —
+      if (stats?.recomendacion) {
+        roundRect(15, y, PW - 30, 16, BLUE_LIGHT, undefined, 4);
+        dot(22, y + 8, BLUE);
+        setTxt(BLUE);
+        pdf.setFontSize(7.5);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Recomendacion: ', 27, y + 9);
+        setTxt(TEXT_DARK);
+        pdf.setFont('helvetica', 'normal');
+        const splitRec = pdf.splitTextToSize(stats.recomendacion, PW - 80);
+        pdf.text(splitRec[0], 61, y + 9);
+        y += 22;
+      }
     }
+ 
+    hLine(y);
+    y += 8;
+ 
+    // — Sección ESTADÍSTICAS GENERALES —
+    setFill(BLUE);
+    pdf.rect(15, y, 3, 8, 'F');
+    setTxt(TEXT_DARK);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('ESTADÍSTICAS GENERALES', 21, y + 6.5);
+    y += 14;
+ 
+    const stats2 = this.dashboardData.estadisticas;
+    const boxW   = (PW - 38) / 4 - 2;
+    const statData = [
+      { v: String(stats2.puntosGanados),    l: 'Puntos Ganados',    c: ORANGE },
+      { v: String(stats2.juegosCompletados),l: 'Juegos Completos',  c: GREEN  },
+      { v: String(stats2.totalSesiones),    l: 'Total Sesiones',    c: BLUE   },
+      { v: `#${stats2.posicionRanking}`,    l: `de ${stats2.totalEstudiantes} estudiantes`, c: RED },
+    ];
+    statData.forEach((s, i) => {
+      statBox(15 + i * (boxW + 2.5), y, boxW, 28, s.v, s.l, s.c);
+    });
+    y += 34;
+ 
+    // — Barra de progreso de juegos —
+    if (this.dashboardData.juegos?.length) {
+      hLine(y);
+      y += 8;
+ 
+      setFill(BLUE);
+      pdf.rect(15, y, 3, 8, 'F');
+      setTxt(TEXT_DARK);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('PROGRESO POR JUEGO', 21, y + 6.5);
+      y += 14;
+ 
+      this.dashboardData.juegos.forEach((juego: any) => {
+        const pct = this.calcularPorcentajeProgreso(juego);
+        const barColor: [number,number,number] = juego.completado ? GREEN : BLUE;
+ 
+        setTxt(TEXT_DARK);
+        pdf.setFontSize(8.5);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(juego.nombre, 15, y + 4);
+ 
+        // Barra fondo
+        roundRect(15, y + 6, PW - 50, 5, GRAY_LINE, undefined, 2);
+        // Barra progreso
+        if (pct > 0) {
+          roundRect(15, y + 6, Math.max(3, (PW - 50) * pct / 100), 5, barColor, undefined, 2);
+        }
+ 
+        // Porcentaje
+        setTxt(barColor);
+        pdf.setFontSize(8.5);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${pct}%`, PW - 30, y + 10);
+ 
+        // Completado badge
+        if (juego.completado) {
+          badge(PW - 22, y + 2, 'OK', GREEN_LIGHT, GREEN, 14);
+        }
+ 
+        setTxt(TEXT_GRAY);
+        pdf.setFontSize(7);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(`Nivel ${juego.nivelActual || 0}/${juego.maxNiveles}  |  ${juego.puntosGanados || 0} pts  |  Jugado ${juego.vecesJugado || 0}x`, 15, y + 15);
+ 
+        y += 20;
+      });
+    }
+ 
+    // — Footer pág 1 —
+    this.addFooter(pdf, 1, PW, PH, BLUE, GRAY_LINE, WHITE);
+ 
+    // ══════════════════════════════════════════════════════════
+    //  PÁGINA 2 — Evolución de Indicadores
+    // ══════════════════════════════════════════════════════════
+    if (this.dashboardData.salud?.historialMediciones?.length >= 2) {
+      pdf.addPage();
+      this.addPageHeader(pdf, 'EVOLUCIÓN DE INDICADORES DE SALUD', PW, BLUE, WHITE);
+      let y2 = 50;
+ 
+      const mediciones = [...this.dashboardData.salud.historialMediciones]
+        .sort((a: any, b: any) => new Date(a.fechaRegistro).getTime() - new Date(b.fechaRegistro).getTime());
+ 
+      const chartConfigs = [
+        { titulo: 'Evolución de Peso', unidad: 'kg',  color: BLUE,   getter: (m: any) => m.peso  },
+        { titulo: 'Evolución de Talla',unidad: 'cm',  color: GREEN,  getter: (m: any) => m.talla },
+        { titulo: 'Evolución del IMC', unidad: 'IMC', color: [150,50,180] as [number,number,number], getter: (m: any) => m.imc },
+      ];
+ 
+      chartConfigs.forEach(cfg => {
+        y2 = this.drawLineChart(pdf, y2, PW, mediciones, cfg.titulo, cfg.unidad, cfg.color, cfg.getter,
+          TEXT_DARK, TEXT_GRAY, GRAY_BG, GRAY_LINE, WHITE);
+        y2 += 10;
+      });
+ 
+      this.addFooter(pdf, 2, PW, PH, BLUE, GRAY_LINE, WHITE);
+    }
+ 
+    // ══════════════════════════════════════════════════════════
+    //  PÁGINA 3 — Recomendaciones
+    // ══════════════════════════════════════════════════════════
+    pdf.addPage();
+    this.addPageHeader(pdf, 'RECOMENDACIONES Y CONCLUSIONES', PW, BLUE, WHITE);
+    let y3 = 50;
+ 
+    // — Salud —
+    y3 = this.addRecommendationSection(pdf, y3, PW,
+      'RECOMENDACIONES DE SALUD',
+      this.dashboardData.salud?.estadisticas?.recomendacion || 'Estado dentro de los parámetros normales.',
+      RED, GRAY_BG, TEXT_DARK, TEXT_GRAY, GRAY_LINE);
+ 
+    // — Académicas —
+    const acadItems: string[] = [];
+    if ((this.dashboardData.estadisticas?.juegosCompletados || 0) < 3) {
+      acadItems.push('Completar todos los juegos educativos para una evaluación nutricional completa.');
+    }
+    if ((this.dashboardData.estadisticas?.puntosGanados || 0) < 1000) {
+      acadItems.push('Incrementar la participación en actividades educativas para reforzar conocimientos nutricionales.');
+    }
+    if (acadItems.length === 0) {
+      acadItems.push('Excelente participación en los juegos educativos. ¡Sigue así!');
+    }
+ 
+    y3 = this.addRecommendationSection(pdf, y3, PW,
+      'RECOMENDACIONES ACADÉMICAS',
+      acadItems.join(' '),
+      BLUE, GRAY_BG, TEXT_DARK, TEXT_GRAY, GRAY_LINE);
+ 
+    // — Conclusión —
+    y3 += 4;
+    setFill(BLUE);
+    pdf.rect(15, y3, 3, 8, 'F');
+    setTxt(TEXT_DARK);
+    pdf.setFontSize(12);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text('CONCLUSIÓN', 21, y3 + 6.5);
+    y3 += 16;
+ 
+    roundRect(15, y3, PW - 30, 50, GRAY_BG, undefined, 5);
+    setFill(BLUE);
+    pdf.rect(15, y3, PW - 30, 3, 'F');  // top accent
+ 
+    const conclusionText = this.generarConclusionTexto();
+    setTxt(TEXT_DARK);
+    pdf.setFontSize(9.5);
+    pdf.setFont('helvetica', 'normal');
+    const splitConc = pdf.splitTextToSize(conclusionText, PW - 44);
+    pdf.text(splitConc, 22, y3 + 14);
+ 
+    // Firma / sello
+    y3 += 58;
+    hLine(y3, 15, PW - 15, GRAY_LINE);
+    y3 += 6;
+    setTxt(TEXT_GRAY);
+    pdf.setFontSize(7.5);
+    pdf.setFont('helvetica', 'italic');
+    pdf.text('Este reporte fue generado automáticamente por la Plataforma MIKHUY.', PW / 2, y3, { align: 'center' });
+    pdf.text('Para consultas adicionales, comuníquese con el equipo docente.', PW / 2, y3 + 5, { align: 'center' });
+ 
+    this.addFooter(pdf, 3, PW, PH, BLUE, GRAY_LINE, WHITE);
+ 
+    // — Guardar —
+    const totalPages = pdf.internal.pages.length - 1;
+    // Actualizar número total en footers (jsPDF no soporta forward reference, ya tenemos el total fijo en addFooter)
+ 
+    const fileName = `Reporte_Completo_${this.selectedStudent.nombre}_${this.selectedStudent.apellido}_${Date.now()}.pdf`;
+    pdf.save(fileName);
+ 
+    this.snackBar.open('Reporte PDF generado exitosamente', 'Cerrar', { duration: 3000 });
+    this.isGeneratingPDF = false;
+ 
+  } catch (error) {
+    console.error('Error generando PDF:', error);
+    this.snackBar.open('Error al generar el reporte PDF', 'Cerrar', { duration: 3000 });
+    this.isGeneratingPDF = false;
   }
+}
+ 
+// ── Helpers privados ─────────────────────────────────────────────────────────
+ 
+private addPageHeader(pdf: any, title: string, PW: number,
+                      blue: [number,number,number], white: [number,number,number]): void {
+  pdf.setFillColor(blue[0], blue[1], blue[2]);
+  pdf.rect(0, 0, PW, 38, 'F');
+  pdf.setFillColor(30, 100, 180);
+  // Triángulo decorativo esquina
+  pdf.setFillColor(30, 100, 180);
+  pdf.lines(
+    [[50, 0], [-50, 38], [-50, -38]],
+    PW - 50, 0, [1, 1], 'F', true
+  );
+  pdf.setTextColor(white[0], white[1], white[2]);
+  pdf.setFontSize(14);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(title, 20, 22);
+  pdf.setFontSize(8);
+  pdf.setFont('helvetica', 'normal');
+  pdf.setTextColor(200, 225, 255);
+  pdf.text('Plataforma MIKHUY', 20, 32);
+}
+ 
+private addFooter(pdf: any, page: number, PW: number, PH: number,
+                  blue: [number,number,number], grayLine: [number,number,number],
+                  white: [number,number,number]): void {
+  pdf.setFillColor(blue[0], blue[1], blue[2]);
+  pdf.rect(0, PH - 14, PW, 14, 'F');
+  pdf.setTextColor(white[0], white[1], white[2]);
+  pdf.setFontSize(7.5);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text('Plataforma MIKHUY — Sistema de Seguimiento Nutricional Estudiantil', 15, PH - 6);
+  pdf.text(`Pagina ${page}`, PW - 15, PH - 6, { align: 'right' });
+}
+ 
+private drawLineChart(
+  pdf: any, startY: number, PW: number, mediciones: any[],
+  titulo: string, unidad: string, lineColor: [number,number,number],
+  getValue: (m: any) => number,
+  textDark: [number,number,number], textGray: [number,number,number],
+  grayBg: [number,number,number], grayLine: [number,number,number],
+  white: [number,number,number]
+): number {
+  const marginL  = 25;
+  const marginR  = 15;
+  const chartX   = marginL + 20;
+  const chartW   = PW - marginL - marginR - 20;
+  const chartH   = 45;
+  const chartY   = startY + 14;
+ 
+  // Fondo carta
+  pdf.setFillColor(grayBg[0], grayBg[1], grayBg[2]);
+  pdf.roundedRect(marginL, startY, PW - marginL - marginR, chartH + 22, 4, 4, 'F');
+ 
+  // Título
+  pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(titulo, marginL + 4, startY + 9);
+ 
+  // Badge unidad
+  pdf.setFillColor(lineColor[0], lineColor[1], lineColor[2]);
+  pdf.setTextColor(white[0], white[1], white[2]);
+  pdf.setFontSize(7);
+  pdf.roundedRect(PW - marginR - 22, startY + 3, 18, 7, 2, 2, 'F');
+  pdf.text(unidad, PW - marginR - 13, startY + 8, { align: 'center' });
+ 
+  // Datos
+  const valores  = mediciones.map(getValue);
+  const minVal   = Math.min(...valores);
+  const maxVal   = Math.max(...valores);
+  const range    = maxVal - minVal || 1;
+ 
+  // Grid lines horizontales
+  pdf.setDrawColor(grayLine[0], grayLine[1], grayLine[2]);
+  pdf.setLineWidth(0.2);
+  [0, 0.5, 1].forEach(t => {
+    const gy = chartY + chartH * (1 - t);
+    pdf.line(chartX, gy, chartX + chartW, gy);
+    const label = (minVal + range * t).toFixed(1);
+    pdf.setTextColor(textGray[0], textGray[1], textGray[2]);
+    pdf.setFontSize(6.5);
+    pdf.text(label, chartX - 2, gy + 1, { align: 'right' });
+  });
+ 
+  // Eje X
+  pdf.setDrawColor(grayLine[0], grayLine[1], grayLine[2]);
+  pdf.setLineWidth(0.4);
+  pdf.line(chartX, chartY + chartH, chartX + chartW, chartY + chartH);
+ 
+  // Calcular puntos
+  const pts = mediciones.map((m, i) => ({
+    x: chartX + (i / (mediciones.length - 1)) * chartW,
+    y: chartY + chartH - ((getValue(m) - minVal) / range) * chartH,
+    val: getValue(m),
+    fecha: new Date(m.fechaRegistro).toLocaleDateString('es-ES', { day:'2-digit', month:'short' }),
+  }));
+ 
+  // Área bajo la curva — líneas verticales finas simulan relleno suave
+  // (jsPDF estándar no soporta polygon ni GState/opacity)
+  const areaColor: [number,number,number] = [
+    Math.min(lineColor[0] + 170, 255),
+    Math.min(lineColor[1] + 170, 255),
+    Math.min(lineColor[2] + 170, 255),
+  ];
+  pdf.setDrawColor(areaColor[0], areaColor[1], areaColor[2]);
+  pdf.setLineWidth(0.5);
+  const fillSteps = 60;
+  for (let s = 0; s <= fillSteps; s++) {
+    const t = s / fillSteps;
+    const sx = chartX + t * chartW;
+    const segIdx = Math.min(Math.floor(t * (pts.length - 1)), pts.length - 2);
+    const segT   = t * (pts.length - 1) - segIdx;
+    const sy     = pts[segIdx].y + (pts[segIdx + 1].y - pts[segIdx].y) * segT;
+    pdf.line(sx, sy, sx, chartY + chartH);
+  }
+ 
+  // Línea del gráfico
+  pdf.setDrawColor(lineColor[0], lineColor[1], lineColor[2]);
+  pdf.setLineWidth(1.5);
+  for (let i = 0; i < pts.length - 1; i++) {
+    pdf.line(pts[i].x, pts[i].y, pts[i+1].x, pts[i+1].y);
+  }
+ 
+  // Puntos y etiquetas
+  pts.forEach((p, i) => {
+    // Círculo blanco borde color
+    pdf.setFillColor(white[0], white[1], white[2]);
+    pdf.setDrawColor(lineColor[0], lineColor[1], lineColor[2]);
+    pdf.setLineWidth(1.2);
+    pdf.circle(p.x, p.y, 2.5, 'FD');
+ 
+    // Fecha bajo el eje
+    pdf.setTextColor(textGray[0], textGray[1], textGray[2]);
+    pdf.setFontSize(6);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(p.fecha, p.x, chartY + chartH + 6, { align: 'center' });
+ 
+    // Valor sobre el punto (solo primero y último para no saturar)
+    if (i === 0 || i === pts.length - 1) {
+      pdf.setTextColor(lineColor[0], lineColor[1], lineColor[2]);
+      pdf.setFontSize(7);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(p.val.toFixed(1), p.x, p.y - 4, { align: 'center' });
+    }
+  });
+ 
+  return startY + chartH + 28;
+}
+ 
+private addRecommendationSection(
+  pdf: any, y: number, PW: number,
+  sectionTitle: string, content: string,
+  accentColor: [number,number,number],
+  grayBg: [number,number,number], textDark: [number,number,number],
+  textGray: [number,number,number], grayLine: [number,number,number]
+): number {
+  // Barra lateral
+  pdf.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
+  pdf.rect(15, y, 3, 8, 'F');
+  pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+  pdf.setFontSize(11);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text(sectionTitle, 21, y + 6.5);
+  y += 14;
+ 
+  pdf.setFillColor(grayBg[0], grayBg[1], grayBg[2]);
+  const splitText = pdf.splitTextToSize(content, PW - 44);
+  const boxH = Math.max(18, splitText.length * 6 + 10);
+  pdf.roundedRect(15, y, PW - 30, boxH, 4, 4, 'F');
+ 
+  // Borde izquierdo color
+  pdf.setFillColor(accentColor[0], accentColor[1], accentColor[2]);
+  pdf.rect(15, y, 2, boxH, 'F');
+ 
+  pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
+  pdf.setFontSize(9);
+  pdf.setFont('helvetica', 'normal');
+  pdf.text(splitText, 22, y + 8);
+ 
+  return y + boxH + 8;
+}
+ 
+private generarConclusionTexto(): string {
+  let txt = `El estudiante ${this.selectedStudent?.nombre} ${this.selectedStudent?.apellido} `;
+  if (this.dashboardData?.salud?.estadisticas) {
+    const e = this.dashboardData.salud.estadisticas;
+    txt += `presenta un estado nutricional ${e.estadoNutricionalActual.toLowerCase()} con un IMC de ${e.imcActual.toFixed(1)}. `;
+    txt += `La tendencia registrada es ${e.tendencia.toLowerCase()} con ${e.totalMediciones} medicion(es) en el sistema. `;
+  }
+  const s = this.dashboardData?.estadisticas;
+  if (s) {
+    txt += `Ha acumulado ${s.puntosGanados} puntos y completado ${s.juegosCompletados} juego(s), `;
+    txt += `ubicándose en la posición #${s.posicionRanking} del ranking de ${s.totalEstudiantes} estudiantes. `;
+  }
+  txt += 'Se recomienda continuar con el seguimiento periódico y reforzar los hábitos saludables aprendidos en la plataforma MIKHUY.';
+  return txt;
+}
 
   private async addHealthChartToPDF(
     pdf: any,
