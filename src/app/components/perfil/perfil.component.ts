@@ -277,7 +277,7 @@ export class PerfilComponent implements OnInit {
       telefono: data.telefono || '',
       edad: data.edad || '',
       peso: data.peso || '',
-      talla: data.talla || '',
+      talla: data.talla ? (data.talla / 100).toFixed(2) : '',
       grado: data.grado || '5to',
       seccion: data.seccion || 'A',
     });
@@ -290,7 +290,7 @@ export class PerfilComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       telefono: ['', [Validators.pattern(/^[0-9]{9}$/)]],
       peso: ['', [Validators.min(0.5), Validators.max(200)]],
-      talla: ['', [Validators.min(0.5), Validators.max(250)]],
+      talla: ['', [Validators.min(1.00), Validators.max(2.50)]],
       edad: ['', [Validators.min(11), Validators.max(17)]],
       grado: ['5to'],
       seccion: ['A'],
@@ -390,7 +390,7 @@ export class PerfilComponent implements OnInit {
       seccion: this.perfilForm.value.seccion,
       edad: edadValue ? parseInt(edadValue) : undefined,
       peso: pesoValue ? parseFloat(pesoValue) : undefined,
-      talla: tallaValue ? parseFloat(tallaValue) : undefined,
+      talla: tallaValue ? Math.round(parseFloat(tallaValue) * 100) : undefined,    
     };
 
     console.log('📦 Datos a enviar:', updateData);

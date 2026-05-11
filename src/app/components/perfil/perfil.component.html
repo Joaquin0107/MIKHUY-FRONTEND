@@ -261,18 +261,18 @@
                       matInput
                       type="number"
                       formControlName="talla"
-                      placeholder="100"
+                      placeholder="1.50"
                       step="0.1"
                       min="100.0"
                       max="250.0"
                     />
                     <mat-icon matPrefix>height</mat-icon>
-                    <mat-hint>Puedes usar decimales (ej: 100.0)</mat-hint>
+                    <mat-hint>En metros (ej: 1.50)</mat-hint>
                     <mat-error *ngIf="perfilForm.get('talla')?.hasError('min')">
-                      Talla mínima: 100.0 cm
+                      Talla mínima: 1.00 m
                     </mat-error>
                     <mat-error *ngIf="perfilForm.get('talla')?.hasError('max')">
-                      Talla máxima: 250.0 cm
+                      Talla máxima: 2.50 m
                     </mat-error>
                   </mat-form-field>
                 </div>
