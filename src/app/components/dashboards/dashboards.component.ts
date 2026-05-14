@@ -319,100 +319,165 @@ export class DashboardsComponent implements OnInit {
 
   async descargarReporte(): Promise<void> {
     if (!this.selectedStudent || !this.dashboardData) {
-      this.snackBar.open('No hay datos para generar el reporte', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('No hay datos para generar el reporte', 'Cerrar', {
+        duration: 3000,
+      });
       return;
     }
     this.isGeneratingPDF = true;
     this.snackBar.open('Generando reporte PDF...', '', { duration: 2000 });
- 
+
     try {
-      const pdf  = new jsPDF('p', 'mm', 'a4');
-      const PW   = pdf.internal.pageSize.getWidth();   // 210 mm
-      const PH   = pdf.internal.pageSize.getHeight();  // 297 mm
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const PW = pdf.internal.pageSize.getWidth(); // 210 mm
+      const PH = pdf.internal.pageSize.getHeight(); // 297 mm
       const TOTAL_PAGES = 4;
- 
+
       // ── Paleta ──────────────────────────────────────────────
-      const BLUE        = [48,  130, 220] as [number,number,number];
-      const BLUE_DARK   = [30,  100, 180] as [number,number,number];
-      const BLUE_LIGHT  = [232, 242, 255] as [number,number,number];
-      const GREEN       = [76,  175, 80]  as [number,number,number];
-      const GREEN_LIGHT = [232, 245, 233] as [number,number,number];
-      const ORANGE      = [255, 152, 0]   as [number,number,number];
-      const RED         = [244, 67,  54]  as [number,number,number];
-      const PURPLE      = [150, 50,  180] as [number,number,number];
-      const GRAY_BG     = [248, 249, 250] as [number,number,number];
-      const GRAY_LINE   = [220, 220, 220] as [number,number,number];
-      const TEXT_DARK   = [33,  37,  41]  as [number,number,number];
-      const TEXT_GRAY   = [108, 117, 125] as [number,number,number];
-      const WHITE       = [255, 255, 255] as [number,number,number];
- 
+      const BLUE = [48, 130, 220] as [number, number, number];
+      const BLUE_DARK = [30, 100, 180] as [number, number, number];
+      const BLUE_LIGHT = [232, 242, 255] as [number, number, number];
+      const GREEN = [76, 175, 80] as [number, number, number];
+      const GREEN_LIGHT = [232, 245, 233] as [number, number, number];
+      const ORANGE = [255, 152, 0] as [number, number, number];
+      const RED = [244, 67, 54] as [number, number, number];
+      const PURPLE = [150, 50, 180] as [number, number, number];
+      const GRAY_BG = [248, 249, 250] as [number, number, number];
+      const GRAY_LINE = [220, 220, 220] as [number, number, number];
+      const TEXT_DARK = [33, 37, 41] as [number, number, number];
+      const TEXT_GRAY = [108, 117, 125] as [number, number, number];
+      const WHITE = [255, 255, 255] as [number, number, number];
+
       // ── Helpers (coordenadas: Y crece hacia ABAJO desde el top) ─
-      const sf = (c: [number,number,number]) => pdf.setFillColor(c[0], c[1], c[2]);
-      const ss = (c: [number,number,number]) => pdf.setDrawColor(c[0], c[1], c[2]);
-      const st = (c: [number,number,number]) => pdf.setTextColor(c[0], c[1], c[2]);
- 
+      const sf = (c: [number, number, number]) =>
+        pdf.setFillColor(c[0], c[1], c[2]);
+      const ss = (c: [number, number, number]) =>
+        pdf.setDrawColor(c[0], c[1], c[2]);
+      const st = (c: [number, number, number]) =>
+        pdf.setTextColor(c[0], c[1], c[2]);
+
       // Rectángulo redondeado: x,y = top-left en mm (Y desde arriba)
-      const rr = (x: number, y: number, w: number, h: number,
-                  fill: [number,number,number], r = 3) => {
+      const rr = (
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        fill: [number, number, number],
+        r = 3,
+      ) => {
         sf(fill);
         pdf.roundedRect(x, y, w, h, r, r, 'F');
       };
- 
+
       // Rectángulo simple
-      const rect = (x: number, y: number, w: number, h: number,
-                    fill: [number,number,number]) => {
-        sf(fill); pdf.rect(x, y, w, h, 'F');
+      const rect = (
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        fill: [number, number, number],
+      ) => {
+        sf(fill);
+        pdf.rect(x, y, w, h, 'F');
       };
- 
+
       // Badge centrado
-      const badge = (x: number, y: number, label: string,
-                     bg: [number,number,number], fg: [number,number,number], w = 40) => {
+      const badge = (
+        x: number,
+        y: number,
+        label: string,
+        bg: [number, number, number],
+        fg: [number, number, number],
+        w = 40,
+      ) => {
         rr(x, y, w, 7, bg, 3);
-        st(fg); pdf.setFontSize(7.5); pdf.setFont('helvetica', 'bold');
+        st(fg);
+        pdf.setFontSize(7.5);
+        pdf.setFont('helvetica', 'bold');
         pdf.text(label, x + w / 2, y + 5, { align: 'center' });
       };
- 
+
       // Línea horizontal
       const hline = (y: number, x1 = 15, x2 = PW - 15) => {
-        ss(GRAY_LINE); pdf.setLineWidth(0.3); pdf.line(x1, y, x2, y);
+        ss(GRAY_LINE);
+        pdf.setLineWidth(0.3);
+        pdf.line(x1, y, x2, y);
       };
- 
+
       // Barra lateral + título de sección
-      const sectionBar = (x: number, y: number, title: string,
-                          color: [number,number,number], size = 11) => {
+      const sectionBar = (
+        x: number,
+        y: number,
+        title: string,
+        color: [number, number, number],
+        size = 11,
+      ) => {
         rect(x, y, 3, 9, color);
-        st(TEXT_DARK); pdf.setFontSize(size); pdf.setFont('helvetica', 'bold');
+        st(TEXT_DARK);
+        pdf.setFontSize(size);
+        pdf.setFont('helvetica', 'bold');
         pdf.text(title, x + 5, y + 6.5);
       };
- 
+
       // Caja de estadística
-      const statBox = (x: number, y: number, w: number, h: number,
-                       value: string, label: string, accent: [number,number,number]) => {
+      const statBox = (
+        x: number,
+        y: number,
+        w: number,
+        h: number,
+        value: string,
+        label: string,
+        accent: [number, number, number],
+      ) => {
         rr(x, y, w, h, GRAY_BG, 4);
         rect(x, y, 2.5, h, accent);
-        st(accent); pdf.setFontSize(18); pdf.setFont('helvetica', 'bold');
+        st(accent);
+        pdf.setFontSize(18);
+        pdf.setFont('helvetica', 'bold');
         pdf.text(value, x + w / 2, y + h / 2 + 3, { align: 'center' });
-        st(TEXT_GRAY); pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        st(TEXT_GRAY);
+        pdf.setFontSize(7);
+        pdf.setFont('helvetica', 'normal');
         pdf.text(label, x + w / 2, y + h - 3.5, { align: 'center' });
       };
- 
+
       // Arco gauge: segmentos de línea (jsPDF no tiene arc nativo)
-      const gaugeArc = (cx: number, cy: number, r: number,
-                        startDeg: number, endDeg: number,
-                        color: [number,number,number], lw: number, steps = 30) => {
-        ss(color); pdf.setLineWidth(lw);
+      const gaugeArc = (
+        cx: number,
+        cy: number,
+        r: number,
+        startDeg: number,
+        endDeg: number,
+        color: [number, number, number],
+        lw: number,
+        steps = 30,
+      ) => {
+        ss(color);
+        pdf.setLineWidth(lw);
         for (let i = 0; i < steps; i++) {
-          const a1 = ((startDeg + (endDeg - startDeg) * i     / steps) * Math.PI) / 180;
-          const a2 = ((startDeg + (endDeg - startDeg) * (i+1) / steps) * Math.PI) / 180;
-          pdf.line(cx + r * Math.cos(a1), cy + r * Math.sin(a1),
-                   cx + r * Math.cos(a2), cy + r * Math.sin(a2));
+          const a1 =
+            ((startDeg + ((endDeg - startDeg) * i) / steps) * Math.PI) / 180;
+          const a2 =
+            ((startDeg + ((endDeg - startDeg) * (i + 1)) / steps) * Math.PI) /
+            180;
+          pdf.line(
+            cx + r * Math.cos(a1),
+            cy + r * Math.sin(a1),
+            cx + r * Math.cos(a2),
+            cy + r * Math.sin(a2),
+          );
         }
       };
- 
+
       // Flecha arriba/abajo con líneas
-      const arrow = (x: number, y: number, up: boolean,
-                     color: [number,number,number]) => {
-        ss(color); pdf.setLineWidth(0.9);
+      const arrow = (
+        x: number,
+        y: number,
+        up: boolean,
+        color: [number, number, number],
+      ) => {
+        ss(color);
+        pdf.setLineWidth(0.9);
         if (up) {
           pdf.line(x, y + 2.5, x, y - 2.5);
           pdf.line(x, y - 2.5, x - 1.8, y);
@@ -423,451 +488,713 @@ export class DashboardsComponent implements OnInit {
           pdf.line(x, y + 2.5, x + 1.8, y);
         }
       };
- 
+
       // ══════════════════════════════════════════════════════
       //  PÁGINA 1 — Perfil + Salud + Estadísticas
       // ══════════════════════════════════════════════════════
-      this.pdfHeader(pdf, 'REPORTE NUTRICIONAL',
-        'Plataforma MIKHUY  |  Sistema de Seguimiento Estudiantil', '1 de 4',
-        PW, BLUE, BLUE_DARK, WHITE);
- 
-      st([170, 205, 245]); pdf.setFontSize(8); pdf.setFont('helvetica', 'normal');
-      pdf.text(`Generado: ${new Date().toLocaleDateString('es-ES',
-        { day: '2-digit', month: 'long', year: 'numeric' })}`, 18, 37);
- 
+      this.pdfHeader(
+        pdf,
+        'REPORTE NUTRICIONAL',
+        'Plataforma MIKHUY  |  Sistema de Seguimiento Estudiantil',
+        '1 de 4',
+        PW,
+        BLUE,
+        BLUE_DARK,
+        WHITE,
+      );
+
+      st([170, 205, 245]);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(
+        `Generado: ${new Date().toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+        })}`,
+        18,
+        37,
+      );
+
       let y = 48; // cursor top-down en mm
- 
+
       // Avatar silueta
-      sf(BLUE_LIGHT); pdf.circle(28, y + 13, 13, 'F');
-      sf(BLUE);       pdf.circle(28, y + 9,   5, 'F');
-                      pdf.circle(28, y + 19,  8, 'F');
- 
-      st(TEXT_DARK); pdf.setFontSize(16); pdf.setFont('helvetica', 'bold');
-      pdf.text(`${this.selectedStudent.nombre} ${this.selectedStudent.apellido}`, 47, y + 7);
-      st(TEXT_GRAY); pdf.setFontSize(9); pdf.setFont('helvetica', 'normal');
+      sf(BLUE_LIGHT);
+      pdf.circle(28, y + 13, 13, 'F');
+      sf(BLUE);
+      pdf.circle(28, y + 9, 5, 'F');
+      pdf.circle(28, y + 19, 8, 'F');
+
+      st(TEXT_DARK);
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(
+        `${this.selectedStudent.nombre} ${this.selectedStudent.apellido}`,
+        47,
+        y + 7,
+      );
+      st(TEXT_GRAY);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'normal');
       pdf.text(
         `Edad: ${this.selectedStudent.edad} años   |   Grado: ${this.selectedStudent.grado} — Sección ${this.selectedStudent.seccion}`,
-        47, y + 15);
-      badge(47, y + 20,
+        47,
+        y + 15,
+      );
+      badge(
+        47,
+        y + 20,
         `${this.dashboardData.estadisticas.puntosGanados} pts acumulados`,
-        BLUE_LIGHT, BLUE, 52);
- 
+        BLUE_LIGHT,
+        BLUE,
+        52,
+      );
+
       y += 32;
-      hline(y); y += 8;
- 
+      hline(y);
+      y += 8;
+
       // — ANÁLISIS DE SALUD —
       if (this.dashboardData.salud?.medicionActual) {
-        const med   = this.dashboardData.salud.medicionActual;
+        const med = this.dashboardData.salud.medicionActual;
         const stats = this.dashboardData.salud.estadisticas;
- 
+
         sectionBar(15, y, 'ANÁLISIS DE SALUD', RED);
         y += 14;
- 
+
         const cardH = 68;
         rr(15, y, PW - 30, cardH, GRAY_BG, 4);
- 
+
         // Gauge: centro en (50, y + cardH/2)
-        const cx = 50, cyG = y + cardH / 2;
+        const cx = 50,
+          cyG = y + cardH / 2;
         const gR = 19;
-        gaugeArc(cx, cyG, gR, 180, 360, [210,210,210], 5.5); // fondo gris
-        gaugeArc(cx, cyG, gR, 180, 225, [66, 165,245],  5);  // azul
-        gaugeArc(cx, cyG, gR, 225, 270, [102,187,106],  5);  // verde
-        gaugeArc(cx, cyG, gR, 270, 315, [255,167,38 ],  5);  // naranja
-        gaugeArc(cx, cyG, gR, 315, 360, [239,83, 80 ],  5);  // rojo
- 
+        gaugeArc(cx, cyG, gR, 180, 360, [210, 210, 210], 5.5); // fondo gris
+        gaugeArc(cx, cyG, gR, 180, 225, [66, 165, 245], 5); // azul
+        gaugeArc(cx, cyG, gR, 225, 270, [102, 187, 106], 5); // verde
+        gaugeArc(cx, cyG, gR, 270, 315, [255, 167, 38], 5); // naranja
+        gaugeArc(cx, cyG, gR, 315, 360, [239, 83, 80], 5); // rojo
+
         // Aguja
-        const imc     = stats?.imcActual || 0;
+        const imc = stats?.imcActual || 0;
         const imcNorm = Math.min(Math.max((imc - 10) / 35, 0), 1);
-        const nRad    = ((180 + imcNorm * 180) * Math.PI) / 180;
-        ss(TEXT_DARK); pdf.setLineWidth(1);
-        pdf.line(cx, cyG, cx + (gR - 3) * Math.cos(nRad), cyG + (gR - 3) * Math.sin(nRad));
-        sf(TEXT_DARK); pdf.circle(cx, cyG, 2, 'F');
-        sf(WHITE);     pdf.circle(cx, cyG, 1, 'F');
- 
+        const nRad = ((180 + imcNorm * 180) * Math.PI) / 180;
+        ss(TEXT_DARK);
+        pdf.setLineWidth(1);
+        pdf.line(
+          cx,
+          cyG,
+          cx + (gR - 3) * Math.cos(nRad),
+          cyG + (gR - 3) * Math.sin(nRad),
+        );
+        sf(TEXT_DARK);
+        pdf.circle(cx, cyG, 2, 'F');
+        sf(WHITE);
+        pdf.circle(cx, cyG, 1, 'F');
+
         // Valor IMC (debajo del gauge)
-        st(TEXT_DARK); pdf.setFontSize(14); pdf.setFont('helvetica', 'bold');
+        st(TEXT_DARK);
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
         pdf.text(imc.toFixed(1), cx, cyG + 10, { align: 'center' });
-        st(TEXT_GRAY); pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+        st(TEXT_GRAY);
+        pdf.setFontSize(7);
+        pdf.setFont('helvetica', 'normal');
         pdf.text('Índice de Masa Corporal', cx, cyG + 16, { align: 'center' });
- 
+
         // Badge estado nutricional
-        const ec  = this.getEstadoColor(stats?.estadoNutricionalActual || '');
-        const eFg: [number,number,number] = [ec.r, ec.g, ec.b];
-        const eBg: [number,number,number] = [
-          Math.min(ec.r + 150, 255), Math.min(ec.g + 150, 255), Math.min(ec.b + 150, 255)];
-        badge(cx - 18, y + cardH - 9, stats?.estadoNutricionalActual || '-', eBg, eFg, 36);
- 
+        const ec = this.getEstadoColor(stats?.estadoNutricionalActual || '');
+        const eFg: [number, number, number] = [ec.r, ec.g, ec.b];
+        const eBg: [number, number, number] = [
+          Math.min(ec.r + 150, 255),
+          Math.min(ec.g + 150, 255),
+          Math.min(ec.b + 150, 255),
+        ];
+        badge(
+          cx - 18,
+          y + cardH - 9,
+          stats?.estadoNutricionalActual || '-',
+          eBg,
+          eFg,
+          36,
+        );
+
         // 4 datos a la derecha del gauge
         const rx = 88;
         [
-          { l: 'Peso',       v: `${med.peso} kg`,             c: BLUE    },
-          { l: 'Talla',      v: `${med.talla} cm`,            c: GREEN   },
-          { l: 'Tendencia',  v: stats?.tendencia || '-',       c: ORANGE  },
-          { l: 'Mediciones', v: `${stats?.totalMediciones||0}`,c: TEXT_GRAY },
+          { l: 'Peso', v: `${med.peso} kg`, c: BLUE },
+          { l: 'Talla', v: `${med.talla} cm`, c: GREEN },
+          { l: 'Tendencia', v: stats?.tendencia || '-', c: ORANGE },
+          {
+            l: 'Mediciones',
+            v: `${stats?.totalMediciones || 0}`,
+            c: TEXT_GRAY,
+          },
         ].forEach((item, i) => {
           const ix = rx + (i % 2) * 55;
           const iy = y + 8 + Math.floor(i / 2) * 24;
-          sf(item.c); pdf.circle(ix, iy + 3, 1.8, 'F');
-          st(TEXT_GRAY); pdf.setFontSize(7.5); pdf.setFont('helvetica', 'normal');
+          sf(item.c);
+          pdf.circle(ix, iy + 3, 1.8, 'F');
+          st(TEXT_GRAY);
+          pdf.setFontSize(7.5);
+          pdf.setFont('helvetica', 'normal');
           pdf.text(item.l, ix + 5, iy + 4);
-          st(TEXT_DARK); pdf.setFontSize(13); pdf.setFont('helvetica', 'bold');
+          st(TEXT_DARK);
+          pdf.setFontSize(13);
+          pdf.setFont('helvetica', 'bold');
           pdf.text(item.v, ix + 5, iy + 13);
         });
- 
+
         // Variaciones con flechas
         const vy = y + cardH - 9;
         if (stats?.variacionPeso !== 0) {
           const up = (stats?.variacionPeso || 0) > 0;
           arrow(rx + 4, vy, up, up ? RED : GREEN);
-          st(up ? RED : GREEN); pdf.setFontSize(7.5); pdf.setFont('helvetica', 'bold');
-          pdf.text(`${Math.abs(stats?.variacionPeso || 0).toFixed(1)}% vs medicion anterior`,
-            rx + 9, vy + 2);
+          st(up ? RED : GREEN);
+          pdf.setFontSize(7.5);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(
+            `${Math.abs(stats?.variacionPeso || 0).toFixed(1)}% vs medicion anterior`,
+            rx + 9,
+            vy + 2,
+          );
         }
         if ((stats?.variacionTalla || 0) > 0) {
           arrow(rx + 58, vy, true, GREEN);
-          st(GREEN); pdf.setFontSize(7.5); pdf.setFont('helvetica', 'bold');
-          pdf.text(`+${(stats?.variacionTalla || 0).toFixed(1)}% crecimiento`, rx + 63, vy + 2);
+          st(GREEN);
+          pdf.setFontSize(7.5);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(
+            `+${(stats?.variacionTalla || 0).toFixed(1)}% crecimiento`,
+            rx + 63,
+            vy + 2,
+          );
         }
- 
+
         y += cardH + 4;
- 
+
         // Caja de recomendación
         if (stats?.recomendacion) {
           const splitRec = pdf.splitTextToSize(stats.recomendacion, PW - 52);
           const recH = Math.max(14, splitRec.length * 5.5 + 10);
           rr(15, y, PW - 30, recH, BLUE_LIGHT, 3);
           rect(15, y, 2.5, recH, BLUE);
-          st(BLUE); pdf.setFontSize(8); pdf.setFont('helvetica', 'bold');
+          st(BLUE);
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'bold');
           pdf.text('Recomendacion:', 21, y + 8);
-          st(TEXT_DARK); pdf.setFont('helvetica', 'normal');
+          st(TEXT_DARK);
+          pdf.setFont('helvetica', 'normal');
           pdf.text(splitRec, 21, y + 14);
           y += recH + 7;
         }
       }
- 
-      hline(y); y += 8;
- 
+
+      hline(y);
+      y += 8;
+
       // — ESTADÍSTICAS GENERALES —
       sectionBar(15, y, 'ESTADÍSTICAS GENERALES', BLUE);
       y += 12;
- 
+
       const s2 = this.dashboardData.estadisticas;
       const bw = (PW - 40) / 4;
       [
-        { v: String(s2.puntosGanados),     l: 'Puntos Ganados',     c: ORANGE },
-        { v: String(s2.juegosCompletados), l: 'Juegos Completos',   c: GREEN  },
-        { v: String(s2.totalSesiones),     l: 'Total Sesiones',      c: BLUE   },
-        { v: `#${s2.posicionRanking}`,     l: `de ${s2.totalEstudiantes} est.`, c: RED },
-      ].forEach((s, i) => statBox(15 + i * (bw + 2.5), y, bw, 28, s.v, s.l, s.c));
- 
+        { v: String(s2.puntosGanados), l: 'Puntos Ganados', c: ORANGE },
+        { v: String(s2.juegosCompletados), l: 'Juegos Completos', c: GREEN },
+        { v: String(s2.totalSesiones), l: 'Total Sesiones', c: BLUE },
+        {
+          v: `#${s2.posicionRanking}`,
+          l: `de ${s2.totalEstudiantes} est.`,
+          c: RED,
+        },
+      ].forEach((s, i) =>
+        statBox(15 + i * (bw + 2.5), y, bw, 28, s.v, s.l, s.c),
+      );
+
       this.pdfFooter(pdf, 1, TOTAL_PAGES, PW, PH, BLUE, WHITE);
- 
+
       // ═══════════════════════════════════════════════
       // PÁGINA 2 — Progreso por Juego
       // ═══════════════════════════════════════════════
       pdf.addPage();
-      this.pdfHeader(pdf, 'PROGRESO POR JUEGO', 'Plataforma MIKHUY',
-        '2 de 4', PW, BLUE, BLUE_DARK, WHITE);
+      this.pdfHeader(
+        pdf,
+        'PROGRESO POR JUEGO',
+        'Plataforma MIKHUY',
+        '2 de 4',
+        PW,
+        BLUE,
+        BLUE_DARK,
+        WHITE,
+      );
       let y2 = 48;
- 
-      st(TEXT_GRAY); pdf.setFontSize(8.5); pdf.setFont('helvetica', 'normal');
-      pdf.text(`Se muestran ${this.dashboardData.juegos?.length || 0} actividad(es) registradas.`, 15, y2);
+
+      st(TEXT_GRAY);
+      pdf.setFontSize(8.5);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(
+        `Se muestran ${this.dashboardData.juegos?.length || 0} actividad(es) registradas.`,
+        15,
+        y2,
+      );
       y2 += 10;
- 
+
       const cardH2 = 56;
       (this.dashboardData.juegos || []).forEach((juego: any) => {
-        const pct    = Math.min(100, this.calcularPorcentajeProgreso(juego));
-        const bColor: [number,number,number] = juego.completado ? GREEN  : BLUE;
-        const bBg:    [number,number,number] = juego.completado ? GREEN_LIGHT : BLUE_LIGHT;
-        const bLabel  = juego.completado ? 'COMPLETADO' : 'EN PROGRESO';
- 
+        const pct = Math.min(100, this.calcularPorcentajeProgreso(juego));
+        const bColor: [number, number, number] = juego.completado
+          ? GREEN
+          : BLUE;
+        const bBg: [number, number, number] = juego.completado
+          ? GREEN_LIGHT
+          : BLUE_LIGHT;
+        const bLabel = juego.completado ? 'COMPLETADO' : 'EN PROGRESO';
+
         rr(15, y2, PW - 30, cardH2 - 4, GRAY_BG, 5);
         rect(15, y2, 4, cardH2 - 4, bColor);
- 
-        st(TEXT_DARK); pdf.setFontSize(12); pdf.setFont('helvetica', 'bold');
+
+        st(TEXT_DARK);
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'bold');
         pdf.text(juego.nombre, 24, y2 + 12);
         badge(PW - 42, y2 + 4, bLabel, bBg, bColor, 24);
- 
-        const barX = 24, barW = PW - 60, barH = 9, barY = y2 + 19;
+
+        const barX = 24,
+          barW = PW - 60,
+          barH = 9,
+          barY = y2 + 19;
         rr(barX, barY, barW, barH, GRAY_LINE, 4);
-        if (pct > 0) rr(barX, barY, Math.max(4, barW * pct / 100), barH, bColor, 4);
-        st(bColor); pdf.setFontSize(14); pdf.setFont('helvetica', 'bold');
+        if (pct > 0)
+          rr(barX, barY, Math.max(4, (barW * pct) / 100), barH, bColor, 4);
+        st(bColor);
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
         pdf.text(`${pct}%`, barX + barW + 4, barY + 7);
- 
+
         const metrics = [
-          { v: `Nivel ${juego.nivelActual||0}/${juego.maxNiveles}`, l: 'Progreso'         },
-          { v: `${(juego.puntosGanados||0).toLocaleString()} pts`,  l: 'Puntos obtenidos' },
-          { v: `${juego.vecesJugado||0}x`,                          l: 'Veces jugado'     },
+          {
+            v: `Nivel ${juego.nivelActual || 0}/${juego.maxNiveles}`,
+            l: 'Progreso',
+          },
+          {
+            v: `${(juego.puntosGanados || 0).toLocaleString()} pts`,
+            l: 'Puntos obtenidos',
+          },
+          { v: `${juego.vecesJugado || 0}x`, l: 'Veces jugado' },
         ];
         const mW = barW / metrics.length;
         metrics.forEach((m, mi) => {
           const mx2 = barX + mi * mW;
-          st(TEXT_DARK); pdf.setFontSize(10); pdf.setFont('helvetica', 'bold');
+          st(TEXT_DARK);
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'bold');
           pdf.text(m.v, mx2, y2 + 39);
-          st(TEXT_GRAY); pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
+          st(TEXT_GRAY);
+          pdf.setFontSize(7);
+          pdf.setFont('helvetica', 'normal');
           pdf.text(m.l, mx2, y2 + 46);
         });
- 
+
         y2 += cardH2 + 3;
       });
- 
+
       this.pdfFooter(pdf, 2, TOTAL_PAGES, PW, PH, BLUE, WHITE);
- 
+
       // ═══════════════════════════════════════════════
       // PÁGINA 3 — Evolución de Indicadores
       // ═══════════════════════════════════════════════
       if ((this.dashboardData.salud?.historialMediciones?.length || 0) >= 2) {
         pdf.addPage();
-        this.pdfHeader(pdf, 'EVOLUCION DE INDICADORES DE SALUD',
-          'Plataforma MIKHUY', '3 de 4', PW, BLUE, BLUE_DARK, WHITE);
- 
-        const mediciones = [...this.dashboardData.salud!.historialMediciones]
-          .sort((a: any, b: any) =>
-            new Date(a.fechaRegistro).getTime() - new Date(b.fechaRegistro).getTime());
- 
+        this.pdfHeader(
+          pdf,
+          'EVOLUCION DE INDICADORES DE SALUD',
+          'Plataforma MIKHUY',
+          '3 de 4',
+          PW,
+          BLUE,
+          BLUE_DARK,
+          WHITE,
+        );
+
+        const mediciones = [
+          ...this.dashboardData.salud!.historialMediciones,
+        ].sort(
+          (a: any, b: any) =>
+            new Date(a.fechaRegistro).getTime() -
+            new Date(b.fechaRegistro).getTime(),
+        );
+
         let y3 = 46;
         [
-          { titulo: 'Evolucion de Peso',  unidad: 'kg',  color: BLUE,   getter: (m: any) => Number(m.peso)  },
-          { titulo: 'Evolucion de Talla', unidad: 'cm',  color: GREEN,  getter: (m: any) => Number(m.talla) },
-          { titulo: 'Evolucion del IMC',  unidad: 'IMC', color: PURPLE, getter: (m: any) => Number(m.imc)   },
-        ].forEach(cfg => {
-          y3 = this.drawLineChart(pdf, y3, PW, mediciones,
-            cfg.titulo, cfg.unidad, cfg.color, cfg.getter,
-            TEXT_DARK, TEXT_GRAY, GRAY_BG, GRAY_LINE, WHITE);
+          {
+            titulo: 'Evolucion de Peso',
+            unidad: 'kg',
+            color: BLUE,
+            getter: (m: any) => Number(m.peso),
+          },
+          {
+            titulo: 'Evolucion de Talla',
+            unidad: 'cm',
+            color: GREEN,
+            getter: (m: any) => Number(m.talla),
+          },
+          {
+            titulo: 'Evolucion del IMC',
+            unidad: 'IMC',
+            color: PURPLE,
+            getter: (m: any) => Number(m.imc),
+          },
+        ].forEach((cfg) => {
+          y3 = this.drawLineChart(
+            pdf,
+            y3,
+            PW,
+            mediciones,
+            cfg.titulo,
+            cfg.unidad,
+            cfg.color,
+            cfg.getter,
+            TEXT_DARK,
+            TEXT_GRAY,
+            GRAY_BG,
+            GRAY_LINE,
+            WHITE,
+          );
           y3 += 5;
         });
       }
       this.pdfFooter(pdf, 3, TOTAL_PAGES, PW, PH, BLUE, WHITE);
- 
+
       // ═══════════════════════════════════════════════
       // PÁGINA 4 — Recomendaciones y Conclusiones
       // ═══════════════════════════════════════════════
       pdf.addPage();
-      this.pdfHeader(pdf, 'RECOMENDACIONES Y CONCLUSIONES',
-        'Plataforma MIKHUY', '4 de 4', PW, BLUE, BLUE_DARK, WHITE);
+      this.pdfHeader(
+        pdf,
+        'RECOMENDACIONES Y CONCLUSIONES',
+        'Plataforma MIKHUY',
+        '4 de 4',
+        PW,
+        BLUE,
+        BLUE_DARK,
+        WHITE,
+      );
       let y4 = 48;
- 
-      y4 = this.addRecommendationSection(pdf, y4, PW,
+
+      y4 = this.addRecommendationSection(
+        pdf,
+        y4,
+        PW,
         'RECOMENDACIONES DE SALUD',
         this.dashboardData.salud?.estadisticas?.recomendacion ||
           'Estado dentro de los parametros normales.',
-        RED, GRAY_BG, TEXT_DARK, TEXT_GRAY);
- 
+        RED,
+        GRAY_BG,
+        TEXT_DARK,
+        TEXT_GRAY,
+      );
+
       const acadItems: string[] = [];
       if ((this.dashboardData.estadisticas?.juegosCompletados || 0) < 3)
-        acadItems.push('Completar todos los juegos educativos para una evaluacion nutricional completa.');
+        acadItems.push(
+          'Completar todos los juegos educativos para una evaluacion nutricional completa.',
+        );
       if ((this.dashboardData.estadisticas?.puntosGanados || 0) < 1000)
-        acadItems.push('Incrementar la participacion en actividades educativas.');
+        acadItems.push(
+          'Incrementar la participacion en actividades educativas.',
+        );
       if (!acadItems.length)
-        acadItems.push('Excelente participacion en los juegos educativos. Sigue asi!');
- 
-      y4 = this.addRecommendationSection(pdf, y4, PW,
+        acadItems.push(
+          'Excelente participacion en los juegos educativos. Sigue asi!',
+        );
+
+      y4 = this.addRecommendationSection(
+        pdf,
+        y4,
+        PW,
         'RECOMENDACIONES ACADEMICAS',
         acadItems.join(' '),
-        BLUE, GRAY_BG, TEXT_DARK, TEXT_GRAY);
- 
+        BLUE,
+        GRAY_BG,
+        TEXT_DARK,
+        TEXT_GRAY,
+      );
+
       y4 += 4;
       rect(15, y4, 3, 9, BLUE);
-      st(TEXT_DARK); pdf.setFontSize(11); pdf.setFont('helvetica', 'bold');
+      st(TEXT_DARK);
+      pdf.setFontSize(11);
+      pdf.setFont('helvetica', 'bold');
       pdf.text('CONCLUSION', 21, y4 + 6.5);
       y4 += 13;
- 
+
       const conclusionText = this.generarConclusionTexto();
       const splitConc = pdf.splitTextToSize(conclusionText, PW - 46);
       const concH = Math.max(32, splitConc.length * 6.5 + 16);
       rr(15, y4, PW - 30, concH, GRAY_BG, 5);
       rect(15, y4, PW - 30, 4, BLUE);
-      st(TEXT_DARK); pdf.setFontSize(10); pdf.setFont('helvetica', 'normal');
+      st(TEXT_DARK);
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
       pdf.text(splitConc, 23, y4 + 13);
- 
+
       y4 += concH + 12;
       hline(y4);
-      st(TEXT_GRAY); pdf.setFontSize(8); pdf.setFont('helvetica', 'italic');
-      pdf.text('Este reporte fue generado automaticamente por la Plataforma MIKHUY.',
-        PW / 2, y4 + 7,  { align: 'center' });
-      pdf.text('Para consultas adicionales, comuniquese con el equipo docente.',
-        PW / 2, y4 + 13, { align: 'center' });
- 
+      st(TEXT_GRAY);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'italic');
+      pdf.text(
+        'Este reporte fue generado automaticamente por la Plataforma MIKHUY.',
+        PW / 2,
+        y4 + 7,
+        { align: 'center' },
+      );
+      pdf.text(
+        'Para consultas adicionales, comuniquese con el equipo docente.',
+        PW / 2,
+        y4 + 13,
+        { align: 'center' },
+      );
+
       this.pdfFooter(pdf, 4, TOTAL_PAGES, PW, PH, BLUE, WHITE);
- 
+
       const fileName = `Reporte_${this.selectedStudent.nombre}_${this.selectedStudent.apellido}_${Date.now()}.pdf`;
       pdf.save(fileName);
-      this.snackBar.open('Reporte PDF generado exitosamente', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('Reporte PDF generado exitosamente', 'Cerrar', {
+        duration: 3000,
+      });
       this.isGeneratingPDF = false;
- 
     } catch (error) {
       console.error('Error generando PDF:', error);
-      this.snackBar.open('Error al generar el reporte PDF', 'Cerrar', { duration: 3000 });
+      this.snackBar.open('Error al generar el reporte PDF', 'Cerrar', {
+        duration: 3000,
+      });
       this.isGeneratingPDF = false;
     }
   }
- 
+
   private pdfHeader(
-    pdf: any, title: string, subtitle: string, pageLabel: string,
-    PW: number, blue: [number,number,number], blueDark: [number,number,number],
-    white: [number,number,number]
+    pdf: any,
+    title: string,
+    subtitle: string,
+    pageLabel: string,
+    PW: number,
+    blue: [number, number, number],
+    blueDark: [number, number, number],
+    white: [number, number, number],
   ): void {
     pdf.setFillColor(blue[0], blue[1], blue[2]);
     pdf.rect(0, 0, PW, 40, 'F');
     pdf.setFillColor(blueDark[0], blueDark[1], blueDark[2]);
     pdf.rect(PW - 38, 0, 38, 40, 'F');
     pdf.setTextColor(white[0], white[1], white[2]);
-    pdf.setFontSize(16); pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(16);
+    pdf.setFont('helvetica', 'bold');
     pdf.text(title, 18, 19);
-    pdf.setFontSize(8); pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(200, 225, 255);
     pdf.text(subtitle, 18, 29);
-    pdf.setFontSize(9); pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(170, 205, 245);
     pdf.text(pageLabel, PW - 6, 18, { align: 'right' });
   }
- 
+
   private pdfFooter(
-    pdf: any, page: number, total: number,
-    PW: number, PH: number,
-    blue: [number,number,number], white: [number,number,number]
+    pdf: any,
+    page: number,
+    total: number,
+    PW: number,
+    PH: number,
+    blue: [number, number, number],
+    white: [number, number, number],
   ): void {
     pdf.setFillColor(blue[0], blue[1], blue[2]);
     pdf.rect(0, PH - 12, PW, 12, 'F');
     pdf.setTextColor(white[0], white[1], white[2]);
-    pdf.setFontSize(7.5); pdf.setFont('helvetica', 'normal');
-    pdf.text('Plataforma MIKHUY — Sistema de Seguimiento Nutricional Estudiantil',
-      15, PH - 4.5);
-    pdf.text(`Pagina ${page} de ${total}`, PW - 15, PH - 4.5, { align: 'right' });
+    pdf.setFontSize(7.5);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text(
+      'Plataforma MIKHUY — Sistema de Seguimiento Nutricional Estudiantil',
+      15,
+      PH - 4.5,
+    );
+    pdf.text(`Pagina ${page} de ${total}`, PW - 15, PH - 4.5, {
+      align: 'right',
+    });
   }
- 
+
   private drawLineChart(
-    pdf: any, startY: number, PW: number, mediciones: any[],
-    titulo: string, unidad: string, lineColor: [number,number,number],
+    pdf: any,
+    startY: number,
+    PW: number,
+    mediciones: any[],
+    titulo: string,
+    unidad: string,
+    lineColor: [number, number, number],
     getValue: (m: any) => number,
-    textDark: [number,number,number], textGray: [number,number,number],
-    grayBg: [number,number,number], grayLine: [number,number,number],
-    white: [number,number,number]
+    textDark: [number, number, number],
+    textGray: [number, number, number],
+    grayBg: [number, number, number],
+    grayLine: [number, number, number],
+    white: [number, number, number],
   ): number {
-    const cardH  = 62;
-    const padL   = 18, padR = 12, padT = 18, padB = 16;
+    const cardH = 62;
+    const padL = 18,
+      padR = 12,
+      padT = 18,
+      padB = 16;
     const chartX = 14 + padL;
     const chartW = PW - 28 - padL - padR;
     const chartY = startY + padT;
     const chartH = cardH - padT - padB;
- 
+
     pdf.setFillColor(grayBg[0], grayBg[1], grayBg[2]);
     pdf.roundedRect(14, startY, PW - 28, cardH, 3, 3, 'F');
     pdf.setFillColor(lineColor[0], lineColor[1], lineColor[2]);
     pdf.roundedRect(14, startY, PW - 28, 3, 1, 1, 'F');
- 
+
     pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-    pdf.setFontSize(10); pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'bold');
     pdf.text(titulo, 19, startY + 13);
- 
+
     pdf.setFillColor(lineColor[0], lineColor[1], lineColor[2]);
     pdf.roundedRect(PW - 32, startY + 4, 16, 7, 2, 2, 'F');
     pdf.setTextColor(white[0], white[1], white[2]);
-    pdf.setFontSize(6.5); pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(6.5);
+    pdf.setFont('helvetica', 'bold');
     pdf.text(unidad, PW - 24, startY + 9.5, { align: 'center' });
- 
+
     if (mediciones.length < 2) {
       pdf.setTextColor(textGray[0], textGray[1], textGray[2]);
       pdf.setFontSize(8);
-      pdf.text('Se necesitan al menos 2 mediciones.',
-        chartX + chartW / 2, startY + cardH / 2, { align: 'center' });
+      pdf.text(
+        'Se necesitan al menos 2 mediciones.',
+        chartX + chartW / 2,
+        startY + cardH / 2,
+        { align: 'center' },
+      );
       return startY + cardH;
     }
- 
+
     const valores = mediciones.map(getValue);
-    const mn  = Math.min(...valores);
-    const mx  = Math.max(...valores);
+    const mn = Math.min(...valores);
+    const mx = Math.max(...valores);
     const pad = (mx - mn) * 0.15 || 1;
-    const minV  = mn - pad;
-    const range = (mx + pad) - (mn - pad);
- 
+    const minV = mn - pad;
+    const range = mx + pad - (mn - pad);
+
     // Grid + etiquetas Y
     pdf.setDrawColor(grayLine[0], grayLine[1], grayLine[2]);
-    [0, 0.5, 1].forEach(t => {
-      const gy  = chartY + chartH * t;
+    [0, 0.5, 1].forEach((t) => {
+      const gy = chartY + chartH * t;
       const val = minV + range * (1 - t);
-      pdf.setLineWidth(0.2); pdf.line(chartX, gy, chartX + chartW, gy);
+      pdf.setLineWidth(0.2);
+      pdf.line(chartX, gy, chartX + chartW, gy);
       pdf.setTextColor(textGray[0], textGray[1], textGray[2]);
-      pdf.setFontSize(6); pdf.setFont('helvetica', 'normal');
-      pdf.text(val >= 100 ? val.toFixed(0) : val.toFixed(1),
-        chartX - 2, gy + 1.5, { align: 'right' });
+      pdf.setFontSize(6);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(
+        val >= 100 ? val.toFixed(0) : val.toFixed(1),
+        chartX - 2,
+        gy + 1.5,
+        { align: 'right' },
+      );
     });
- 
+
     pdf.setLineWidth(0.5);
     pdf.line(chartX, chartY + chartH, chartX + chartW, chartY + chartH);
- 
+
     // Puntos: valor alto → Y pequeño (arriba)
     const pts = mediciones.map((m, i) => ({
-      x: chartX + chartW * i / (mediciones.length - 1),
+      x: chartX + (chartW * i) / (mediciones.length - 1),
       y: chartY + chartH * (1 - (getValue(m) - minV) / range),
       v: getValue(m),
-      f: new Date(m.fechaRegistro).toLocaleDateString('es-ES',
-           { day: '2-digit', month: 'short' }),
+      f: new Date(m.fechaRegistro).toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'short',
+      }),
     }));
- 
+
     // Área relleno con líneas verticales
-    const aC: [number,number,number] = [
+    const aC: [number, number, number] = [
       Math.min(lineColor[0] + 170, 255),
       Math.min(lineColor[1] + 170, 255),
       Math.min(lineColor[2] + 170, 255),
     ];
-    pdf.setDrawColor(aC[0], aC[1], aC[2]); pdf.setLineWidth(0.4);
+    pdf.setDrawColor(aC[0], aC[1], aC[2]);
+    pdf.setLineWidth(0.4);
     for (let s = 0; s <= 80; s++) {
-      const t  = s / 80;
+      const t = s / 80;
       const sx = chartX + t * chartW;
       const si = Math.min(Math.floor(t * (pts.length - 1)), pts.length - 2);
-      const sy = pts[si].y + (pts[si+1].y - pts[si].y) * (t * (pts.length-1) - si);
+      const sy =
+        pts[si].y + (pts[si + 1].y - pts[si].y) * (t * (pts.length - 1) - si);
       pdf.line(sx, sy, sx, chartY + chartH);
     }
- 
+
     // Línea principal
     pdf.setDrawColor(lineColor[0], lineColor[1], lineColor[2]);
     pdf.setLineWidth(1.8);
     for (let i = 0; i < pts.length - 1; i++)
-      pdf.line(pts[i].x, pts[i].y, pts[i+1].x, pts[i+1].y);
- 
+      pdf.line(pts[i].x, pts[i].y, pts[i + 1].x, pts[i + 1].y);
+
     // Puntos + valores + fechas
     pts.forEach((p) => {
       pdf.setFillColor(white[0], white[1], white[2]);
       pdf.setDrawColor(lineColor[0], lineColor[1], lineColor[2]);
-      pdf.setLineWidth(1.4); pdf.circle(p.x, p.y, 2.5, 'FD');
+      pdf.setLineWidth(1.4);
+      pdf.circle(p.x, p.y, 2.5, 'FD');
       pdf.setTextColor(lineColor[0], lineColor[1], lineColor[2]);
-      pdf.setFontSize(6.5); pdf.setFont('helvetica', 'bold');
-      pdf.text(p.v >= 100 ? p.v.toFixed(0) : p.v.toFixed(1),
-        p.x, p.y - 4, { align: 'center' });
+      pdf.setFontSize(6.5);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(p.v >= 100 ? p.v.toFixed(0) : p.v.toFixed(1), p.x, p.y - 4, {
+        align: 'center',
+      });
       pdf.setTextColor(textGray[0], textGray[1], textGray[2]);
-      pdf.setFontSize(6); pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(6);
+      pdf.setFont('helvetica', 'normal');
       pdf.text(p.f, p.x, chartY + chartH + 6, { align: 'center' });
     });
- 
+
     return startY + cardH;
   }
- 
+
   private addRecommendationSection(
-    pdf: any, y: number, PW: number,
-    sectionTitle: string, content: string,
-    accent: [number,number,number], grayBg: [number,number,number],
-    textDark: [number,number,number], textGray: [number,number,number]
+    pdf: any,
+    y: number,
+    PW: number,
+    sectionTitle: string,
+    content: string,
+    accent: [number, number, number],
+    grayBg: [number, number, number],
+    textDark: [number, number, number],
+    textGray: [number, number, number],
   ): number {
     pdf.setFillColor(accent[0], accent[1], accent[2]);
     pdf.rect(15, y, 3, 9, 'F');
     pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-    pdf.setFontSize(11); pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
     pdf.text(sectionTitle, 21, y + 6.5);
     y += 13;
- 
+
     const lines = pdf.splitTextToSize(content, PW - 46);
-    const boxH  = Math.max(18, lines.length * 6 + 12);
+    const boxH = Math.max(18, lines.length * 6 + 12);
     pdf.setFillColor(grayBg[0], grayBg[1], grayBg[2]);
     pdf.roundedRect(15, y, PW - 30, boxH, 3, 3, 'F');
     pdf.setFillColor(accent[0], accent[1], accent[2]);
     pdf.rect(15, y, 3, boxH, 'F');
     pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
-    pdf.setFontSize(9.5); pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9.5);
+    pdf.setFont('helvetica', 'normal');
     pdf.text(lines, 23, y + 9);
     return y + boxH + 10;
   }
- 
+
   private generarConclusionTexto(): string {
     let txt = `El estudiante ${this.selectedStudent?.nombre} ${this.selectedStudent?.apellido} `;
     if (this.dashboardData?.salud?.estadisticas) {
@@ -882,7 +1209,8 @@ export class DashboardsComponent implements OnInit {
       txt += `Ha acumulado ${s.puntosGanados} puntos y completado ${s.juegosCompletados} juego(s), `;
       txt += `ubicandose en la posicion #${s.posicionRanking} del ranking de ${s.totalEstudiantes} estudiantes. `;
     }
-    txt += 'Se recomienda continuar con el seguimiento periodico y reforzar los habitos saludables aprendidos en la plataforma MIKHUY.';
+    txt +=
+      'Se recomienda continuar con el seguimiento periodico y reforzar los habitos saludables aprendidos en la plataforma MIKHUY.';
     return txt;
   }
 
@@ -1112,9 +1440,31 @@ export class DashboardsComponent implements OnInit {
     return 'sports_esports';
   }
 
-getIMCAngle(imc: number): number {
-    const norm = Math.min(Math.max((imc - 10) / 35, 0), 1);
-    return 180 + norm * 180;
+  getIMCAngle(imc: number): number {
+    if (!imc || imc <= 0) return 225; // Extremo izquierdo
+
+    // 1. 🔵 Bajo peso: 225°–250° (IMC 0–18.5)
+    if (imc < 18.5) {
+      const percent = imc / 18.5;
+      return 225 + percent * 25;
+    }
+
+    // 2. 🟢 Normal: 250°–290° (IMC 18.5–25)
+    if (imc < 25) {
+      const percent = (imc - 18.5) / 6.5;
+      return 250 + percent * 40;
+    }
+
+    // 3. 🟠 Sobrepeso: 290°–340° (IMC 25–30)
+    if (imc < 30) {
+      const percent = (imc - 25) / 5;
+      return 290 + percent * 50;
+    }
+
+    // 4. 🔴 Obesidad: 340°–360° (IMC ≥ 30, tope en 40)
+    const maxIMC = 40;
+    const percent = Math.min(1, (imc - 30) / (maxIMC - 30));
+    return 340 + percent * 20;
   }
 
   getTendenciaIcon(tendencia: string): string {
@@ -1134,7 +1484,12 @@ getIMCAngle(imc: number): number {
     if (this.dashboardData?.salud?.estadisticas) {
       const imc = this.dashboardData.salud.estadisticas.imcActual;
       const angle = this.getIMCAngle(imc);
-      console.log('🎯 IMC GAUGE → IMC:', imc, '| rotate:', angle.toFixed(1) + '°');
+      console.log(
+        '🎯 IMC GAUGE → IMC:',
+        imc,
+        '| rotate:',
+        angle.toFixed(1) + '°',
+      );
     }
   }
 
