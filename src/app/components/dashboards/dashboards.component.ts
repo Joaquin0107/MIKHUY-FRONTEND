@@ -1444,37 +1444,38 @@ export class DashboardsComponent implements OnInit {
   }
 
   getIMCAngle(imc: number): number {
-    if (!imc || imc <= 0) return 225;
+    // El arco SVG está definido con centro en (100,100) y radio 80:
+    //   Inicio:  M 20,100   → ángulo SVG 180° (extremo izquierdo)
+    //   Tope:    (100,20)   → ángulo SVG 270° (punto más alto)
+    //   Fin:     M 180,100  → ángulo SVG 360° (extremo derecho)
+    //
+    // El template aplica: rotate(getIMCAngle(imc) - 90, 100, 100)
+    // La aguja en reposo apunta a la derecha (0°), con -90 queda apuntando arriba.
+    // Para que apunte al inicio del arco (180°SVG): necesitamos rotate(90) → devolver 180
+    // Para que apunte al tope (270°SVG):            necesitamos rotate(180) → devolver 270
+    // Para que apunte al final (360°SVG):           necesitamos rotate(270) → devolver 360
+    //
+    // Distribución de zonas en el arco (180° total de recorrido):
+    //   Bajo peso  (IMC  0 – 18.5): 180° → 225°  (primer cuarto)
+    //   Normal     (IMC 18.5 – 25): 225° → 270°  (segundo cuarto)
+    //   Sobrepeso  (IMC 25 – 30):   270° → 315°  (tercer cuarto)
+    //   Obesidad   (IMC 30 – 40):   315° → 360°  (cuarto cuarto)
 
-    // El arco SVG va de 225° (izq-abajo) a 360° (der-abajo)
-    // El template aplica: rotate(angle - 90, 100, 100)
-    // Devolvemos el ángulo SVG directo para que el template lo ajuste con -90
+    if (!imc || imc <= 0) return 180; // extremo izquierdo del arco
 
-    const INICIO = 225; // ángulo SVG del inicio del arco (Bajo peso)
-    const FIN = 360; // ángulo SVG del fin del arco (Obesidad máxima)
-    const RANGO = FIN - INICIO; // 135° en total
-
-    let porcentajeEnArco: number;
-
-    if (imc <= 0) {
-      porcentajeEnArco = 0;
-    } else if (imc < 18.5) {
-      // Bajo peso: 0% a 33% del arco
-      porcentajeEnArco = (imc / 18.5) * 0.333;
+    if (imc < 18.5) {
+      // Bajo peso: 180° a 225°
+      return 180 + (imc / 18.5) * 45;
     } else if (imc < 25) {
-      // Normal: 33% a 66% del arco
-      porcentajeEnArco = 0.333 + ((imc - 18.5) / 6.5) * 0.333;
+      // Normal: 225° a 270°
+      return 225 + ((imc - 18.5) / 6.5) * 45;
     } else if (imc < 30) {
-      // Sobrepeso: 66% a 100% del arco
-      porcentajeEnArco = 0.666 + ((imc - 25) / 5) * 0.333;
+      // Sobrepeso: 270° a 315°
+      return 270 + ((imc - 25) / 5.0) * 45;
     } else {
-      // Obesidad: 100% (tope)
-      const maxIMC = 40;
-      porcentajeEnArco =
-        0.999 + Math.min(0.001, ((imc - 30) / (maxIMC - 30)) * 0.001);
+      // Obesidad: 315° a 360° (tope en IMC 40)
+      return 315 + Math.min(1, (imc - 30) / 10.0) * 45;
     }
-
-    return INICIO + porcentajeEnArco * RANGO;
   }
 
   getTendenciaIcon(tendencia: string): string {
@@ -1494,19 +1495,18 @@ export class DashboardsComponent implements OnInit {
     if (this.dashboardData?.salud?.estadisticas) {
       const imc = this.dashboardData.salud.estadisticas.imcActual;
       const angle = this.getIMCAngle(imc);
+      const rotacion = angle - 90;
       console.log('🎯 IMC GAUGE DEBUG:');
       console.log('  IMC:', imc);
-      console.log('  Ángulo calculado:', angle.toFixed(2) + '°');
-      console.log(
-        '  Estado:',
-        this.dashboardData.salud.estadisticas.estadoNutricionalActual,
-      );
+      console.log('  Ángulo SVG:', angle.toFixed(2) + '°');
+      console.log('  Rotación aplicada (angle-90):', rotacion.toFixed(2) + '°');
+      console.log('  Estado:', this.dashboardData.salud.estadisticas.estadoNutricionalActual);
 
-      // Verificación de zona
+      // Verificación con rangos correctos (180°-360°)
       let zonaEsperada = '';
-      if (angle < 45) zonaEsperada = 'AZUL (Bajo peso)';
-      else if (angle < 100) zonaEsperada = 'VERDE (Normal)';
-      else if (angle < 140) zonaEsperada = 'NARANJA (Sobrepeso)';
+      if (angle < 225) zonaEsperada = 'AZUL (Bajo peso)';
+      else if (angle < 270) zonaEsperada = 'VERDE (Normal)';
+      else if (angle < 315) zonaEsperada = 'NARANJA (Sobrepeso)';
       else zonaEsperada = 'ROJO (Obesidad)';
 
       console.log('  Zona esperada:', zonaEsperada);
