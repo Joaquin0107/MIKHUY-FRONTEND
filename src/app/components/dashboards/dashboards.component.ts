@@ -1112,15 +1112,20 @@ export class DashboardsComponent implements OnInit {
     return 'sports_esports';
   }
 
-  getIMCAngle(imc: number): number {
-    // Misma fórmula que usa el gauge del PDF:
-    //   imcNorm = clamp((imc - 10) / 35, 0, 1)
-    //   angleDeg = 180 + imcNorm * 180   → rango 180°–360°
-    // rotate(angleDeg, 100, 90) aplicado directamente en el SVG.
-    // 180° = inicio arco izquierda, 270° = tope, 360° = fin derecha.
-    const norm = Math.min(Math.max((imc - 10) / 35, 0), 1);
-    return 180 + norm * 180;
-  }
+  getIMCAngle(pesoKg: number, tallaCm: number): number {
+  // Convertir talla a metros
+  const tallaM = tallaCm / 100;
+
+  // Calcular IMC = peso / talla²
+  const imc = pesoKg / (tallaM * tallaM);
+
+  // Normalizar IMC al rango [0,1]
+  const norm = Math.min(Math.max((imc - 10) / 35, 0), 1);
+
+  // Mapear al ángulo (180°–360°)
+  return 180 + norm * 180;
+}
+
 
   getTendenciaIcon(tendencia: string): string {
     switch (tendencia) {
@@ -1135,13 +1140,18 @@ export class DashboardsComponent implements OnInit {
     }
   }
 
-  ngAfterViewInit() {
-    if (this.dashboardData?.salud?.estadisticas) {
-      const imc = this.dashboardData.salud.estadisticas.imcActual;
-      const angle = this.getIMCAngle(imc);
-      console.log('🎯 IMC GAUGE → IMC:', imc, '| rotate:', angle.toFixed(1) + '°');
-    }
+ngAfterViewInit() {
+  if (this.dashboardData?.salud?.medicionActual) {
+    const peso = this.dashboardData.salud.medicionActual.peso;
+    const talla = this.dashboardData.salud.medicionActual.talla;
+
+    const angle = this.getIMCAngle(peso, talla);
+
+    console.log(
+      '🎯 IMC GAUGE → Peso:', peso, 'kg | Talla:', talla, 'cm | rotate:', angle.toFixed(1) + '°'
+    );
   }
+}
 
   getWeightChartPoints(): string {
     if (
