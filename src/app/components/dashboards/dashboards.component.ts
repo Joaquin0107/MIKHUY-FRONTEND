@@ -1444,40 +1444,37 @@ export class DashboardsComponent implements OnInit {
   }
 
   getIMCAngle(imc: number): number {
-    if (!imc || imc <= 0) {
-      return 0; // Extremo izquierdo
-    }
+    if (!imc || imc <= 0) return 225;
 
-    let angle: number;
+    // El arco SVG va de 225° (izq-abajo) a 360° (der-abajo)
+    // El template aplica: rotate(angle - 90, 100, 100)
+    // Devolvemos el ángulo SVG directo para que el template lo ajuste con -90
 
-    // 1. 🔵 BAJO PESO: 0° a 23° - IMC 0 a 18.5
-    if (imc < 18.5) {
-      const percent = imc / 18.5;
-      angle = percent * 23;
-      return Math.min(angle, 23);
-    }
+    const INICIO = 225; // ángulo SVG del inicio del arco (Bajo peso)
+    const FIN = 360; // ángulo SVG del fin del arco (Obesidad máxima)
+    const RANGO = FIN - INICIO; // 135° en total
 
-    // 2. 🟢 NORMAL: 23° a 65° - IMC 18.5 a 25
-    else if (imc < 25) {
-      const percent = (imc - 18.5) / 6.5;
-      angle = 23 + percent * 42;
-      return Math.max(23, Math.min(angle, 65));
-    }
+    let porcentajeEnArco: number;
 
-    // 3. 🟠 SOBREPESO: 65° a 115° - IMC 25 a 30
-    else if (imc < 30) {
-      const percent = (imc - 25) / 5;
-      angle = 65 + percent * 50;
-      return Math.max(65, Math.min(angle, 115));
-    }
-
-    // 4. 🔴 OBESIDAD: 115° a 180° - IMC ≥ 30
-    else {
+    if (imc <= 0) {
+      porcentajeEnArco = 0;
+    } else if (imc < 18.5) {
+      // Bajo peso: 0% a 33% del arco
+      porcentajeEnArco = (imc / 18.5) * 0.333;
+    } else if (imc < 25) {
+      // Normal: 33% a 66% del arco
+      porcentajeEnArco = 0.333 + ((imc - 18.5) / 6.5) * 0.333;
+    } else if (imc < 30) {
+      // Sobrepeso: 66% a 100% del arco
+      porcentajeEnArco = 0.666 + ((imc - 25) / 5) * 0.333;
+    } else {
+      // Obesidad: 100% (tope)
       const maxIMC = 40;
-      const percent = Math.min(1, (imc - 30) / (maxIMC - 30));
-      angle = 115 + percent * 65;
-      return Math.max(115, Math.min(angle, 180));
+      porcentajeEnArco =
+        0.999 + Math.min(0.001, ((imc - 30) / (maxIMC - 30)) * 0.001);
     }
+
+    return INICIO + porcentajeEnArco * RANGO;
   }
 
   getTendenciaIcon(tendencia: string): string {
