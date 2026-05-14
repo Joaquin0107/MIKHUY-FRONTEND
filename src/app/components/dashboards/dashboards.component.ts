@@ -1118,11 +1118,8 @@ export class DashboardsComponent implements OnInit {
     //   Tope:    (100,20)   → ángulo SVG 270° (punto más alto)
     //   Fin:     M 180,100  → ángulo SVG 360° (extremo derecho)
     //
-    // El template aplica: rotate(getIMCAngle(imc) - 90, 100, 100)
-    // La aguja en reposo apunta a la derecha (0°), con -90 queda apuntando arriba.
-    // Para que apunte al inicio del arco (180°SVG): necesitamos rotate(90) → devolver 180
-    // Para que apunte al tope (270°SVG):            necesitamos rotate(180) → devolver 270
-    // Para que apunte al final (360°SVG):           necesitamos rotate(270) → devolver 360
+    // El HTML usa: rotate(getIMCAngle(imc), 100, 100) — sin el -90.
+    // La aguja apunta a la derecha en reposo; rotate(R) la gira R grados horario.
     //
     // Distribución de zonas en el arco (180° total de recorrido):
     //   Bajo peso  (IMC  0 – 18.5): 180° → 225°  (primer cuarto)
@@ -1164,20 +1161,16 @@ export class DashboardsComponent implements OnInit {
     if (this.dashboardData?.salud?.estadisticas) {
       const imc = this.dashboardData.salud.estadisticas.imcActual;
       const angle = this.getIMCAngle(imc);
-      const rotacion = angle - 90;
       console.log('🎯 IMC GAUGE DEBUG:');
       console.log('  IMC:', imc);
-      console.log('  Ángulo SVG:', angle.toFixed(2) + '°');
-      console.log('  Rotación aplicada (angle-90):', rotacion.toFixed(2) + '°');
+      console.log('  Rotación aplicada:', angle.toFixed(2) + '°');
       console.log('  Estado:', this.dashboardData.salud.estadisticas.estadoNutricionalActual);
 
-      // Verificación con rangos correctos (180°-360°)
       let zonaEsperada = '';
       if (angle < 225) zonaEsperada = 'AZUL (Bajo peso)';
       else if (angle < 270) zonaEsperada = 'VERDE (Normal)';
       else if (angle < 315) zonaEsperada = 'NARANJA (Sobrepeso)';
       else zonaEsperada = 'ROJO (Obesidad)';
-
       console.log('  Zona esperada:', zonaEsperada);
     }
   }
