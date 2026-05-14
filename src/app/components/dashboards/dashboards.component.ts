@@ -317,7 +317,7 @@ export class DashboardsComponent implements OnInit {
     });
   }
 
-    async descargarReporte(): Promise<void> {
+  async descargarReporte(): Promise<void> {
     if (!this.selectedStudent || !this.dashboardData) {
       this.snackBar.open('No hay datos para generar el reporte', 'Cerrar', { duration: 3000 });
       return;
@@ -327,11 +327,10 @@ export class DashboardsComponent implements OnInit {
  
     try {
       const pdf  = new jsPDF('p', 'mm', 'a4');
-      const PW   = pdf.internal.pageSize.getWidth();   // 210 mm
-      const PH   = pdf.internal.pageSize.getHeight();  // 297 mm
+      const PW   = pdf.internal.pageSize.getWidth();
+      const PH   = pdf.internal.pageSize.getHeight();
       const TOTAL_PAGES = 4;
  
-      // ── Paleta ──────────────────────────────────────────────
       const BLUE        = [48,  130, 220] as [number,number,number];
       const BLUE_DARK   = [30,  100, 180] as [number,number,number];
       const BLUE_LIGHT  = [232, 242, 255] as [number,number,number];
@@ -346,25 +345,20 @@ export class DashboardsComponent implements OnInit {
       const TEXT_GRAY   = [108, 117, 125] as [number,number,number];
       const WHITE       = [255, 255, 255] as [number,number,number];
  
-      // ── Helpers (coordenadas: Y crece hacia ABAJO desde el top) ─
       const sf = (c: [number,number,number]) => pdf.setFillColor(c[0], c[1], c[2]);
       const ss = (c: [number,number,number]) => pdf.setDrawColor(c[0], c[1], c[2]);
       const st = (c: [number,number,number]) => pdf.setTextColor(c[0], c[1], c[2]);
  
-      // Rectángulo redondeado: x,y = top-left en mm (Y desde arriba)
       const rr = (x: number, y: number, w: number, h: number,
                   fill: [number,number,number], r = 3) => {
-        sf(fill);
-        pdf.roundedRect(x, y, w, h, r, r, 'F');
+        sf(fill); pdf.roundedRect(x, y, w, h, r, r, 'F');
       };
  
-      // Rectángulo simple
       const rect = (x: number, y: number, w: number, h: number,
                     fill: [number,number,number]) => {
         sf(fill); pdf.rect(x, y, w, h, 'F');
       };
  
-      // Badge centrado
       const badge = (x: number, y: number, label: string,
                      bg: [number,number,number], fg: [number,number,number], w = 40) => {
         rr(x, y, w, 7, bg, 3);
@@ -372,12 +366,10 @@ export class DashboardsComponent implements OnInit {
         pdf.text(label, x + w / 2, y + 5, { align: 'center' });
       };
  
-      // Línea horizontal
       const hline = (y: number, x1 = 15, x2 = PW - 15) => {
         ss(GRAY_LINE); pdf.setLineWidth(0.3); pdf.line(x1, y, x2, y);
       };
  
-      // Barra lateral + título de sección
       const sectionBar = (x: number, y: number, title: string,
                           color: [number,number,number], size = 11) => {
         rect(x, y, 3, 9, color);
@@ -385,7 +377,6 @@ export class DashboardsComponent implements OnInit {
         pdf.text(title, x + 5, y + 6.5);
       };
  
-      // Caja de estadística
       const statBox = (x: number, y: number, w: number, h: number,
                        value: string, label: string, accent: [number,number,number]) => {
         rr(x, y, w, h, GRAY_BG, 4);
@@ -396,7 +387,6 @@ export class DashboardsComponent implements OnInit {
         pdf.text(label, x + w / 2, y + h - 3.5, { align: 'center' });
       };
  
-      // Arco gauge: segmentos de línea (jsPDF no tiene arc nativo)
       const gaugeArc = (cx: number, cy: number, r: number,
                         startDeg: number, endDeg: number,
                         color: [number,number,number], lw: number, steps = 30) => {
@@ -409,7 +399,6 @@ export class DashboardsComponent implements OnInit {
         }
       };
  
-      // Flecha arriba/abajo con líneas
       const arrow = (x: number, y: number, up: boolean,
                      color: [number,number,number]) => {
         ss(color); pdf.setLineWidth(0.9);
@@ -424,20 +413,20 @@ export class DashboardsComponent implements OnInit {
         }
       };
  
-      // ══════════════════════════════════════════════════════
-      //  PÁGINA 1 — Perfil + Salud + Estadísticas
-      // ══════════════════════════════════════════════════════
+      // ═══════════════════════════════════════════════
+      // PÁGINA 1 — Perfil + Salud + Estadísticas
+      // ═══════════════════════════════════════════════
       this.pdfHeader(pdf, 'REPORTE NUTRICIONAL',
-        'Plataforma MIKHUY  |  Sistema de Seguimiento Estudiantil', '1 de 4',
-        PW, BLUE, BLUE_DARK, WHITE);
+        'Plataforma MIKHUY  |  Sistema de Seguimiento Estudiantil',
+        '1 de 4', PW, BLUE, BLUE_DARK, WHITE);
  
       st([170, 205, 245]); pdf.setFontSize(8); pdf.setFont('helvetica', 'normal');
       pdf.text(`Generado: ${new Date().toLocaleDateString('es-ES',
         { day: '2-digit', month: 'long', year: 'numeric' })}`, 18, 37);
  
-      let y = 48; // cursor top-down en mm
+      let y = 48;
  
-      // Avatar silueta
+      // Avatar
       sf(BLUE_LIGHT); pdf.circle(28, y + 13, 13, 'F');
       sf(BLUE);       pdf.circle(28, y + 9,   5, 'F');
                       pdf.circle(28, y + 19,  8, 'F');
@@ -466,16 +455,15 @@ export class DashboardsComponent implements OnInit {
         const cardH = 68;
         rr(15, y, PW - 30, cardH, GRAY_BG, 4);
  
-        // Gauge: centro en (50, y + cardH/2)
+        // Gauge centro
         const cx = 50, cyG = y + cardH / 2;
-        const gR = 19;
-        gaugeArc(cx, cyG, gR, 180, 360, [210,210,210], 5.5); // fondo gris
-        gaugeArc(cx, cyG, gR, 180, 225, [66, 165,245],  5);  // azul
-        gaugeArc(cx, cyG, gR, 225, 270, [102,187,106],  5);  // verde
-        gaugeArc(cx, cyG, gR, 270, 315, [255,167,38 ],  5);  // naranja
-        gaugeArc(cx, cyG, gR, 315, 360, [239,83, 80 ],  5);  // rojo
+        const gR  = 19;
+        gaugeArc(cx, cyG, gR, 180, 360, [210,210,210], 5.5);
+        gaugeArc(cx, cyG, gR, 180, 225, [66, 165,245],  5);
+        gaugeArc(cx, cyG, gR, 225, 270, [102,187,106],  5);
+        gaugeArc(cx, cyG, gR, 270, 315, [255,167,38 ],  5);
+        gaugeArc(cx, cyG, gR, 315, 360, [239,83, 80 ],  5);
  
-        // Aguja
         const imc     = stats?.imcActual || 0;
         const imcNorm = Math.min(Math.max((imc - 10) / 35, 0), 1);
         const nRad    = ((180 + imcNorm * 180) * Math.PI) / 180;
@@ -484,26 +472,23 @@ export class DashboardsComponent implements OnInit {
         sf(TEXT_DARK); pdf.circle(cx, cyG, 2, 'F');
         sf(WHITE);     pdf.circle(cx, cyG, 1, 'F');
  
-        // Valor IMC (debajo del gauge)
         st(TEXT_DARK); pdf.setFontSize(14); pdf.setFont('helvetica', 'bold');
         pdf.text(imc.toFixed(1), cx, cyG + 10, { align: 'center' });
         st(TEXT_GRAY); pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
-        pdf.text('Índice de Masa Corporal', cx, cyG + 16, { align: 'center' });
+        pdf.text('Indice de Masa Corporal', cx, cyG + 16, { align: 'center' });
  
-        // Badge estado nutricional
         const ec  = this.getEstadoColor(stats?.estadoNutricionalActual || '');
         const eFg: [number,number,number] = [ec.r, ec.g, ec.b];
         const eBg: [number,number,number] = [
           Math.min(ec.r + 150, 255), Math.min(ec.g + 150, 255), Math.min(ec.b + 150, 255)];
         badge(cx - 18, y + cardH - 9, stats?.estadoNutricionalActual || '-', eBg, eFg, 36);
  
-        // 4 datos a la derecha del gauge
         const rx = 88;
         [
-          { l: 'Peso',       v: `${med.peso} kg`,             c: BLUE    },
-          { l: 'Talla',      v: `${med.talla} cm`,            c: GREEN   },
-          { l: 'Tendencia',  v: stats?.tendencia || '-',       c: ORANGE  },
-          { l: 'Mediciones', v: `${stats?.totalMediciones||0}`,c: TEXT_GRAY },
+          { l: 'Peso',       v: `${med.peso} kg`,              c: BLUE     },
+          { l: 'Talla',      v: `${med.talla} cm`,             c: GREEN    },
+          { l: 'Tendencia',  v: stats?.tendencia || '-',        c: ORANGE   },
+          { l: 'Mediciones', v: `${stats?.totalMediciones||0}`, c: TEXT_GRAY },
         ].forEach((item, i) => {
           const ix = rx + (i % 2) * 55;
           const iy = y + 8 + Math.floor(i / 2) * 24;
@@ -514,7 +499,6 @@ export class DashboardsComponent implements OnInit {
           pdf.text(item.v, ix + 5, iy + 13);
         });
  
-        // Variaciones con flechas
         const vy = y + cardH - 9;
         if (stats?.variacionPeso !== 0) {
           const up = (stats?.variacionPeso || 0) > 0;
@@ -531,7 +515,6 @@ export class DashboardsComponent implements OnInit {
  
         y += cardH + 4;
  
-        // Caja de recomendación
         if (stats?.recomendacion) {
           const splitRec = pdf.splitTextToSize(stats.recomendacion, PW - 52);
           const recH = Math.max(14, splitRec.length * 5.5 + 10);
@@ -547,8 +530,7 @@ export class DashboardsComponent implements OnInit {
  
       hline(y); y += 8;
  
-      // — ESTADÍSTICAS GENERALES —
-      sectionBar(15, y, 'ESTADÍSTICAS GENERALES', BLUE);
+      sectionBar(15, y, 'ESTADISTICAS GENERALES', BLUE);
       y += 12;
  
       const s2 = this.dashboardData.estadisticas;
@@ -562,9 +544,9 @@ export class DashboardsComponent implements OnInit {
  
       this.pdfFooter(pdf, 1, TOTAL_PAGES, PW, PH, BLUE, WHITE);
  
-      // ══════════════════════════════════════════════════════
-      //  PÁGINA 2 — Progreso por Juego
-      // ══════════════════════════════════════════════════════
+      // ═══════════════════════════════════════════════
+      // PÁGINA 2 — Progreso por Juego
+      // ═══════════════════════════════════════════════
       pdf.addPage();
       this.pdfHeader(pdf, 'PROGRESO POR JUEGO', 'Plataforma MIKHUY',
         '2 de 4', PW, BLUE, BLUE_DARK, WHITE);
@@ -576,28 +558,24 @@ export class DashboardsComponent implements OnInit {
  
       const cardH2 = 56;
       (this.dashboardData.juegos || []).forEach((juego: any) => {
-        // Porcentaje clampeado a 100
         const pct    = Math.min(100, this.calcularPorcentajeProgreso(juego));
-        const bColor: [number,number,number] = juego.completado ? GREEN : BLUE;
+        const bColor: [number,number,number] = juego.completado ? GREEN  : BLUE;
         const bBg:    [number,number,number] = juego.completado ? GREEN_LIGHT : BLUE_LIGHT;
         const bLabel  = juego.completado ? 'COMPLETADO' : 'EN PROGRESO';
  
         rr(15, y2, PW - 30, cardH2 - 4, GRAY_BG, 5);
         rect(15, y2, 4, cardH2 - 4, bColor);
  
-        // Nombre + badge
         st(TEXT_DARK); pdf.setFontSize(12); pdf.setFont('helvetica', 'bold');
         pdf.text(juego.nombre, 24, y2 + 12);
         badge(PW - 42, y2 + 4, bLabel, bBg, bColor, 24);
  
-        // Barra de progreso
         const barX = 24, barW = PW - 60, barH = 9, barY = y2 + 19;
         rr(barX, barY, barW, barH, GRAY_LINE, 4);
         if (pct > 0) rr(barX, barY, Math.max(4, barW * pct / 100), barH, bColor, 4);
         st(bColor); pdf.setFontSize(14); pdf.setFont('helvetica', 'bold');
         pdf.text(`${pct}%`, barX + barW + 4, barY + 7);
  
-        // Métricas debajo de la barra
         const metrics = [
           { v: `Nivel ${juego.nivelActual||0}/${juego.maxNiveles}`, l: 'Progreso'         },
           { v: `${(juego.puntosGanados||0).toLocaleString()} pts`,  l: 'Puntos obtenidos' },
@@ -617,12 +595,12 @@ export class DashboardsComponent implements OnInit {
  
       this.pdfFooter(pdf, 2, TOTAL_PAGES, PW, PH, BLUE, WHITE);
  
-      // ══════════════════════════════════════════════════════
-      //  PÁGINA 3 — Evolución de Indicadores
-      // ══════════════════════════════════════════════════════
+      // ═══════════════════════════════════════════════
+      // PÁGINA 3 — Evolución de Indicadores
+      // ═══════════════════════════════════════════════
       if ((this.dashboardData.salud?.historialMediciones?.length || 0) >= 2) {
         pdf.addPage();
-        this.pdfHeader(pdf, 'EVOLUCIÓN DE INDICADORES DE SALUD',
+        this.pdfHeader(pdf, 'EVOLUCION DE INDICADORES DE SALUD',
           'Plataforma MIKHUY', '3 de 4', PW, BLUE, BLUE_DARK, WHITE);
  
         const mediciones = [...this.dashboardData.salud!.historialMediciones]
@@ -630,12 +608,11 @@ export class DashboardsComponent implements OnInit {
             new Date(a.fechaRegistro).getTime() - new Date(b.fechaRegistro).getTime());
  
         let y3 = 46;
-        const chartConfigs = [
-          { titulo: 'Evolución de Peso',  unidad: 'kg',  color: BLUE,   getter: (m: any) => Number(m.peso)  },
-          { titulo: 'Evolución de Talla', unidad: 'cm',  color: GREEN,  getter: (m: any) => Number(m.talla) },
-          { titulo: 'Evolución del IMC',  unidad: 'IMC', color: PURPLE, getter: (m: any) => Number(m.imc)   },
-        ];
-        chartConfigs.forEach(cfg => {
+        [
+          { titulo: 'Evolucion de Peso',  unidad: 'kg',  color: BLUE,   getter: (m: any) => Number(m.peso)  },
+          { titulo: 'Evolucion de Talla', unidad: 'cm',  color: GREEN,  getter: (m: any) => Number(m.talla) },
+          { titulo: 'Evolucion del IMC',  unidad: 'IMC', color: PURPLE, getter: (m: any) => Number(m.imc)   },
+        ].forEach(cfg => {
           y3 = this.drawLineChart(pdf, y3, PW, mediciones,
             cfg.titulo, cfg.unidad, cfg.color, cfg.getter,
             TEXT_DARK, TEXT_GRAY, GRAY_BG, GRAY_LINE, WHITE);
@@ -644,9 +621,9 @@ export class DashboardsComponent implements OnInit {
       }
       this.pdfFooter(pdf, 3, TOTAL_PAGES, PW, PH, BLUE, WHITE);
  
-      // ══════════════════════════════════════════════════════
-      //  PÁGINA 4 — Recomendaciones y Conclusiones
-      // ══════════════════════════════════════════════════════
+      // ═══════════════════════════════════════════════
+      // PÁGINA 4 — Recomendaciones y Conclusiones
+      // ═══════════════════════════════════════════════
       pdf.addPage();
       this.pdfHeader(pdf, 'RECOMENDACIONES Y CONCLUSIONES',
         'Plataforma MIKHUY', '4 de 4', PW, BLUE, BLUE_DARK, WHITE);
@@ -667,15 +644,14 @@ export class DashboardsComponent implements OnInit {
         acadItems.push('Excelente participacion en los juegos educativos. Sigue asi!');
  
       y4 = this.addRecommendationSection(pdf, y4, PW,
-        'RECOMENDACIONES ACADÉMICAS',
+        'RECOMENDACIONES ACADEMICAS',
         acadItems.join(' '),
         BLUE, GRAY_BG, TEXT_DARK, TEXT_GRAY);
  
-      // Conclusión
       y4 += 4;
       rect(15, y4, 3, 9, BLUE);
       st(TEXT_DARK); pdf.setFontSize(11); pdf.setFont('helvetica', 'bold');
-      pdf.text('CONCLUSIÓN', 21, y4 + 6.5);
+      pdf.text('CONCLUSION', 21, y4 + 6.5);
       y4 += 13;
  
       const conclusionText = this.generarConclusionTexto();
@@ -696,7 +672,6 @@ export class DashboardsComponent implements OnInit {
  
       this.pdfFooter(pdf, 4, TOTAL_PAGES, PW, PH, BLUE, WHITE);
  
-      // Guardar
       const fileName = `Reporte_${this.selectedStudent.nombre}_${this.selectedStudent.apellido}_${Date.now()}.pdf`;
       pdf.save(fileName);
       this.snackBar.open('Reporte PDF generado exitosamente', 'Cerrar', { duration: 3000 });
@@ -708,8 +683,6 @@ export class DashboardsComponent implements OnInit {
       this.isGeneratingPDF = false;
     }
   }
- 
-  // ── Métodos privados auxiliares ────────────────────────────
  
   private pdfHeader(
     pdf: any, title: string, subtitle: string, pageLabel: string,
@@ -757,20 +730,18 @@ export class DashboardsComponent implements OnInit {
     const padL   = 18, padR = 12, padT = 18, padB = 16;
     const chartX = 14 + padL;
     const chartW = PW - 28 - padL - padR;
-    const chartY = startY + padT;          // top del área de datos
+    const chartY = startY + padT;
     const chartH = cardH - padT - padB;
  
-    // Tarjeta
     pdf.setFillColor(grayBg[0], grayBg[1], grayBg[2]);
     pdf.roundedRect(14, startY, PW - 28, cardH, 3, 3, 'F');
-    // Borde top de color
     pdf.setFillColor(lineColor[0], lineColor[1], lineColor[2]);
     pdf.roundedRect(14, startY, PW - 28, 3, 1, 1, 'F');
  
-    // Título y badge
     pdf.setTextColor(textDark[0], textDark[1], textDark[2]);
     pdf.setFontSize(10); pdf.setFont('helvetica', 'bold');
     pdf.text(titulo, 19, startY + 13);
+ 
     pdf.setFillColor(lineColor[0], lineColor[1], lineColor[2]);
     pdf.roundedRect(PW - 32, startY + 4, 16, 7, 2, 2, 'F');
     pdf.setTextColor(white[0], white[1], white[2]);
@@ -786,15 +757,17 @@ export class DashboardsComponent implements OnInit {
     }
  
     const valores = mediciones.map(getValue);
-    const mn = Math.min(...valores), mx = Math.max(...valores);
+    const mn  = Math.min(...valores);
+    const mx  = Math.max(...valores);
     const pad = (mx - mn) * 0.15 || 1;
-    const minV = mn - pad, range = (mx + pad) - (mn - pad);
+    const minV  = mn - pad;
+    const range = (mx + pad) - (mn - pad);
  
-    // Grid horizontal + etiquetas Y
+    // Grid + etiquetas Y
     pdf.setDrawColor(grayLine[0], grayLine[1], grayLine[2]);
     [0, 0.5, 1].forEach(t => {
-      const gy  = chartY + chartH * t;          // Y crece hacia abajo
-      const val = minV + range * (1 - t);       // valor más alto arriba
+      const gy  = chartY + chartH * t;
+      const val = minV + range * (1 - t);
       pdf.setLineWidth(0.2); pdf.line(chartX, gy, chartX + chartW, gy);
       pdf.setTextColor(textGray[0], textGray[1], textGray[2]);
       pdf.setFontSize(6); pdf.setFont('helvetica', 'normal');
@@ -802,11 +775,10 @@ export class DashboardsComponent implements OnInit {
         chartX - 2, gy + 1.5, { align: 'right' });
     });
  
-    // Eje X
     pdf.setLineWidth(0.5);
     pdf.line(chartX, chartY + chartH, chartX + chartW, chartY + chartH);
  
-    // Puntos (Y crece hacia abajo: valores altos = Y pequeño)
+    // Puntos: valor alto → Y pequeño (arriba)
     const pts = mediciones.map((m, i) => ({
       x: chartX + chartW * i / (mediciones.length - 1),
       y: chartY + chartH * (1 - (getValue(m) - minV) / range),
@@ -815,7 +787,7 @@ export class DashboardsComponent implements OnInit {
            { day: '2-digit', month: 'short' }),
     }));
  
-    // Área relleno (líneas verticales claras)
+    // Área relleno con líneas verticales
     const aC: [number,number,number] = [
       Math.min(lineColor[0] + 170, 255),
       Math.min(lineColor[1] + 170, 255),
@@ -823,9 +795,10 @@ export class DashboardsComponent implements OnInit {
     ];
     pdf.setDrawColor(aC[0], aC[1], aC[2]); pdf.setLineWidth(0.4);
     for (let s = 0; s <= 80; s++) {
-      const t  = s / 80, sx = chartX + t * chartW;
+      const t  = s / 80;
+      const sx = chartX + t * chartW;
       const si = Math.min(Math.floor(t * (pts.length - 1)), pts.length - 2);
-      const sy = pts[si].y + (pts[si+1].y - pts[si].y) * (t*(pts.length-1) - si);
+      const sy = pts[si].y + (pts[si+1].y - pts[si].y) * (t * (pts.length-1) - si);
       pdf.line(sx, sy, sx, chartY + chartH);
     }
  
@@ -835,17 +808,15 @@ export class DashboardsComponent implements OnInit {
     for (let i = 0; i < pts.length - 1; i++)
       pdf.line(pts[i].x, pts[i].y, pts[i+1].x, pts[i+1].y);
  
-    // Puntos, valores y fechas
-    pts.forEach((p, i) => {
+    // Puntos + valores + fechas
+    pts.forEach((p) => {
       pdf.setFillColor(white[0], white[1], white[2]);
       pdf.setDrawColor(lineColor[0], lineColor[1], lineColor[2]);
       pdf.setLineWidth(1.4); pdf.circle(p.x, p.y, 2.5, 'FD');
- 
       pdf.setTextColor(lineColor[0], lineColor[1], lineColor[2]);
       pdf.setFontSize(6.5); pdf.setFont('helvetica', 'bold');
       pdf.text(p.v >= 100 ? p.v.toFixed(0) : p.v.toFixed(1),
         p.x, p.y - 4, { align: 'center' });
- 
       pdf.setTextColor(textGray[0], textGray[1], textGray[2]);
       pdf.setFontSize(6); pdf.setFont('helvetica', 'normal');
       pdf.text(p.f, p.x, chartY + chartH + 6, { align: 'center' });
