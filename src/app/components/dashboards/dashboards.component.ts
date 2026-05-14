@@ -1441,30 +1441,30 @@ export class DashboardsComponent implements OnInit {
   }
 
   getIMCAngle(imc: number): number {
-    if (!imc || imc <= 0) return 225; // Extremo izquierdo
+    if (!imc || imc <= 0) return 180;
 
-    // 1. 🔵 Bajo peso: 225°–250° (IMC 0–18.5)
+    // 1. 🔵 Bajo peso: 180°–225° (IMC 0–18.5)
     if (imc < 18.5) {
       const percent = imc / 18.5;
-      return 225 + percent * 25;
+      return 180 + percent * 45;
     }
 
-    // 2. 🟢 Normal: 250°–290° (IMC 18.5–25)
+    // 2. 🟢 Normal: 225°–270° (IMC 18.5–25)
     if (imc < 25) {
       const percent = (imc - 18.5) / 6.5;
-      return 250 + percent * 40;
+      return 225 + percent * 45;
     }
 
-    // 3. 🟠 Sobrepeso: 290°–340° (IMC 25–30)
+    // 3. 🟠 Sobrepeso: 270°–315° (IMC 25–30)
     if (imc < 30) {
       const percent = (imc - 25) / 5;
-      return 290 + percent * 50;
+      return 270 + percent * 45;
     }
 
-    // 4. 🔴 Obesidad: 340°–360° (IMC ≥ 30, tope en 40)
+    // 4. 🔴 Obesidad: 315°–360° (IMC ≥ 30, tope en 40)
     const maxIMC = 40;
     const percent = Math.min(1, (imc - 30) / (maxIMC - 30));
-    return 340 + percent * 20;
+    return 315 + percent * 45;
   }
 
   getTendenciaIcon(tendencia: string): string {
