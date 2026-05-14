@@ -1113,27 +1113,13 @@ export class DashboardsComponent implements OnInit {
   }
 
   getIMCAngle(imc: number): number {
-    // SVG gauge: centro (100,90), radio 75
-    // Arco: 180° (izquierda) → 270° (tope) → 360° (derecha)
-    // rotate(X, 100, 90) aplicado directamente — SIN offset en el template.
-    // La aguja apunta a la derecha en reposo (0°):
-    //   rotate(180) → apunta izquierda  = inicio arco (Bajo peso)
-    //   rotate(225) → límite Bajo/Normal
-    //   rotate(270) → apunta arriba     = tope arco (Normal/Sobrepeso)
-    //   rotate(315) → límite Sobre/Obesidad
-    //   rotate(360) → apunta derecha    = fin arco (Obesidad máx)
-
-    if (!imc || imc <= 0) return 180;
-
-    if (imc < 18.5) {
-      return 180 + (imc / 18.5) * 45;
-    } else if (imc < 25) {
-      return 225 + ((imc - 18.5) / 6.5) * 45;
-    } else if (imc < 30) {
-      return 270 + ((imc - 25) / 5.0) * 45;
-    } else {
-      return 315 + Math.min(1, (imc - 30) / 10.0) * 45;
-    }
+    // Misma fórmula que usa el gauge del PDF:
+    //   imcNorm = clamp((imc - 10) / 35, 0, 1)
+    //   angleDeg = 180 + imcNorm * 180   → rango 180°–360°
+    // rotate(angleDeg, 100, 90) aplicado directamente en el SVG.
+    // 180° = inicio arco izquierda, 270° = tope, 360° = fin derecha.
+    const norm = Math.min(Math.max((imc - 10) / 35, 0), 1);
+    return 180 + norm * 180;
   }
 
   getTendenciaIcon(tendencia: string): string {
@@ -1153,8 +1139,7 @@ export class DashboardsComponent implements OnInit {
     if (this.dashboardData?.salud?.estadisticas) {
       const imc = this.dashboardData.salud.estadisticas.imcActual;
       const angle = this.getIMCAngle(imc);
-      let zona = angle < 225 ? 'AZUL (Bajo peso)' : angle < 270 ? 'VERDE (Normal)' : angle < 315 ? 'NARANJA (Sobrepeso)' : 'ROJO (Obesidad)';
-      console.log('🎯 IMC GAUGE → IMC:', imc, '| rotate:', angle.toFixed(1) + '° |', zona);
+      console.log('🎯 IMC GAUGE → IMC:', imc, '| rotate:', angle.toFixed(1) + '°');
     }
   }
 
