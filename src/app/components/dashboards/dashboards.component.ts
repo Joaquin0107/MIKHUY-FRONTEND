@@ -327,10 +327,11 @@ export class DashboardsComponent implements OnInit {
  
     try {
       const pdf  = new jsPDF('p', 'mm', 'a4');
-      const PW   = pdf.internal.pageSize.getWidth();
-      const PH   = pdf.internal.pageSize.getHeight();
+      const PW   = pdf.internal.pageSize.getWidth();   // 210 mm
+      const PH   = pdf.internal.pageSize.getHeight();  // 297 mm
       const TOTAL_PAGES = 4;
  
+      // ── Paleta ──────────────────────────────────────────────
       const BLUE        = [48,  130, 220] as [number,number,number];
       const BLUE_DARK   = [30,  100, 180] as [number,number,number];
       const BLUE_LIGHT  = [232, 242, 255] as [number,number,number];
@@ -345,20 +346,25 @@ export class DashboardsComponent implements OnInit {
       const TEXT_GRAY   = [108, 117, 125] as [number,number,number];
       const WHITE       = [255, 255, 255] as [number,number,number];
  
+      // ── Helpers (coordenadas: Y crece hacia ABAJO desde el top) ─
       const sf = (c: [number,number,number]) => pdf.setFillColor(c[0], c[1], c[2]);
       const ss = (c: [number,number,number]) => pdf.setDrawColor(c[0], c[1], c[2]);
       const st = (c: [number,number,number]) => pdf.setTextColor(c[0], c[1], c[2]);
  
+      // Rectángulo redondeado: x,y = top-left en mm (Y desde arriba)
       const rr = (x: number, y: number, w: number, h: number,
                   fill: [number,number,number], r = 3) => {
-        sf(fill); pdf.roundedRect(x, y, w, h, r, r, 'F');
+        sf(fill);
+        pdf.roundedRect(x, y, w, h, r, r, 'F');
       };
  
+      // Rectángulo simple
       const rect = (x: number, y: number, w: number, h: number,
                     fill: [number,number,number]) => {
         sf(fill); pdf.rect(x, y, w, h, 'F');
       };
  
+      // Badge centrado
       const badge = (x: number, y: number, label: string,
                      bg: [number,number,number], fg: [number,number,number], w = 40) => {
         rr(x, y, w, 7, bg, 3);
@@ -366,10 +372,12 @@ export class DashboardsComponent implements OnInit {
         pdf.text(label, x + w / 2, y + 5, { align: 'center' });
       };
  
+      // Línea horizontal
       const hline = (y: number, x1 = 15, x2 = PW - 15) => {
         ss(GRAY_LINE); pdf.setLineWidth(0.3); pdf.line(x1, y, x2, y);
       };
  
+      // Barra lateral + título de sección
       const sectionBar = (x: number, y: number, title: string,
                           color: [number,number,number], size = 11) => {
         rect(x, y, 3, 9, color);
@@ -377,6 +385,7 @@ export class DashboardsComponent implements OnInit {
         pdf.text(title, x + 5, y + 6.5);
       };
  
+      // Caja de estadística
       const statBox = (x: number, y: number, w: number, h: number,
                        value: string, label: string, accent: [number,number,number]) => {
         rr(x, y, w, h, GRAY_BG, 4);
@@ -387,6 +396,7 @@ export class DashboardsComponent implements OnInit {
         pdf.text(label, x + w / 2, y + h - 3.5, { align: 'center' });
       };
  
+      // Arco gauge: segmentos de línea (jsPDF no tiene arc nativo)
       const gaugeArc = (cx: number, cy: number, r: number,
                         startDeg: number, endDeg: number,
                         color: [number,number,number], lw: number, steps = 30) => {
@@ -399,6 +409,7 @@ export class DashboardsComponent implements OnInit {
         }
       };
  
+      // Flecha arriba/abajo con líneas
       const arrow = (x: number, y: number, up: boolean,
                      color: [number,number,number]) => {
         ss(color); pdf.setLineWidth(0.9);
@@ -413,20 +424,20 @@ export class DashboardsComponent implements OnInit {
         }
       };
  
-      // ═══════════════════════════════════════════════
-      // PÁGINA 1 — Perfil + Salud + Estadísticas
-      // ═══════════════════════════════════════════════
+      // ══════════════════════════════════════════════════════
+      //  PÁGINA 1 — Perfil + Salud + Estadísticas
+      // ══════════════════════════════════════════════════════
       this.pdfHeader(pdf, 'REPORTE NUTRICIONAL',
-        'Plataforma MIKHUY  |  Sistema de Seguimiento Estudiantil',
-        '1 de 4', PW, BLUE, BLUE_DARK, WHITE);
+        'Plataforma MIKHUY  |  Sistema de Seguimiento Estudiantil', '1 de 4',
+        PW, BLUE, BLUE_DARK, WHITE);
  
       st([170, 205, 245]); pdf.setFontSize(8); pdf.setFont('helvetica', 'normal');
       pdf.text(`Generado: ${new Date().toLocaleDateString('es-ES',
         { day: '2-digit', month: 'long', year: 'numeric' })}`, 18, 37);
  
-      let y = 48;
+      let y = 48; // cursor top-down en mm
  
-      // Avatar
+      // Avatar silueta
       sf(BLUE_LIGHT); pdf.circle(28, y + 13, 13, 'F');
       sf(BLUE);       pdf.circle(28, y + 9,   5, 'F');
                       pdf.circle(28, y + 19,  8, 'F');
@@ -455,15 +466,16 @@ export class DashboardsComponent implements OnInit {
         const cardH = 68;
         rr(15, y, PW - 30, cardH, GRAY_BG, 4);
  
-        // Gauge centro
+        // Gauge: centro en (50, y + cardH/2)
         const cx = 50, cyG = y + cardH / 2;
-        const gR  = 19;
-        gaugeArc(cx, cyG, gR, 180, 360, [210,210,210], 5.5);
-        gaugeArc(cx, cyG, gR, 180, 225, [66, 165,245],  5);
-        gaugeArc(cx, cyG, gR, 225, 270, [102,187,106],  5);
-        gaugeArc(cx, cyG, gR, 270, 315, [255,167,38 ],  5);
-        gaugeArc(cx, cyG, gR, 315, 360, [239,83, 80 ],  5);
+        const gR = 19;
+        gaugeArc(cx, cyG, gR, 180, 360, [210,210,210], 5.5); // fondo gris
+        gaugeArc(cx, cyG, gR, 180, 225, [66, 165,245],  5);  // azul
+        gaugeArc(cx, cyG, gR, 225, 270, [102,187,106],  5);  // verde
+        gaugeArc(cx, cyG, gR, 270, 315, [255,167,38 ],  5);  // naranja
+        gaugeArc(cx, cyG, gR, 315, 360, [239,83, 80 ],  5);  // rojo
  
+        // Aguja
         const imc     = stats?.imcActual || 0;
         const imcNorm = Math.min(Math.max((imc - 10) / 35, 0), 1);
         const nRad    = ((180 + imcNorm * 180) * Math.PI) / 180;
@@ -472,23 +484,26 @@ export class DashboardsComponent implements OnInit {
         sf(TEXT_DARK); pdf.circle(cx, cyG, 2, 'F');
         sf(WHITE);     pdf.circle(cx, cyG, 1, 'F');
  
+        // Valor IMC (debajo del gauge)
         st(TEXT_DARK); pdf.setFontSize(14); pdf.setFont('helvetica', 'bold');
         pdf.text(imc.toFixed(1), cx, cyG + 10, { align: 'center' });
         st(TEXT_GRAY); pdf.setFontSize(7); pdf.setFont('helvetica', 'normal');
-        pdf.text('Indice de Masa Corporal', cx, cyG + 16, { align: 'center' });
+        pdf.text('Índice de Masa Corporal', cx, cyG + 16, { align: 'center' });
  
+        // Badge estado nutricional
         const ec  = this.getEstadoColor(stats?.estadoNutricionalActual || '');
         const eFg: [number,number,number] = [ec.r, ec.g, ec.b];
         const eBg: [number,number,number] = [
           Math.min(ec.r + 150, 255), Math.min(ec.g + 150, 255), Math.min(ec.b + 150, 255)];
         badge(cx - 18, y + cardH - 9, stats?.estadoNutricionalActual || '-', eBg, eFg, 36);
  
+        // 4 datos a la derecha del gauge
         const rx = 88;
         [
-          { l: 'Peso',       v: `${med.peso} kg`,              c: BLUE     },
-          { l: 'Talla',      v: `${med.talla} cm`,             c: GREEN    },
-          { l: 'Tendencia',  v: stats?.tendencia || '-',        c: ORANGE   },
-          { l: 'Mediciones', v: `${stats?.totalMediciones||0}`, c: TEXT_GRAY },
+          { l: 'Peso',       v: `${med.peso} kg`,             c: BLUE    },
+          { l: 'Talla',      v: `${med.talla} cm`,            c: GREEN   },
+          { l: 'Tendencia',  v: stats?.tendencia || '-',       c: ORANGE  },
+          { l: 'Mediciones', v: `${stats?.totalMediciones||0}`,c: TEXT_GRAY },
         ].forEach((item, i) => {
           const ix = rx + (i % 2) * 55;
           const iy = y + 8 + Math.floor(i / 2) * 24;
@@ -499,6 +514,7 @@ export class DashboardsComponent implements OnInit {
           pdf.text(item.v, ix + 5, iy + 13);
         });
  
+        // Variaciones con flechas
         const vy = y + cardH - 9;
         if (stats?.variacionPeso !== 0) {
           const up = (stats?.variacionPeso || 0) > 0;
@@ -515,6 +531,7 @@ export class DashboardsComponent implements OnInit {
  
         y += cardH + 4;
  
+        // Caja de recomendación
         if (stats?.recomendacion) {
           const splitRec = pdf.splitTextToSize(stats.recomendacion, PW - 52);
           const recH = Math.max(14, splitRec.length * 5.5 + 10);
@@ -530,7 +547,8 @@ export class DashboardsComponent implements OnInit {
  
       hline(y); y += 8;
  
-      sectionBar(15, y, 'ESTADISTICAS GENERALES', BLUE);
+      // — ESTADÍSTICAS GENERALES —
+      sectionBar(15, y, 'ESTADÍSTICAS GENERALES', BLUE);
       y += 12;
  
       const s2 = this.dashboardData.estadisticas;
