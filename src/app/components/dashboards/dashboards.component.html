@@ -639,7 +639,7 @@
                   <circle cx="100"    cy="15"    r="2.5" fill="#fff" opacity="0.9"/>
                   <circle cx="153.03" cy="36.97" r="2.5" fill="#fff" opacity="0.9"/>
                   <!-- Aguja — misma fórmula que el PDF -->
-                  <g [attr.transform]="'rotate(' + getIMCAngle(salud.medicionActual.peso, salud.medicionActual.talla) + ')'">
+                  <g [attr.transform]="'rotate(' + getIMCAngle(stats.imcActual) + ')'">
                     <!-- Sombra -->
                     <line x1="100" y1="90" x2="158" y2="90"
                           stroke="rgba(0,0,0,0.12)" stroke-width="3.5"
