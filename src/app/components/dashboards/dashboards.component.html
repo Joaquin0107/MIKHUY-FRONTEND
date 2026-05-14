@@ -712,7 +712,7 @@
                 <div class="medicion-card">
                   <mat-icon>height</mat-icon>
                   <div class="medicion-info">
-                    <h4>{{ salud.medicionActual.talla }} cm</h4>
+                    <h4>{{ salud.medicionActual.talla }} m</h4>
                     <p>Talla</p>
                     <ng-container *ngIf="salud.estadisticas as stats">
                       <!-- ✅ CLASE CORRECTA: talla-up para color VERDE -->
@@ -842,9 +842,9 @@
                       [attr.cy]="point.y"
                       r="4"
                       class="chart-point talla-point"
-                      [matTooltip]="point.talla + ' cm - ' + point.fecha"
+                      [matTooltip]="point.talla + ' m - ' + point.fecha"
                     ></circle>
-                    <text x="15" y="25" class="chart-label">cm</text>
+                    <text x="15" y="25" class="chart-label">m</text>
                   </svg>
                 </div>
               </mat-card-content>
