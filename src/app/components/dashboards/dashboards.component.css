@@ -1294,7 +1294,7 @@
 
 .gauge-svg {
   width: 240px;
-  height: 138px;
+  height: 126px;
   overflow: visible;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
@@ -1302,7 +1302,7 @@
 /* Animación suave de la aguja */
 .gauge-svg g {
   transition: transform 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  transform-origin: 100px 100px;
+  transform-origin: 100px 90px;
 }
 
 /* Hover effects en los segmentos */
@@ -1402,7 +1402,7 @@
 @media (max-width: 768px) {
   .gauge-svg {
     width: 200px;
-    height: 115px;
+    height: 110px;
   }
   
   .imc-info h3 {
@@ -1893,7 +1893,7 @@
 
   .gauge-svg {
     width: 160px;
-    height: 92px;
+    height: 100px;
   }
 
   .imc-info h3 {

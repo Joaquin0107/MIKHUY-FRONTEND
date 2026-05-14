@@ -1113,33 +1113,26 @@ export class DashboardsComponent implements OnInit {
   }
 
   getIMCAngle(imc: number): number {
-    // El arco SVG tiene centro (100,100), radio 80:
-    //   M 20,100     = 180° → inicio (extremo izquierdo)
-    //   43.43,43.43  = 225° → límite Bajo peso / Normal
-    //   100,20       = 270° → tope del arco
-    //   156.57,43.43 = 315° → límite Sobrepeso / Obesidad
-    //   180,100      = 360° → fin (extremo derecho)
-    //
-    // El template aplica: rotate(getIMCAngle - 90, 100, 100)
-    // Para que rotate(X-90) apunte al ángulo SVG correcto: X = anguloSVG + 90
-    //   inicio arco (180°) → X = 270  → rotate(180) ✓
-    //   tope       (270°)  → X = 360  → rotate(270) ✓
-    //   fin arco   (360°)  → X = 450  → rotate(360) ✓
+    // SVG gauge: centro (100,90), radio 75
+    // Arco: 180° (izquierda) → 270° (tope) → 360° (derecha)
+    // rotate(X, 100, 90) aplicado directamente — SIN offset en el template.
+    // La aguja apunta a la derecha en reposo (0°):
+    //   rotate(180) → apunta izquierda  = inicio arco (Bajo peso)
+    //   rotate(225) → límite Bajo/Normal
+    //   rotate(270) → apunta arriba     = tope arco (Normal/Sobrepeso)
+    //   rotate(315) → límite Sobre/Obesidad
+    //   rotate(360) → apunta derecha    = fin arco (Obesidad máx)
 
-    if (!imc || imc <= 0) return 270; // inicio del arco
+    if (!imc || imc <= 0) return 180;
 
     if (imc < 18.5) {
-      // Bajo peso: anguloSVG 180°→225°, X = 270→315
-      return 270 + (imc / 18.5) * 45;
+      return 180 + (imc / 18.5) * 45;
     } else if (imc < 25) {
-      // Normal: anguloSVG 225°→270°, X = 315→360
-      return 315 + ((imc - 18.5) / 6.5) * 45;
+      return 225 + ((imc - 18.5) / 6.5) * 45;
     } else if (imc < 30) {
-      // Sobrepeso: anguloSVG 270°→315°, X = 360→405
-      return 360 + ((imc - 25) / 5.0) * 45;
+      return 270 + ((imc - 25) / 5.0) * 45;
     } else {
-      // Obesidad: anguloSVG 315°→360°, X = 405→450
-      return 405 + Math.min(1, (imc - 30) / 10.0) * 45;
+      return 315 + Math.min(1, (imc - 30) / 10.0) * 45;
     }
   }
 
@@ -1159,16 +1152,9 @@ export class DashboardsComponent implements OnInit {
   ngAfterViewInit() {
     if (this.dashboardData?.salud?.estadisticas) {
       const imc = this.dashboardData.salud.estadisticas.imcActual;
-      const x = this.getIMCAngle(imc);
-      const rotate = x - 90;
-      console.log('🎯 IMC GAUGE DEBUG → IMC:', imc, '| rotate:', rotate.toFixed(1) + '°');
-
-      let zona = '';
-      if (x < 315) zona = 'AZUL (Bajo peso)';
-      else if (x < 360) zona = 'VERDE (Normal)';
-      else if (x < 405) zona = 'NARANJA (Sobrepeso)';
-      else zona = 'ROJO (Obesidad)';
-      console.log('  Zona:', zona, '| Estado:', this.dashboardData.salud.estadisticas.estadoNutricionalActual);
+      const angle = this.getIMCAngle(imc);
+      let zona = angle < 225 ? 'AZUL (Bajo peso)' : angle < 270 ? 'VERDE (Normal)' : angle < 315 ? 'NARANJA (Sobrepeso)' : 'ROJO (Obesidad)';
+      console.log('🎯 IMC GAUGE → IMC:', imc, '| rotate:', angle.toFixed(1) + '° |', zona);
     }
   }
 
