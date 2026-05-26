@@ -76,7 +76,7 @@ export class LoginComponent implements OnInit {
     let attempts = 0;
 
     const ping = () => {
-      fetch(`${this.BACKEND_URL}/health`)
+      fetch(`${this.BACKEND_URL}/api/status`)
         .then((res) => {
           if (res.ok) {
             this.backendReady = true;
