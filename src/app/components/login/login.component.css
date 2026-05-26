@@ -149,28 +149,61 @@
   text-decoration: underline;
 }
 
-/* Link a registro */
-.register-link {
-  text-align: center;
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e0e0e0;
-  font-size: 0.95rem;
-  color: #666;
+/* ── Estado del backend ────────────────────────────── */
+.backend-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  margin-top: -0.5rem;
 }
 
-.link-btn {
-  color: #48A3F3;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  margin-left: 0.5rem;
-  transition: color 0.3s;
+.backend-status.waking {
+  background: #fff8e1;
+  color: #f57c00;
+  border-left: 3px solid #f57c00;
 }
 
-.link-btn:hover {
-  color: #3d8fd9;
-  text-decoration: underline;
+.backend-status.ready {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-left: 3px solid #2e7d32;
+}
+
+.backend-status mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0;
+}
+
+/* Animación de giro (icono sync) */
+.spin {
+  animation: spin 1.2s linear infinite;
+  display: inline-block;
+}
+
+/* Botón con loading */
+.btn-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.spin-btn {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
+  animation: spin 1.2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 /* Botón de Ingreso */

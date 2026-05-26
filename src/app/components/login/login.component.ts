@@ -42,6 +42,11 @@ export class LoginComponent implements OnInit {
   userRole: string = 'student';
   loading = false;
 
+  // ── Estado del backend ──────────────────────────────
+  backendReady = false;
+  backendWaking = true;
+  private readonly BACKEND_URL = 'https://mikhuy-backend.onrender.com';
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -60,6 +65,42 @@ export class LoginComponent implements OnInit {
       username: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
+
+    // 🔥 Despierta el backend al cargar el login
+    this.wakeUpBackend();
+  }
+
+  // ── Wake-up con reintentos ──────────────────────────
+  private wakeUpBackend(): void {
+    const maxAttempts = 10;
+    let attempts = 0;
+
+    const ping = () => {
+      fetch(`${this.BACKEND_URL}/health`)
+        .then((res) => {
+          if (res.ok) {
+            this.backendReady = true;
+            this.backendWaking = false;
+            console.log('✅ Backend listo');
+          } else {
+            retry();
+          }
+        })
+        .catch(() => retry());
+    };
+
+    const retry = () => {
+      attempts++;
+      if (attempts < maxAttempts) {
+        setTimeout(ping, 3000); // reintenta cada 3 segundos
+      } else {
+        // Dejamos de esperar; el usuario puede intentar igual
+        this.backendWaking = false;
+        console.warn('⚠️ Backend no respondió tras varios intentos');
+      }
+    };
+
+    ping();
   }
 
   togglePasswordVisibility(): void {
@@ -141,7 +182,6 @@ export class LoginComponent implements OnInit {
         console.error('❌ Error en login:', err);
         console.error('Status:', err.status);
         console.error('Message:', err.error?.message);
-        console.error('Error completo:', err);
 
         if (err.status === 401) {
           alert('Credenciales incorrectas. Verifica tu email y contraseña.');

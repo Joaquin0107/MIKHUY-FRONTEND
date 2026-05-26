@@ -1,5 +1,5 @@
-<div class="login-container"> 
-  <!-- Imágen - Lado izquierdo -->
+<div class="login-container">
+  <!-- Imagen - Lado izquierdo -->
   <div class="image-section">
     <img src="assets/images/login.png" alt="Alimentación saludable" class="login-image">
   </div>
@@ -19,6 +19,7 @@
 
       <!-- Formulario -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" autocomplete="off">
+
         <!-- Campo de Usuario/Email -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Correo electrónico</mat-label>
@@ -75,16 +76,32 @@
           </span>
         </div>
 
+        <!-- Estado del servidor -->
+        <div *ngIf="backendWaking && !backendReady" class="backend-status waking">
+          <mat-icon class="spin">sync</mat-icon>
+          <span>Iniciando servidor, por favor espera...</span>
+        </div>
+
+        <div *ngIf="backendReady" class="backend-status ready">
+          <mat-icon>check_circle</mat-icon>
+          <span>Servidor listo</span>
+        </div>
+
         <!-- Botón de ingreso -->
         <button
           mat-raised-button
           color="primary"
           type="submit"
           class="submit-btn"
-          [disabled]="loginForm.invalid"
+          [disabled]="loginForm.invalid || loading"
         >
-          Ingresar
+          <span *ngIf="!loading">Ingresar</span>
+          <span *ngIf="loading" class="btn-loading">
+            <mat-icon class="spin-btn">sync</mat-icon>
+            Ingresando...
+          </span>
         </button>
+
       </form>
     </div>
   </div>
