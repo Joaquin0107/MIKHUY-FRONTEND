@@ -53,7 +53,7 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private dialog: MatDialog,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -83,6 +83,12 @@ export class LoginComponent implements OnInit {
             this.backendReady = true;
             this.backendWaking = false;
             console.log('✅ Backend listo');
+
+            // ✅ Si el usuario ya intentó ingresar, ejecuta el login automáticamente
+            if (this.showWakingMessage) {
+              this.showWakingMessage = false;
+              this.onSubmit();
+            }
           } else {
             retry();
           }
@@ -96,13 +102,14 @@ export class LoginComponent implements OnInit {
         setTimeout(ping, 3000);
       } else {
         this.backendWaking = false;
+        this.showWakingMessage = false;
         console.warn('⚠️ Backend no respondió tras varios intentos');
       }
     };
 
     ping();
   }
-
+  
   togglePasswordVisibility(): void {
     this.hidePassword = !this.hidePassword;
   }
@@ -142,8 +149,12 @@ export class LoginComponent implements OnInit {
           console.log('🎭 Rol del usuario:', rol);
 
           if (rol !== this.userRole) {
-            console.warn(`⚠️ Rol no coincide. Esperado: ${this.userRole}, Recibido: ${rol}`);
-            alert(`Este usuario pertenece al rol "${rol}" y no puede ingresar desde el login de "${this.userRole}".`);
+            console.warn(
+              `⚠️ Rol no coincide. Esperado: ${this.userRole}, Recibido: ${rol}`,
+            );
+            alert(
+              `Este usuario pertenece al rol "${rol}" y no puede ingresar desde el login de "${this.userRole}".`,
+            );
             this.loading = false;
             return;
           }
@@ -152,7 +163,10 @@ export class LoginComponent implements OnInit {
           console.log('💾 Token guardado');
 
           const tokenGuardado = localStorage.getItem('authToken');
-          console.log('🔍 Verificación - Token en localStorage:', tokenGuardado ? '✓' : '✗');
+          console.log(
+            '🔍 Verificación - Token en localStorage:',
+            tokenGuardado ? '✓' : '✗',
+          );
 
           if (!tokenGuardado) {
             console.error('❌ ERROR: El token NO se guardó en localStorage');
@@ -165,7 +179,10 @@ export class LoginComponent implements OnInit {
           console.log('💾 Usuario guardado');
 
           const usuarioGuardado = localStorage.getItem('currentUser');
-          console.log('🔍 Verificación - Usuario en localStorage:', usuarioGuardado ? '✓' : '✗');
+          console.log(
+            '🔍 Verificación - Usuario en localStorage:',
+            usuarioGuardado ? '✓' : '✗',
+          );
 
           this.loading = false;
 
@@ -230,26 +247,28 @@ export class LoginComponent implements OnInit {
       </mat-dialog-actions>
     </div>
   `,
-  styles: [`
-    .dialog-container {
-      font-family: 'Poppins', sans-serif;
-      padding: 24px;
-      max-width: 400px;
-    }
-    h2 {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #d32f2f;
-      font-weight: 600;
-      margin: 0;
-    }
-    p {
-      margin-top: 1rem;
-      font-size: 0.95rem;
-      color: #444;
-    }
-  `]
+  styles: [
+    `
+      .dialog-container {
+        font-family: 'Poppins', sans-serif;
+        padding: 24px;
+        max-width: 400px;
+      }
+      h2 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #d32f2f;
+        font-weight: 600;
+        margin: 0;
+      }
+      p {
+        margin-top: 1rem;
+        font-size: 0.95rem;
+        color: #444;
+      }
+    `,
+  ],
 })
 export class AccessDeniedDialog {
   constructor(@Inject(MAT_DIALOG_DATA) public message: string) {}
