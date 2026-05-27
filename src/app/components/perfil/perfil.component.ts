@@ -270,6 +270,10 @@ export class PerfilComponent implements OnInit {
   }
 
   populateForm(data: EstudianteResponse): void {
+    // Normalizar sección: si la BD guardó "Sección A" extraer solo "A"
+    const seccionNorm = data.seccion
+      ? data.seccion.replace("Sección ", "").trim()
+      : "A";
     this.perfilForm.patchValue({
       firstName: data.nombres,
       lastName: data.apellidos,
@@ -277,9 +281,10 @@ export class PerfilComponent implements OnInit {
       telefono: data.telefono || '',
       edad: data.edad || '',
       peso: data.peso || '',
+      // FIX: talla en metros tal cual del backend
       talla: data.talla || '',
       grado: data.grado || '5to',
-      seccion: data.seccion || 'A',
+      seccion: seccionNorm,
     });
   }
 
@@ -382,16 +387,21 @@ export class PerfilComponent implements OnInit {
     const tallaValue = this.perfilForm.value.talla;
     const edadValue = this.perfilForm.value.edad;
 
+    // Normalizar sección: si viene "Sección A" extraer solo "A"
+    const seccionRaw = this.perfilForm.value.seccion as string;
+    const seccionNormalizada = seccionRaw?.replace('Sección ', '').trim() ?? seccionRaw;
+
     const updateData: UpdateProfileRequest = {
       nombres: this.perfilForm.value.firstName,
       apellidos: this.perfilForm.value.lastName,
       email: this.perfilForm.value.email,
       telefono: this.perfilForm.value.telefono || undefined,
       grado: this.perfilForm.value.grado,
-      seccion: this.perfilForm.value.seccion,
+      seccion: seccionNormalizada,
       edad: edadValue ? parseInt(edadValue) : undefined,
       peso: pesoValue ? parseFloat(pesoValue) : undefined,
-      talla: tallaValue ? Math.round(parseFloat(tallaValue) * 100) : undefined,    
+      // ✅ FIX: talla ya está en metros (1.57), NO multiplicar por 100
+      talla: tallaValue ? parseFloat(parseFloat(tallaValue).toFixed(2)) : undefined,
     };
 
     console.log('📦 Datos a enviar:', updateData);
