@@ -29,11 +29,9 @@ export class MailService {
   }
 
   sendEmail(data: { to: string; subject: string; message: string }): Observable<any> {
-    console.log('📧 [MailService] URL:', `${this.API}/send`);
-
     return this.http.post(`${this.API}/send`, data, {
-      headers: this.getHeaders(),
-      withCredentials: true,
+      headers: this.getHeaders()
+      // sin withCredentials
     }).pipe(
       tap(res => console.log('✔️ Enviado:', res)),
       catchError(err => {
@@ -44,11 +42,9 @@ export class MailService {
   }
 
   sendEmailWithPdf(formData: FormData): Observable<any> {
-    console.log('📧 [MailService] URL:', `${this.API}/send-with-pdf`);
-
     return this.http.post(`${this.API}/send-with-pdf`, formData, {
-      headers: this.getHeadersForFormData(),
-      withCredentials: true,
+      headers: this.getHeadersForFormData()
+      // sin withCredentials
     }).pipe(
       tap(res => console.log('✔️ Enviado PDF:', res)),
       catchError(err => {
