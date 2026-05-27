@@ -1,7 +1,11 @@
 <div class="login-container">
   <!-- Imagen - Lado izquierdo -->
   <div class="image-section">
-    <img src="assets/images/login.png" alt="Alimentación saludable" class="login-image">
+    <img
+      src="assets/images/login.png"
+      alt="Alimentación saludable"
+      class="login-image"
+    />
   </div>
 
   <!-- Formulario login - Lado derecho -->
@@ -14,12 +18,20 @@
     <div class="form-wrapper">
       <!-- Logo -->
       <div class="logo-section">
-        <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="logo-img">
+        <img
+          src="assets/images/MIKHUY.png"
+          alt="MIKHUY Logo"
+          class="logo-img"
+        />
       </div>
 
       <!-- Formulario -->
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" autocomplete="off">
-
+      <form
+        [formGroup]="loginForm"
+        (ngSubmit)="onSubmit()"
+        class="login-form"
+        autocomplete="off"
+      >
         <!-- Campo de Usuario/Email -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Correo electrónico</mat-label>
@@ -29,7 +41,7 @@
             placeholder="Ingresa tu correo"
             formControlName="username"
             autocomplete="email"
-          >
+          />
           <mat-error *ngIf="loginForm.get('username')?.hasError('required')">
             El correo es requerido
           </mat-error>
@@ -47,7 +59,7 @@
             placeholder="Contraseña"
             formControlName="password"
             autocomplete="current-password"
-          >
+          />
           <button
             mat-icon-button
             matSuffix
@@ -55,7 +67,9 @@
             (click)="togglePasswordVisibility()"
             aria-label="Mostrar u ocultar contraseña"
           >
-            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            <mat-icon>{{
+              hidePassword ? "visibility_off" : "visibility"
+            }}</mat-icon>
           </button>
           <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
             La contraseña es requerida
@@ -76,15 +90,20 @@
           </span>
         </div>
 
-        <!-- Mensaje de servidor iniciando (solo al presionar Ingresar) -->
-        <div *ngIf="showWakingMessage && backendWaking" class="backend-status waking">
+        <div
+          *ngIf="showWakingMessage && backendWaking"
+          class="backend-status waking"
+        >
           <mat-icon class="spin">sync</mat-icon>
-          <span>Iniciando servidor, espera unos segundos e intenta de nuevo...</span>
+          <span>Servidor cargando, intenta de nuevo en unos segundos</span>
         </div>
 
-        <div *ngIf="showWakingMessage && backendReady" class="backend-status ready">
+        <div
+          *ngIf="showWakingMessage && backendReady"
+          class="backend-status ready"
+        >
           <mat-icon>check_circle</mat-icon>
-          <span>Servidor listo, intenta ingresar nuevamente</span>
+          <span>Listo, presiona Ingresar</span>
         </div>
 
         <!-- Botón de ingreso -->
@@ -101,7 +120,6 @@
             Ingresando...
           </span>
         </button>
-
       </form>
     </div>
   </div>
