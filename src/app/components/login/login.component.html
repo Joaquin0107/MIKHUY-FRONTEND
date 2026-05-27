@@ -79,7 +79,7 @@
         <!-- Mensaje de servidor iniciando (solo al presionar Ingresar) -->
         <div *ngIf="showWakingMessage && backendWaking" class="backend-status waking">
           <mat-icon class="spin">sync</mat-icon>
-          <span>Iniciando servidor, espera unos segundos. Cuando este mensaje desaparezca, haz clic en “Ingresar” nuevamente</span>
+          <span>Iniciando servidor, espera unos segundos...</span>
         </div>
 
         <div *ngIf="showWakingMessage && backendReady" class="backend-status ready">
