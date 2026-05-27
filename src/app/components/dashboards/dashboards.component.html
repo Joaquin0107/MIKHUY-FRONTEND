@@ -112,11 +112,16 @@
               </div>
               <div class="stat-item">
                 <span class="label">Talla:</span>
-                <span class="value">{{ selectedStudent.talla }}</span>
+                <!-- ✅ FIX: usar dashboardData.estudiante como fuente de verdad (dato fresco del backend) -->
+                <span class="value">
+                  {{ dashboardData?.estudiante?.talla ? (dashboardData.estudiante.talla + 'm') : selectedStudent.talla }}
+                </span>
               </div>
               <div class="stat-item">
                 <span class="label">Peso:</span>
-                <span class="value">{{ selectedStudent.peso }}</span>
+                <span class="value">
+                  {{ dashboardData?.estudiante?.peso ? (dashboardData.estudiante.peso + 'kg') : selectedStudent.peso }}
+                </span>
               </div>
               <div class="stat-item">
                 <span class="label">Grado:</span>
