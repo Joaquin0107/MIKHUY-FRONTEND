@@ -1,59 +1,53 @@
-# Mikhuy
+# 🥗 MIKHUY - Sistema Web de Monitoreo Alimentario con IA Generativa
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.15.
+<p align="center">
+  <img src="public/assets/images/MIKHUY.ico" alt="Mikhuy Logo" width="120px" onerror="this.style.display='none'"/>
+</p>
 
-## Development server
+<p align="center">
+  <a href="https://angular.dev/"><img src="https://img.shields.io/badge/Angular-19.2.15-DD0031?style=for-the-badge&logo=angular&logoColor=white" alt="Angular Version"></a>
+  <a href="https://firebase.google.com/"><img src="https://img.shields.io/badge/Firebase-Hosting-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase Hosting"></a>
+  <a href="https://mikhuy-front.web.app/home"><img src="https://img.shields.io/badge/Demo-En%20Línea-4CAF50?style=for-the-badge" alt="Demo Live"></a>
+</p>
 
-To start a local development server, run:
+---
 
-```bash
-ng serve
-```
+## 📝 Descripción del Proyecto
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+**Mikhuy** es una plataforma web innovadora diseñada para el **monitoreo del comportamiento alimentario y seguimiento de la salud**, impulsada por **Inteligencia Artificial Generativa**. El propósito del sistema es procesar, analizar y brindar retroalimentación inteligente sobre los hábitos alimenticios de los usuarios/estudiantes, facilitando el registro de mediciones de salud y la gamificación a través de un sistema de recompensas y beneficios.
 
-## Code scaffolding
+Este repositorio contiene la arquitectura de la aplicación **Front-End**, construida con la última versión de **Angular** y desplegada en **Firebase**.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+🌐 **Demo en vivo:** [Mikhuy Web App](https://mikhuy-front.web.app/home)
 
-```bash
-ng generate component component-name
-```
+---
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## ✨ Características Principales
 
-```bash
-ng generate --help
-```
+* 🤖 **Análisis con IA Generativa:** Integración con modelos de IA para interpretar el comportamiento y proporcionar feedback personalizado sobre hábitos alimenticios.
+* 📊 **Control de Parámetros de Salud:** Registro y visualización de mediciones clave de salud de manera intuitiva.
+* 🎮 **Gamificación:** Sistema integrado de logros y progreso que incentiva un estilo de vida saludable.
+* 🎁 **Tienda de Beneficios:** Módulo para que los usuarios puedan canjear recompensas acumuladas gracias a sus buenos hábitos.
+* ⚡ **Interfaz Moderna y Reactiva:** Diseñada bajo un enfoque responsivo y dinámico utilizando arquitecturas modernas de Angular.
 
-## Building
+---
 
-To build the project run:
+## 🛠️ Tecnologías Utilizadas
 
-```bash
-ng build
-```
+* **Framework:** [Angular v19.2.15](https://angular.dev/)
+* **Lenguajes:** TypeScript, HTML5, CSS3
+* **Despliegue e Infraestructura:** [Firebase Hosting](https://firebase.google.com/)
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+---
 
-## Running unit tests
+## 🌐 Despliegue
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Este proyecto está configurado para compilarse y desplegarse en la nube utilizando la infraestructura de **Firebase Hosting**, asegurando una alta disponibilidad y tiempos de carga óptimos para los usuarios. El flujo de despliegue está optimizado para integrarse de forma continua con el repositorio.
 
-```bash
-ng test
-```
+---
 
-## Running end-to-end tests
+## 📄 Licencia
 
-For end-to-end (e2e) testing, run:
+Este proyecto está bajo la licencia que determine el autor principal. 
 
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+---
