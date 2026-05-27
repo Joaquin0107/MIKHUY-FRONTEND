@@ -76,15 +76,15 @@
           </span>
         </div>
 
-        <!-- Estado del servidor -->
-        <div *ngIf="backendWaking && !backendReady" class="backend-status waking">
+        <!-- Mensaje de servidor iniciando (solo al presionar Ingresar) -->
+        <div *ngIf="showWakingMessage && backendWaking" class="backend-status waking">
           <mat-icon class="spin">sync</mat-icon>
-          <span>Iniciando servidor, por favor espera...</span>
+          <span>Iniciando servidor, espera unos segundos e intenta de nuevo...</span>
         </div>
 
-        <div *ngIf="backendReady" class="backend-status ready">
+        <div *ngIf="showWakingMessage && backendReady" class="backend-status ready">
           <mat-icon>check_circle</mat-icon>
-          <span>Servidor listo</span>
+          <span>Servidor listo, intenta ingresar nuevamente</span>
         </div>
 
         <!-- Botón de ingreso -->

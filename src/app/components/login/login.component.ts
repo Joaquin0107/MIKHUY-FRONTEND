@@ -45,6 +45,7 @@ export class LoginComponent implements OnInit {
   // ── Estado del backend ──────────────────────────────
   backendReady = false;
   backendWaking = true;
+  showWakingMessage = false;
   private readonly BACKEND_URL = 'https://mikhuy-backend.onrender.com';
 
   constructor(
@@ -66,7 +67,7 @@ export class LoginComponent implements OnInit {
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
-    // 🔥 Despierta el backend al cargar el login
+    // 🔥 Despierta el backend al cargar el login (silencioso)
     this.wakeUpBackend();
   }
 
@@ -92,9 +93,8 @@ export class LoginComponent implements OnInit {
     const retry = () => {
       attempts++;
       if (attempts < maxAttempts) {
-        setTimeout(ping, 3000); // reintenta cada 3 segundos
+        setTimeout(ping, 3000);
       } else {
-        // Dejamos de esperar; el usuario puede intentar igual
         this.backendWaking = false;
         console.warn('⚠️ Backend no respondió tras varios intentos');
       }
@@ -113,7 +113,14 @@ export class LoginComponent implements OnInit {
       return;
     }
 
+    // Si el backend aún no está listo, muestra el mensaje y espera
+    if (this.backendWaking) {
+      this.showWakingMessage = true;
+      return;
+    }
+
     this.loading = true;
+    this.showWakingMessage = false;
 
     const loginData: LoginRequest = {
       email: this.loginForm.value.username,
