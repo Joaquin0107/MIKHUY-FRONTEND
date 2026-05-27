@@ -78,7 +78,7 @@
               <mat-icon *ngIf="!student.avatar">account_circle</mat-icon>
             </div>
             <div class="student-info">
-              <h4>{{ student.nombre }} {{ student.apellido }}</h4>
+              <h4 [matTooltip]="student.nombre + ' ' + student.apellido" matTooltipShowDelay="500">{{ student.nombre }} {{ student.apellido }}</h4>
               <p>{{ student.grado }} - Sección {{ student.seccion }}</p>
               <span class="points-badge"
                 >{{ student.puntosAcumulados || 0 }} pts</span
@@ -112,16 +112,11 @@
               </div>
               <div class="stat-item">
                 <span class="label">Talla:</span>
-                <!-- ✅ FIX: usar dashboardData.estudiante como fuente de verdad (dato fresco del backend) -->
-                <span class="value">
-                  {{ dashboardData?.estudiante?.talla ? (dashboardData.estudiante.talla + 'm') : selectedStudent.talla }}
-                </span>
+                <span class="value">{{ selectedStudent.talla }}</span>
               </div>
               <div class="stat-item">
                 <span class="label">Peso:</span>
-                <span class="value">
-                  {{ dashboardData?.estudiante?.peso ? (dashboardData.estudiante.peso + 'kg') : selectedStudent.peso }}
-                </span>
+                <span class="value">{{ selectedStudent.peso }}</span>
               </div>
               <div class="stat-item">
                 <span class="label">Grado:</span>
@@ -237,7 +232,7 @@
                     <mat-icon>emoji_events</mat-icon>
                     <div>
                       <strong
-                        >Nivel {{ nutrimental.nivelActual || 0 }}/{{
+                        >Nivel {{ getNivelMostrado(nutrimental) }}/{{
                           nutrimental.maxNiveles
                         }}</strong
                       >
@@ -253,17 +248,17 @@
                   </div>
                   <div
                     class="detail-item"
-                    [class.success]="nutrimental.completado"
+                    [class.success]="estaCompletado(nutrimental)"
                   >
                     <mat-icon>{{
-                      nutrimental.completado ? "check_circle" : "pending"
+                      estaCompletado(nutrimental) ? "check_circle" : "pending"
                     }}</mat-icon>
                     <div>
                       <strong>{{
-                        nutrimental.completado ? "¡Completado!" : "En progreso"
+                        estaCompletado(nutrimental) ? "¡Completado!" : "En progreso"
                       }}</strong>
                       <span>{{
-                        nutrimental.completado
+                        estaCompletado(nutrimental)
                           ? "Juego terminado"
                           : "Continúa jugando"
                       }}</span>
@@ -381,7 +376,7 @@
                   <mat-icon class="game-icon">restaurant</mat-icon>
                   <div>
                     <h3>
-                      {{ reto7dias.nivelActual || 0 }} de
+                      {{ getNivelMostrado(reto7dias) }} de
                       {{ reto7dias.maxNiveles }} días completados
                     </h3>
                     <p>{{ reto7dias.puntosGanados || 0 }} puntos acumulados</p>
@@ -400,10 +395,10 @@
                   </div>
                   <div class="game-stat-item">
                     <mat-icon>{{
-                      reto7dias.completado ? "check_circle" : "hourglass_empty"
+                      estaCompletado(reto7dias) ? "check_circle" : "hourglass_empty"
                     }}</mat-icon>
                     <span>{{
-                      reto7dias.completado ? "Completado" : "En progreso"
+                      estaCompletado(reto7dias) ? "Completado" : "En progreso"
                     }}</span>
                   </div>
                 </div>
@@ -528,7 +523,7 @@
                   <mat-icon class="game-icon">psychology</mat-icon>
                   <div>
                     <h3>
-                      Nivel {{ coach.nivelActual || 0 }} de
+                      Nivel {{ getNivelMostrado(coach) }} de
                       {{ coach.maxNiveles }}
                     </h3>
                     <p>{{ coach.puntosGanados || 0 }} puntos acumulados</p>
@@ -547,10 +542,10 @@
                   </div>
                   <div class="game-stat-item">
                     <mat-icon>{{
-                      coach.completado ? "check_circle" : "pending"
+                      estaCompletado(coach) ? "check_circle" : "pending"
                     }}</mat-icon>
                     <span>{{
-                      coach.completado ? "Evaluación completa" : "En evaluación"
+                      estaCompletado(coach) ? "Evaluación completa" : "En evaluación"
                     }}</span>
                   </div>
                 </div>

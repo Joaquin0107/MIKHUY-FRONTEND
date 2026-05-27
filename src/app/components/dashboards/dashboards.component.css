@@ -302,6 +302,8 @@
 
 .student-info {
   flex: 1;
+  min-width: 0; /* ✅ necesario para que ellipsis funcione en flexbox */
+  overflow: hidden;
 }
 
 .student-info h4 {
@@ -309,6 +311,11 @@
   font-size: 0.95rem;
   font-weight: 600;
   color: #333;
+  /* ✅ FIX: truncar apellidos largos con ellipsis */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 170px;
 }
 
 .student-info p {

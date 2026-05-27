@@ -25,8 +25,7 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { Router } from '@angular/router';
 import {
   DashboardService,
   DashboardEstudianteResponse,
@@ -119,17 +118,6 @@ export class DashboardsComponent implements OnInit {
     } else {
       this.loadMyDashboard();
     }
-
-    // ✅ FIX: recargar dashboard cuando se navega de vuelta desde perfil
-    // Angular no destruye el componente si la ruta no cambia, así que
-    // escuchamos NavigationEnd para detectar el retorno y refrescar los datos
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      if (!this.isTeacher) {
-        this.loadMyDashboard();
-      }
-    });
   }
 
   private loadExternalScripts(): void {
@@ -194,7 +182,7 @@ export class DashboardsComponent implements OnInit {
             edad: est.edad,
             grado: est.grado,
             seccion: est.seccion,
-            talla: est.talla ? `${est.talla}m` : 'N/A',  // FIX: talla en metros
+            talla: est.talla ? `${est.talla}cm` : 'N/A',
             peso: est.peso ? `${est.peso}kg` : 'N/A',
             avatar: est.avatarUrl,
             puntosAcumulados: est.puntosAcumulados,
@@ -230,12 +218,6 @@ export class DashboardsComponent implements OnInit {
       next: (response) => {
         if (response.success && response.data) {
           this.dashboardData = response.data;
-
-          // ✅ FIX: actualizar selectedStudent con datos frescos del dashboard
-          // para que talla/peso del header siempre reflejen lo último guardado
-          if (response.data.estudiante) {
-            this.selectedStudent = this.mapEstudianteToStudent(response.data.estudiante);
-          }
 
           console.log('Dashboard Data:', this.dashboardData);
           console.log('Salud Info:', this.dashboardData.salud);
@@ -1442,7 +1424,22 @@ export class DashboardsComponent implements OnInit {
 
   calcularPorcentajeProgreso(juego: JuegoResponse): number {
     if (!juego || !juego.nivelActual || !juego.maxNiveles) return 0;
-    return Math.round((juego.nivelActual / juego.maxNiveles) * 100);
+    // ✅ FIX: nunca superar el 100% aunque nivelActual > maxNiveles
+    return Math.min(100, Math.round((juego.nivelActual / juego.maxNiveles) * 100));
+  }
+
+  // ✅ FIX: días/niveles completados capped a maxNiveles para no mostrar "8 de 7"
+  getNivelMostrado(juego: JuegoResponse): number {
+    if (!juego || !juego.nivelActual || !juego.maxNiveles) return 0;
+    return Math.min(juego.nivelActual, juego.maxNiveles);
+  }
+
+  // ✅ FIX: si nivelActual >= maxNiveles, marcar como completado visualmente
+  estaCompletado(juego: JuegoResponse): boolean {
+    if (!juego) return false;
+    if (juego.completado) return true;
+    if (juego.nivelActual && juego.maxNiveles && juego.nivelActual >= juego.maxNiveles) return true;
+    return false;
   }
 
   getColorByProgress(porcentaje: number): string {
@@ -1806,7 +1803,7 @@ export class DashboardsComponent implements OnInit {
       edad: estudiante.edad,
       grado: estudiante.grado,
       seccion: estudiante.seccion,
-      talla: estudiante.talla ? `${estudiante.talla}m` : 'N/A',  // FIX: talla en metros
+      talla: estudiante.talla ? `${estudiante.talla}cm` : 'N/A',
       peso: estudiante.peso ? `${estudiante.peso}kg` : 'N/A',
       avatar: estudiante.avatarUrl,
       puntosAcumulados: estudiante.puntosAcumulados,
