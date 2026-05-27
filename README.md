@@ -48,6 +48,6 @@ Este proyecto está configurado para compilarse y desplegarse en la nube utiliza
 
 ## 📄 Licencia
 
-Este proyecto está bajo la licencia que determine el autor principal. 
+Este proyecto está bajo la licencia que determinen los autores principales. 
 
 ---
