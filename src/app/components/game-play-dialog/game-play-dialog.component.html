@@ -16,11 +16,9 @@
           <p><strong>Nivel a jugar:</strong> {{ nivelActual }}</p>
           <p><strong>Puntos actuales:</strong> {{ gameData.juego.puntosGanados }}</p>
           <p><strong>Puntos por nivel:</strong> {{ gameData.juego.puntosPorNivel }}</p>
-
-          <!-- Indicador temático para Reto 7 Días -->
-          <p *ngIf="esReto7Dias()">
-            <strong>Día del reto:</strong> {{ nivelActual }} de 7
-          </p>
+          <p *ngIf="esNutrimental()"><strong>Preguntas:</strong> 5 (aleatorias del nivel)</p>
+          <p *ngIf="esCoachExpres()"><strong>Preguntas:</strong> 8 (aleatorias del nivel)</p>
+          <p *ngIf="esReto7Dias()"><strong>Día del reto:</strong> {{ nivelActual }} de 7</p>
         </div>
       </mat-card-content>
       <mat-card-actions>
@@ -49,15 +47,25 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════════════
-         DESAFÍO NUTRIMENTAL — 1 pregunta aleatoria del nivel
-    ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- ════════════════════════════════════════════════════════
+         DESAFÍO NUTRIMENTAL — 5 preguntas barajadas por nivel
+    ════════════════════════════════════════════════════════ -->
     <div *ngIf="esNutrimental()" class="nutrimental-game">
       <mat-card class="question-card">
         <mat-card-header>
-          <mat-card-title>Nivel {{ nivelActual }} · Pregunta aleatoria</mat-card-title>
+          <mat-card-title>
+            Pregunta {{ preguntaActualNutrimental + 1 }} de {{ TOTAL_PREGUNTAS_NUTRIMENTAL }}
+          </mat-card-title>
           <mat-card-subtitle>{{ preguntaNutrimental?.tema }}</mat-card-subtitle>
         </mat-card-header>
+
+        <!-- Barra de progreso -->
+        <mat-progress-bar
+          mode="determinate"
+          [value]="(preguntaActualNutrimental / TOTAL_PREGUNTAS_NUTRIMENTAL) * 100"
+          class="progress-bar">
+        </mat-progress-bar>
+
         <mat-card-content>
           <h3 class="question-text">{{ preguntaNutrimental?.pregunta }}</h3>
 
@@ -67,46 +75,38 @@
               [value]="i"
               [disabled]="respuestaEnviada"
               class="option-button"
-            >
+              [class.correct-option]="respuestaEnviada && i === preguntaNutrimental?.respuestaCorrecta"
+              [class.wrong-option]="respuestaEnviada && i === respuestaSeleccionada && !esRespuestaCorrecta">
               {{ opcion }}
             </mat-radio-button>
           </mat-radio-group>
 
-          <div
-            *ngIf="respuestaEnviada"
-            class="feedback"
+          <div *ngIf="respuestaEnviada" class="feedback"
             [class.correct]="esRespuestaCorrecta"
-            [class.incorrect]="!esRespuestaCorrecta"
-          >
+            [class.incorrect]="!esRespuestaCorrecta">
             <mat-icon>{{ esRespuestaCorrecta ? 'check_circle' : 'cancel' }}</mat-icon>
-            <p>{{ esRespuestaCorrecta ? '¡Correcto! +10 puntos' : 'Incorrecto' }}</p>
+            <p><strong>{{ esRespuestaCorrecta ? '¡Correcto! +10 pts' : 'Incorrecto' }}</strong></p>
             <p class="explanation">{{ preguntaNutrimental?.explicacion }}</p>
           </div>
         </mat-card-content>
+
         <mat-card-actions>
-          <button
-            mat-raised-button
-            color="primary"
+          <button mat-raised-button color="primary"
             (click)="enviarRespuestaNutrimental()"
-            [disabled]="respuestaSeleccionada === null || respuestaEnviada"
-          >
+            [disabled]="respuestaSeleccionada === null || respuestaEnviada">
             Responder
           </button>
-          <button
-            *ngIf="respuestaEnviada"
-            mat-raised-button
-            color="accent"
-            (click)="terminarNivelNutrimental()"
-          >
-            Finalizar Nivel
+          <button *ngIf="respuestaEnviada" mat-raised-button color="accent"
+            (click)="siguientePreguntaNutrimental()">
+            {{ preguntaActualNutrimental < TOTAL_PREGUNTAS_NUTRIMENTAL - 1 ? 'Siguiente pregunta' : 'Finalizar nivel' }}
           </button>
         </mat-card-actions>
       </mat-card>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════════════
-         RETO 7 DÍAS — 1 registro por nivel/día
-    ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- ════════════════════════════════════════════════════════
+         RETO 7 DÍAS — 1 registro completo por nivel/día
+    ════════════════════════════════════════════════════════ -->
     <div *ngIf="esReto7Dias()" class="reto7dias-game">
       <mat-card class="diary-card">
         <mat-card-header>
@@ -117,7 +117,6 @@
         </mat-card-header>
         <mat-card-content>
           <h3>Registra tus alimentos del día:</h3>
-
           <div class="food-groups">
             <div class="food-item">
               <label>🍎 Frutas</label>
@@ -158,24 +157,19 @@
 
           <div class="notes">
             <label>Notas del día {{ nivelActual }}:</label>
-            <textarea
-              [(ngModel)]="notasReto"
-              rows="3"
-              placeholder="¿Cómo fue tu alimentación hoy? ¿Lograste tu meta del día?"
-            ></textarea>
+            <textarea [(ngModel)]="notasReto" rows="3"
+              placeholder="¿Cómo fue tu alimentación hoy? ¿Lograste tu meta del día?">
+            </textarea>
           </div>
 
           <div class="calories-estimate" *ngIf="calcularCalorias() > 0">
             <p><strong>Calorías estimadas:</strong> {{ calcularCalorias() }} kcal</p>
           </div>
 
-          <!-- Progreso de la semana -->
           <div class="week-progress">
-            <span *ngFor="let d of [1,2,3,4,5,6,7]"
-              class="day-dot"
+            <span *ngFor="let d of [1,2,3,4,5,6,7]" class="day-dot"
               [class.completed]="d < nivelActual"
-              [class.current]="d === nivelActual"
-            >
+              [class.current]="d === nivelActual">
               {{ d }}
             </span>
           </div>
@@ -189,25 +183,32 @@
       </mat-card>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════════════
-         COACH EXPRÉS — 1 pregunta aleatoria del nivel
-    ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- ════════════════════════════════════════════════════════
+         COACH EXPRÉS — 8 preguntas barajadas por nivel
+    ════════════════════════════════════════════════════════ -->
     <div *ngIf="esCoachExpres()" class="coach-game">
       <mat-card class="coach-card">
         <mat-card-header>
-          <mat-card-title>Nivel {{ nivelActual }} · Pregunta aleatoria</mat-card-title>
+          <mat-card-title>
+            Pregunta {{ preguntaCoachActual + 1 }} de {{ TOTAL_PREGUNTAS_COACH }}
+          </mat-card-title>
           <mat-card-subtitle>Etapa: {{ preguntaCoach?.etapa }}</mat-card-subtitle>
         </mat-card-header>
+
+        <!-- Barra de progreso -->
+        <mat-progress-bar
+          mode="determinate"
+          [value]="(preguntaCoachActual / TOTAL_PREGUNTAS_COACH) * 100"
+          class="progress-bar">
+        </mat-progress-bar>
+
         <mat-card-content>
           <h3 class="question-text">{{ preguntaCoach?.pregunta }}</h3>
 
           <div class="scale-group">
             <mat-radio-group [(ngModel)]="respuestaCoach" class="scale-options">
-              <mat-radio-button
-                *ngFor="let valor of [1, 2, 3, 4, 5]"
-                [value]="valor"
-                class="scale-option"
-              >
+              <mat-radio-button *ngFor="let valor of [1, 2, 3, 4, 5]"
+                [value]="valor" class="scale-option">
                 {{ valor }}
               </mat-radio-button>
             </mat-radio-group>
@@ -217,14 +218,12 @@
             </div>
           </div>
         </mat-card-content>
+
         <mat-card-actions>
-          <button
-            mat-raised-button
-            color="primary"
+          <button mat-raised-button color="primary"
             (click)="enviarRespuestaCoach()"
-            [disabled]="respuestaCoach === null"
-          >
-            Finalizar Nivel
+            [disabled]="respuestaCoach === null">
+            {{ preguntaCoachActual < TOTAL_PREGUNTAS_COACH - 1 ? 'Siguiente' : 'Finalizar nivel' }}
           </button>
         </mat-card-actions>
       </mat-card>
@@ -273,9 +272,7 @@
         </div>
       </mat-card-content>
       <mat-card-actions>
-        <button mat-raised-button color="primary" (click)="continuar()">
-          Continuar
-        </button>
+        <button mat-raised-button color="primary" (click)="continuar()">Continuar</button>
       </mat-card-actions>
     </mat-card>
   </div>
