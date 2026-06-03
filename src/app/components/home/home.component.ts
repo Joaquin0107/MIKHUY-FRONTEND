@@ -67,7 +67,7 @@ export class HomeComponent {
     </div>
   `,
   styles: [`
-    .policy-dialog { font-family: 'Poppins', sans-serif; padding: 8px 16px 0; }
+    .policy-dialog { font-family: 'Poppins', sans-serif; padding: 20px; }
     h2 { display: flex; align-items: center; gap: 0.5rem; color: #48a3f3; font-weight: 600; font-size: 1.1rem; margin: 0; }
     h3 { color: #333; font-size: 0.92rem; font-weight: 600; margin: 1.1rem 0 0.3rem; }
     p  { font-size: 0.88rem; color: #555; line-height: 1.6; margin: 0; }
@@ -117,7 +117,7 @@ export class TermsDialog {}
     </div>
   `,
   styles: [`
-    .policy-dialog { font-family: 'Poppins', sans-serif; padding: 8px 16px 0; }
+    .policy-dialog { font-family: 'Poppins', sans-serif; padding: 20px; }
     h2 { display: flex; align-items: center; gap: 0.5rem; color: #48a3f3; font-weight: 600; font-size: 1.1rem; margin: 0; }
     h3 { color: #333; font-size: 0.92rem; font-weight: 600; margin: 1.1rem 0 0.3rem; }
     p  { font-size: 0.88rem; color: #555; line-height: 1.6; margin: 0; }
