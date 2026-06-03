@@ -242,8 +242,8 @@ import { MatBadgeModule } from '@angular/material/badge';
     .pod-3 { order: 3; }
     .pod.mi-pod { box-shadow: 0 0 0 3px #42a5f5; }
 
-    .pod-trophy { font-size: 28px; }
-    .pod-1 .pod-trophy { font-size: 36px; }
+    .pod-trophy { display: flex; justify-content: center; }
+    .pod-1 .pod-trophy { }
 
     .pod-avatar {
       width: 40px; height: 40px; border-radius: 50%;
@@ -271,6 +271,7 @@ import { MatBadgeModule } from '@angular/material/badge';
     .rk-scroll-area {
       overflow-y: auto;
       flex: 1;
+      max-height: 200px;
       padding: 0.875rem 1.5rem;
       display: flex;
       flex-direction: column;
