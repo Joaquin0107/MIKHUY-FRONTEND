@@ -219,7 +219,6 @@ import { MatBadgeModule } from '@angular/material/badge';
       /* ── Wrap ────────────────────────────────────────────────────────────── */
       .rk-wrap {
         font-family: 'Poppins', sans-serif;
-        width: 550px;
         max-width: 100%;
         display: flex;
         flex-direction: column;
