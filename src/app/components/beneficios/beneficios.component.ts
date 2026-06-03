@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
+import { FormsModule } from '@angular/forms';
 import {
   MatDialogModule,
   MatDialog,
@@ -42,11 +43,12 @@ import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.c
     MatIconModule,
     MatCardModule,
     MatBadgeModule,
+    FormsModule,
     MatMenuModule,
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
-    FloatingChatbotComponent
+    FloatingChatbotComponent,
   ],
   templateUrl: './beneficios.component.html',
   styleUrls: ['./beneficios.component.css'],
@@ -68,7 +70,7 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private beneficioService: BeneficioService,
     private canjeService: CanjeService,
-    private studentService: StudentService
+    private studentService: StudentService,
   ) {}
 
   ngOnInit(): void {
@@ -144,8 +146,12 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
       this.filteredBeneficios = this.beneficios.filter(
         (b) =>
           b.nombre.toLowerCase().includes(query) ||
-          b.categoria.toLowerCase().includes(query)
+          b.categoria.toLowerCase().includes(query),
       );
+    }
+    // Preservar orden activo después de filtrar
+    if (this.sortOrder !== 'none') {
+      this.sortBeneficios();
     }
   }
 
@@ -156,7 +162,7 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
     if (!this.canCanjear(beneficio)) {
       this.showMessage(
         `Necesitas ${beneficio.puntosRequeridos} pts. Tienes ${this.studentPoints} pts`,
-        'warning'
+        'warning',
       );
       return;
     }
@@ -194,7 +200,7 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
         next: (canje) => {
           this.showMessage(
             `¡Canje exitoso! Has canjeado ${cantidad} ${beneficio.nombre}`,
-            'success'
+            'success',
           );
 
           this.studentService
@@ -233,8 +239,8 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
       type === 'success'
         ? 'snackbar-success'
         : type === 'error'
-        ? 'snackbar-error'
-        : 'snackbar-warning';
+          ? 'snackbar-error'
+          : 'snackbar-warning';
 
     this.snackBar.open(message, 'Cerrar', {
       duration: 4000,
@@ -268,6 +274,22 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
   onImageError(event: Event): void {
     const target = event.target as HTMLImageElement;
     target.src = 'assets/images/placeholder-beneficio.jpg';
+  }
+
+  // Propiedad nueva
+  sortOrder: 'asc' | 'desc' | 'none' = 'none';
+
+  // Método nuevo
+  sortBeneficios(): void {
+    if (this.sortOrder === 'none') {
+      this.filteredBeneficios = [...this.beneficios];
+    } else {
+      this.filteredBeneficios = [...this.filteredBeneficios].sort((a, b) =>
+        this.sortOrder === 'asc'
+          ? a.puntosRequeridos - b.puntosRequeridos
+          : b.puntosRequeridos - a.puntosRequeridos,
+      );
+    }
   }
 }
 
@@ -355,7 +377,7 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
       </div>
     </div>
   `,
-  
+
   styles: [
     `
       .canje-dialog {
@@ -515,19 +537,19 @@ export class CanjeDialog implements OnInit {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<CanjeDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
   ) {}
 
   ngOnInit(): void {
     const maxPorStock = this.data.beneficio.stock || 1;
     const maxPorPuntos = Math.floor(
-      this.data.puntosDisponibles / this.data.beneficio.puntosRequeridos
+      this.data.puntosDisponibles / this.data.beneficio.puntosRequeridos,
     );
     const maxCantidad = Math.min(maxPorStock, maxPorPuntos, 5);
 
     this.cantidadesDisponibles = Array.from(
       { length: maxCantidad },
-      (_, i) => i + 1
+      (_, i) => i + 1,
     );
 
     this.canjeForm = this.fb.group({

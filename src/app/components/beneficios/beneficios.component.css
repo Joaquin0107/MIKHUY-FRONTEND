@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap");
 
 .beneficios-container {
   min-height: 100vh;
   background: #f8f9fa;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   padding-bottom: 2rem;
 }
 
@@ -71,7 +71,8 @@
   font-weight: 500;
 }
 
-.games-btn, .benefits-btn {
+.games-btn,
+.benefits-btn {
   height: 48px !important;
   padding: 0 1.5rem !important;
   border-radius: 24px !important;
@@ -81,16 +82,18 @@
   letter-spacing: 0.5px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
   transition: all 0.3s !important;
-  background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%) !important;
+  background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%) !important;
   color: white !important;
 }
 
-.games-btn:hover, .benefits-btn:hover {
+.games-btn:hover,
+.benefits-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(72, 163, 243, 0.3) !important;
 }
 
-.games-btn mat-icon, .benefits-btn mat-icon {
+.games-btn mat-icon,
+.benefits-btn mat-icon {
   margin-right: 0.5rem;
 }
 
@@ -106,7 +109,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  background: linear-gradient(135deg, #ffd700 0%, #ffa500 100%);
   padding: 0.5rem 1.25rem;
   border-radius: 24px;
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
@@ -141,7 +144,7 @@
 
 .icon-btn:hover {
   background: #f8f9fa;
-  border-color: #48A3F3;
+  border-color: #48a3f3;
 }
 
 .icon-btn mat-icon {
@@ -149,7 +152,7 @@
 }
 
 .notifications-btn mat-icon {
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .notification-menu {
@@ -213,7 +216,7 @@
 }
 
 .search-bar mat-icon {
-  color: #48A3F3;
+  color: #48a3f3;
 }
 
 .search-bar input {
@@ -221,7 +224,42 @@
   border: none;
   outline: none;
   font-size: 1rem;
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
+}
+
+.sort-divider {
+  width: 1px;
+  height: 24px;
+  background: #e0e0e0;
+  flex-shrink: 0;
+}
+
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.sort-icon {
+  color: #48a3f3;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.sort-select {
+  border: none;
+  outline: none;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.9rem;
+  color: #555;
+  background: transparent;
+  cursor: pointer;
+}
+
+.sort-select:focus {
+  color: #48a3f3;
 }
 
 /* Beneficios Grid */
@@ -278,8 +316,13 @@
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 mat-card-content {
@@ -300,7 +343,7 @@ mat-card-content {
 }
 
 .puntos {
-  color: #FFD700;
+  color: #ffd700;
   font-weight: 700;
   font-size: 1.2rem;
 }
@@ -312,7 +355,7 @@ mat-card-actions {
 
 .canjear-btn {
   width: 100%;
-  background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%) !important;
+  background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%) !important;
   color: white !important;
   font-weight: 600 !important;
   transition: all 0.3s !important;
@@ -357,7 +400,7 @@ mat-card-actions {
   right: 2rem;
   width: 70px !important;
   height: 70px !important;
-  background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%) !important;
+  background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%) !important;
   box-shadow: 0 6px 20px rgba(72, 163, 243, 0.4) !important;
   transition: all 0.3s !important;
   animation: pulse-chatbot 2s infinite;
@@ -377,7 +420,8 @@ mat-card-actions {
 }
 
 @keyframes pulse-chatbot {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -391,7 +435,8 @@ mat-card-actions {
     flex: auto;
   }
 
-  .games-btn, .benefits-btn {
+  .games-btn,
+  .benefits-btn {
     padding: 0 1rem !important;
     font-size: 0.85rem !important;
   }

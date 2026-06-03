@@ -56,18 +56,31 @@
   </header>
 
   <!-- Search Bar -->
-  <div class="search-section">
-    <div class="search-bar">
-      <mat-icon>search</mat-icon>
-      <input type="text" 
-             placeholder="Buscar beneficios..." 
-             [value]="searchQuery"
-             (input)="searchQuery=$any($event.target).value; searchBeneficios()">
-      <button mat-icon-button *ngIf="searchQuery" (click)="searchQuery=''; searchBeneficios()">
-        <mat-icon>close</mat-icon>
-      </button>
+<div class="search-section">
+  <div class="search-bar">
+    <mat-icon>search</mat-icon>
+    <input type="text"
+           placeholder="Buscar beneficios..."
+           [value]="searchQuery"
+           (input)="searchQuery=$any($event.target).value; searchBeneficios()">
+    <button mat-icon-button *ngIf="searchQuery" (click)="searchQuery=''; searchBeneficios()">
+      <mat-icon>close</mat-icon>
+    </button>
+
+    <!-- Separador visual -->
+    <div class="sort-divider"></div>
+
+    <!-- Control de ordenamiento -->
+    <div class="sort-control">
+      <mat-icon class="sort-icon">sort</mat-icon>
+      <select [(ngModel)]="sortOrder" (change)="sortBeneficios()" class="sort-select">
+        <option value="none">Ordenar</option>
+        <option value="asc">Menor pts primero</option>
+        <option value="desc">Mayor pts primero</option>
+      </select>
     </div>
   </div>
+</div>
 
   <!-- Loading Spinner -->
   <div class="loading-container" *ngIf="isLoading">
