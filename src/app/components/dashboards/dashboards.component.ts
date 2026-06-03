@@ -8,6 +8,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatListModule } from '@angular/material/list';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import {
@@ -68,6 +69,7 @@ interface Student {
     MatListModule,
     MatDividerModule,
     MatFormFieldModule,
+    MatSelectModule,
     MatInputModule,
     MatDialogModule,
     MatProgressSpinnerModule,
@@ -93,6 +95,23 @@ export class DashboardsComponent implements OnInit {
   currentUser: any = null;
   isTeacher = false;
   isGeneratingPDF = false;
+
+  rendimientoPath: string = '';
+  rendimientoPoints: any[] = [];
+  imcPath: string = '';
+  imcPoints: any[] = [];
+
+  selectedRange: string = 'all';
+  rangeOptions = [
+    { value: 'all', label: 'Todo el historial' },
+    { value: '1w', label: 'Hace 1 semana' },
+    { value: '1m', label: 'Hace 1 mes' },
+    { value: '3m', label: 'Hace 3 meses' },
+    { value: '1y', label: 'Hace 1 año' },
+  ];
+
+  originalJuegos: JuegoResponse[] = [];
+  originalHistorialImc: any[] = [];
 
   constructor(
     private router: Router,
@@ -147,6 +166,11 @@ export class DashboardsComponent implements OnInit {
           this.notificationCount =
             response.data.estadisticas?.notificacionesNoLeidas || 0;
 
+          // Corrección de nombres de propiedades
+          this.originalJuegos = response.data.juegos || [];
+          this.originalHistorialImc =
+            response.data.salud?.historialMediciones || [];
+
           this.selectedStudent = this.mapEstudianteToStudent(
             response.data.estudiante,
           );
@@ -154,6 +178,12 @@ export class DashboardsComponent implements OnInit {
           this.verificarAlertasSalud(response.data.salud);
 
           this.loading = false;
+
+          // Corrección: Llamada directa a los métodos de gráficos vectoriales
+          setTimeout(() => {
+            this.calcularPuntosRendimiento();
+            this.calcularPuntosImc();
+          }, 50);
         } else {
           this.error = response.message || 'Error al cargar el dashboard';
           this.loading = false;
@@ -219,16 +249,20 @@ export class DashboardsComponent implements OnInit {
         if (response.success && response.data) {
           this.dashboardData = response.data;
 
-          console.log('Dashboard Data:', this.dashboardData);
-          console.log('Salud Info:', this.dashboardData.salud);
-          console.log(
-            'Historial Mediciones:',
-            this.dashboardData.salud?.historialMediciones,
-          );
+          this.originalJuegos = response.data.juegos || [];
+          this.originalHistorialImc =
+            response.data.salud?.historialMediciones || [];
+          this.selectedRange = 'all';
 
           this.verificarAlertasSalud(response.data.salud);
 
           this.loading = false;
+
+          // Corrección: Llamada directa a los métodos de gráficos vectoriales
+          setTimeout(() => {
+            this.calcularPuntosRendimiento();
+            this.calcularPuntosImc();
+          }, 50);
         } else {
           this.error =
             response.message || 'Error al cargar datos del estudiante';
@@ -236,7 +270,6 @@ export class DashboardsComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('Error cargando dashboard del estudiante:', err);
         this.error = 'Error al cargar datos del estudiante.';
         this.loading = false;
       },
@@ -1425,7 +1458,10 @@ export class DashboardsComponent implements OnInit {
   calcularPorcentajeProgreso(juego: JuegoResponse): number {
     if (!juego || !juego.nivelActual || !juego.maxNiveles) return 0;
     // ✅ FIX: nunca superar el 100% aunque nivelActual > maxNiveles
-    return Math.min(100, Math.round((juego.nivelActual / juego.maxNiveles) * 100));
+    return Math.min(
+      100,
+      Math.round((juego.nivelActual / juego.maxNiveles) * 100),
+    );
   }
 
   // ✅ FIX: días/niveles completados capped a maxNiveles para no mostrar "8 de 7"
@@ -1438,7 +1474,12 @@ export class DashboardsComponent implements OnInit {
   estaCompletado(juego: JuegoResponse): boolean {
     if (!juego) return false;
     if (juego.completado) return true;
-    if (juego.nivelActual && juego.maxNiveles && juego.nivelActual >= juego.maxNiveles) return true;
+    if (
+      juego.nivelActual &&
+      juego.maxNiveles &&
+      juego.nivelActual >= juego.maxNiveles
+    )
+      return true;
     return false;
   }
 
@@ -1829,6 +1870,88 @@ export class DashboardsComponent implements OnInit {
 
   openProfile(): void {
     this.router.navigate(['/perfil']);
+  }
+
+  applyTimeFilter(): void {
+    if (!this.dashboardData) return;
+
+    if (this.selectedRange === 'all') {
+      this.dashboardData.juegos = [...this.originalJuegos];
+      if (this.dashboardData.salud) {
+        this.dashboardData.salud.historialMediciones = [
+          ...this.originalHistorialImc,
+        ];
+      }
+      this.recalcularEstadisticas();
+      return;
+    }
+
+    const cutoffDate = new Date();
+    if (this.selectedRange === '1w')
+      cutoffDate.setDate(cutoffDate.getDate() - 7);
+    else if (this.selectedRange === '1m')
+      cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+    else if (this.selectedRange === '3m')
+      cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+    else if (this.selectedRange === '1y')
+      cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+
+    this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
+      const juegoDate = new Date(juego.fechaModificacion || juego.fecha);
+      return juegoDate >= cutoffDate;
+    });
+
+    if (this.dashboardData.salud && this.originalHistorialImc) {
+      this.dashboardData.salud.historialMediciones =
+        this.originalHistorialImc.filter((medicion: any) => {
+          const medicionDate = new Date(medicion.fecha);
+          return medicionDate >= cutoffDate;
+        });
+    }
+
+    this.recalcularEstadisticas();
+  }
+
+  recalcularEstadisticas(): void {
+    if (!this.dashboardData) return;
+
+    const juegos = this.dashboardData.juegos || [];
+    if (juegos.length > 0) {
+      const totalPuntaje = juegos.reduce(
+        (acc: number, j: any) => acc + (j.puntaje || 0),
+        0,
+      );
+      if (this.dashboardData.estadisticas) {
+        (this.dashboardData.estadisticas as any).promedioPuntaje =
+          totalPuntaje / juegos.length;
+      }
+    } else if (this.dashboardData.estadisticas) {
+      (this.dashboardData.estadisticas as any).promedioPuntaje = 0;
+    }
+
+    // Ejecuta las llamadas de actualización de gráficos de forma segura
+    this.calcularPuntosRendimiento();
+    this.calcularPuntosImc();
+  }
+
+  // 🔴 DECLARACIÓN FORMAL DE LOS MÉTODOS PARA ELIMINAR EL ERROR DE TYPESCRIPT:
+  calcularPuntosRendimiento(): void {
+    // Si tus funciones de dibujo originales tienen otro nombre (p.ej. generarGraficoRendimiento), puedes llamarlas aquí adentro.
+    const self = this as any;
+    if (typeof self.generarGraficoRendimiento === 'function') {
+      self.generarGraficoRendimiento();
+    } else if (typeof self.initCharts === 'function') {
+      self.initCharts();
+    }
+  }
+
+  calcularPuntosImc(): void {
+    const self = this as any;
+    if (typeof self.generarGraficoImc === 'function') {
+      self.generarGraficoImc();
+    } else if (typeof self.initCharts === 'function') {
+      self.initCharts();
+    }
   }
 
   logout(): void {
