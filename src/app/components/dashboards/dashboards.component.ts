@@ -106,13 +106,12 @@ export class DashboardsComponent implements OnInit {
   selectedRange: string = 'all';
   originalJuegos: JuegoResponse[] = [];
   originalHistorialImc: any[] = [];
-  rangeOptions = [
-    { value: 'all', label: 'Todo el historial' },
-    { value: '1w', label: 'Hace 1 semana' },
-    { value: '1m', label: 'Hace 1 mes' },
-    { value: '3m', label: 'Hace 3 meses' },
-    { value: '1y', label: 'Hace 1 año' },
-  ];
+
+  // ---- historial por fecha ----
+  showCalendar: boolean = false;
+  selectedDate: string = '';          // 'YYYY-MM-DD'
+  selectedDateLabel: string = '';     // texto legible en el botón
+  todayStr: string = new Date().toISOString().split('T')[0];
 
   constructor(
     private router: Router,
@@ -249,6 +248,10 @@ export class DashboardsComponent implements OnInit {
           this.originalJuegos = response.data.juegos || [];
           this.originalHistorialImc = response.data.salud?.historialMediciones || [];
           this.selectedRange = 'all'; // Reseteamos el selector
+          // Resetear filtro de calendario
+          this.selectedDate = '';
+          this.selectedDateLabel = '';
+          this.showCalendar = false;
 
           this.verificarAlertasSalud(response.data.salud);
           this.loading = false;
@@ -1865,10 +1868,83 @@ export class DashboardsComponent implements OnInit {
     this.router.navigate(['/perfil']);
   }
 
+  // ─── CALENDARIO / HISTORIAL POR FECHA ────────────────────────────────────
+
+  toggleCalendar(): void {
+    this.showCalendar = !this.showCalendar;
+  }
+
+  onDateSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const dateStr = input.value;   // 'YYYY-MM-DD'
+    if (!dateStr) return;
+
+    this.selectedDate = dateStr;
+
+    // Etiqueta legible para el botón
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    this.selectedDateLabel = d.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+
+    this.showCalendar = false;
+    this.applyDateFilter(dateStr);
+  }
+
+  clearDateFilter(): void {
+    this.selectedDate = '';
+    this.selectedDateLabel = '';
+    this.showCalendar = false;
+    this.selectedRange = 'all';
+
+    if (!this.dashboardData) return;
+
+    // Restaurar data completa desde los respaldos
+    this.dashboardData.juegos = [...this.originalJuegos];
+    if (this.dashboardData.salud) {
+      this.dashboardData.salud.historialMediciones = [...this.originalHistorialImc];
+    }
+    this.recalcularEstadisticas();
+  }
+
+  /**
+   * Filtra juegos y mediciones para mostrar solo los datos
+   * que existían HASTA el día seleccionado (inclusive).
+   * Así se ve el "estado" del historial en esa fecha exacta.
+   */
+  applyDateFilter(dateStr: string): void {
+    if (!this.dashboardData) return;
+
+    const [year, month, day] = dateStr.split('-').map(Number);
+    // Fin del día seleccionado: 23:59:59.999
+    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+
+    // Juegos jugados HASTA esa fecha
+    this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
+      const raw = juego.fechaModificacion ?? juego.fecha ?? juego.updatedAt ?? juego.createdAt;
+      if (!raw) return true;          // sin fecha → siempre visible
+      return new Date(raw) <= endOfDay;
+    });
+
+    // Mediciones de salud/IMC HASTA esa fecha
+    if (this.dashboardData.salud && this.originalHistorialImc) {
+      this.dashboardData.salud.historialMediciones = this.originalHistorialImc.filter((m: any) => {
+        const raw = m.fechaRegistro ?? m.fecha ?? m.createdAt;
+        if (!raw) return true;
+        return new Date(raw) <= endOfDay;
+      });
+    }
+
+    this.recalcularEstadisticas();
+  }
+
+  // Mantener por compatibilidad (ya no se usa desde la UI, pero evita errores si algo lo llama)
   applyTimeFilter(): void {
     if (!this.dashboardData) return;
 
-    // Si elige 'all', restauramos la data completa desde las copias de respaldo
     if (this.selectedRange === 'all') {
       this.dashboardData.juegos = [...this.originalJuegos];
       if (this.dashboardData.salud) {
@@ -1884,13 +1960,11 @@ export class DashboardsComponent implements OnInit {
     else if (this.selectedRange === '3m') cutoffDate.setMonth(cutoffDate.getMonth() - 3);
     else if (this.selectedRange === '1y') cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
 
-    // Filtramos el arreglo de juegos en memoria
     this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
       const juegoDate = new Date(juego.fechaModificacion || juego.fecha);
       return juegoDate >= cutoffDate;
     });
 
-    // Filtramos el historial de mediciones IMC en memoria
     if (this.dashboardData.salud && this.originalHistorialImc) {
       this.dashboardData.salud.historialMediciones = this.originalHistorialImc.filter((medicion: any) => {
         const medicionDate = new Date(medicion.fecha);

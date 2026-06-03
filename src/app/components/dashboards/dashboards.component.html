@@ -140,23 +140,46 @@
           </div>
         </div>
         <div class="profile-actions">
-          <mat-form-field
-            appearance="outline"
-            style="min-width: 200px; margin-bottom: 15px; display: block"
-          >
-            <mat-label>Filtrar historial</mat-label>
-            <mat-select
-              [(value)]="selectedRange"
-              (selectionChange)="applyTimeFilter()"
-            >
-              <mat-option
-                *ngFor="let option of rangeOptions"
-                [value]="option.value"
+
+          <!-- ===== BOTÓN VER HISTORIAL + CALENDARIO ===== -->
+          <div class="history-filter-wrapper">
+            <button mat-raised-button class="history-btn" (click)="toggleCalendar()">
+              <mat-icon>history</mat-icon>
+              <span>{{ selectedDateLabel ? selectedDateLabel : 'Ver historial' }}</span>
+              <mat-icon class="arrow-icon">{{ showCalendar ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+
+            <div class="calendar-panel" *ngIf="showCalendar">
+              <div class="calendar-panel-header">
+                <div class="calendar-panel-title">
+                  <mat-icon>calendar_today</mat-icon>
+                  <span>Ver datos hasta una fecha</span>
+                </div>
+                <button mat-icon-button class="cal-close-btn" (click)="toggleCalendar()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </div>
+              <p class="calendar-hint">
+                Al seleccionar una fecha verás el historial tal como estaba <strong>hasta ese día</strong>.
+              </p>
+              <input
+                type="date"
+                class="calendar-native-input"
+                [value]="selectedDate"
+                [max]="todayStr"
+                (change)="onDateSelected($event)"
+              />
+              <button
+                mat-stroked-button
+                class="clear-filter-btn"
+                *ngIf="selectedDate"
+                (click)="clearDateFilter()"
               >
-                {{ option.label }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+                <mat-icon>clear</mat-icon> Ver todo el historial
+              </button>
+            </div>
+          </div>
+          <!-- ===== FIN BOTÓN VER HISTORIAL ===== -->
 
           <button
             mat-raised-button
