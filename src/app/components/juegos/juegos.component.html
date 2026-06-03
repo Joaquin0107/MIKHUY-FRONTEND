@@ -13,19 +13,16 @@
     </div>
 
     <div class="header-right">
-      <!-- Beneficios/Recompensas Button -->
       <button mat-raised-button class="benefits-btn" (click)="navigateToBenefits()">
         <mat-icon>card_giftcard</mat-icon>
         BENEFICIOS
       </button>
 
-      <!-- Points Display -->
       <div class="points-display">
         <mat-icon class="points-icon">stars</mat-icon>
-        <span class="points-value">{{studentPoints}}</span>
+        <span class="points-value">{{ studentPoints }}</span>
       </div>
 
-      <!-- Menu -->
       <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
         <mat-icon>menu</mat-icon>
       </button>
@@ -43,46 +40,72 @@
     </div>
   </header>
 
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-icon class="loading-icon">hourglass_empty</mat-icon>
+    <p>Cargando juegos...</p>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && juegos.length === 0">
+    <mat-icon>sports_esports</mat-icon>
+    <h2>No hay juegos disponibles</h2>
+    <p>Vuelve pronto para nuevos contenidos.</p>
+  </div>
+
   <!-- Games Grid -->
-  <div class="games-grid">
+  <div class="games-grid" *ngIf="!loading && juegos.length > 0">
     <mat-card *ngFor="let juego of juegos" class="game-card">
+
+      <!-- Imagen -->
       <div class="card-image">
         <img [src]="juego.image" [alt]="juego.title" (error)="onImageError($event)">
-        <div class="categoria-badge">{{juego.categoria}}</div>
+        <div class="categoria-badge">{{ juego.categoria }}</div>
       </div>
-      
+
+      <!-- Contenido -->
       <mat-card-content>
-        <h2>{{juego.title}}</h2>
-        <p class="subtitle">{{juego.subtitle}}</p>
-        <p class="description">{{juego.description}}</p>
-        
+        <h2>{{ juego.title }}</h2>
+        <p class="subtitle">{{ juego.subtitle }}</p>
+        <p class="description">{{ juego.description }}</p>
+
         <div class="progress-section">
           <div class="progress-info">
-            <span>Nivel {{juego.nivelActual}}/{{juego.maxNiveles}}</span>
-            <span class="puntos">{{juego.puntosGanados}} pts</span>
+            <span>Nivel {{ juego.nivelActual }}/{{ juego.maxNiveles }}</span>
+            <span class="puntos">{{ juego.puntosGanados }} pts</span>
           </div>
-          <mat-progress-bar 
-            mode="determinate" 
+          <mat-progress-bar
+            mode="determinate"
             [value]="getProgressPercent(juego)"
             color="primary">
           </mat-progress-bar>
         </div>
       </mat-card-content>
 
+      <!-- Acciones -->
       <mat-card-actions>
-        <button mat-button (click)="verPosiciones(juego)">
+        <!-- Posiciones -->
+        <button mat-button class="action-btn-posiciones" (click)="verPosiciones(juego)">
           <mat-icon>leaderboard</mat-icon>
           Posiciones
         </button>
-        <button mat-raised-button color="primary" (click)="jugar(juego)">
+
+        <!-- Instrucciones -->
+        <button mat-icon-button class="action-btn-instrucciones"
+          title="Ver instrucciones" (click)="verInstrucciones(juego)">
+          <mat-icon>help_outline</mat-icon>
+        </button>
+
+        <!-- Jugar -->
+        <button mat-raised-button color="primary" class="action-btn-jugar"
+          (click)="jugar(juego)">
           <mat-icon>play_arrow</mat-icon>
           Jugar
         </button>
       </mat-card-actions>
+
     </mat-card>
   </div>
 
-  <!-- Floating Chatbot Button -->
-<app-floating-chatbot></app-floating-chatbot>
-
+  <app-floating-chatbot></app-floating-chatbot>
 </div>
