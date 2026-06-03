@@ -231,7 +231,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         display: flex;
         align-items: center;
         gap: 14px;
-        padding: 1.25rem 1.5rem;
+        padding: 40px 3.5rem;
         background: linear-gradient(135deg, #ffb74d 0%, #f9a825 100%);
         margin: -24px -24px 0 -24px;
         flex-shrink: 0;
