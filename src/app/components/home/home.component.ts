@@ -30,6 +30,9 @@ export class HomeComponent {
   }
 }
 
+/* ==========================================================================
+   1. COMPONENTE: TÉRMINOS Y CONDICIONES (CORREGIDO)
+   ========================================================================== */
 @Component({
   selector: 'terms-dialog',
   standalone: true,
@@ -67,18 +70,53 @@ export class HomeComponent {
     </mat-dialog-actions>
   `,
   styles: [`
-    :host { font-family: 'Poppins', sans-serif; display: flex; flex-direction: column; height: 100%; }
-    h2 { display: flex; align-items: center; gap: 0.5rem; color: #48a3f3; font-weight: 600; font-size: 1.1rem; margin: 0; padding: 20px 24px 10px; }
-    .policy-dialog { padding: 10px 24px 20px !important; }
-    .policy-actions { padding: 12px 24px 20px; display: flex; justify-content: flex-end; }
+    :host { 
+      font-family: 'Poppins', sans-serif; 
+      display: flex; 
+      flex-direction: column; 
+      max-height: 80vh; 
+      overflow: hidden; 
+    }
+    h2 { 
+      display: flex; 
+      align-items: center; 
+      gap: 0.5rem; 
+      color: #48a3f3; 
+      font-weight: 600; 
+      font-size: 1.1rem; 
+      margin: 0; 
+      padding: 24px 24px 12px; 
+    }
+    .policy-dialog { 
+      padding: 0 24px 12px !important; 
+      margin: 0;
+      overflow-y: auto; 
+    }
+    .policy-actions { 
+      padding: 16px 24px 24px; 
+      margin: 0;
+      display: flex; 
+      justify-content: flex-end; 
+      background-color: #ffffff; 
+    }
     h3 { color: #333; font-size: 0.92rem; font-weight: 600; margin: 1.1rem 0 0.3rem; }
     p  { font-size: 0.88rem; color: #555; line-height: 1.6; margin: 0; }
     .policy-intro { background: #f0f7ff; border-left: 3px solid #48a3f3; padding: 0.6rem 0.8rem; border-radius: 4px; margin-bottom: 0.5rem; }
-    .close-btn { background: linear-gradient(135deg, #48a3f3, #5bb3ff) !important; color: white !important; font-weight: 600 !important; border-radius: 20px !important; padding: 0 25px !important; }
+    .close-btn { 
+      background: linear-gradient(135deg, #48a3f3, #5bb3ff) !important; 
+      color: white !important; 
+      font-weight: 600 !important; 
+      border-radius: 24px !important; 
+      padding: 0 28px !important; 
+      height: 40px !important;
+    }
   `]
 })
 export class TermsDialog {}
 
+/* ==========================================================================
+   2. COMPONENTE: POLÍTICA DE PRIVACIDAD (CORREGIDO)
+   ========================================================================== */
 @Component({
   selector: 'privacy-dialog',
   standalone: true,
@@ -119,14 +157,46 @@ export class TermsDialog {}
     </mat-dialog-actions>
   `,
   styles: [`
-    :host { font-family: 'Poppins', sans-serif; display: flex; flex-direction: column; height: 100%; }
-    h2 { display: flex; align-items: center; gap: 0.5rem; color: #48a3f3; font-weight: 600; font-size: 1.1rem; margin: 0; padding: 20px 24px 10px; }
-    .policy-dialog { padding: 10px 24px 20px !important; }
-    .policy-actions { padding: 12px 24px 20px; display: flex; justify-content: flex-end; }
+    :host { 
+      font-family: 'Poppins', sans-serif; 
+      display: flex; 
+      flex-direction: column; 
+      max-height: 80vh; 
+      overflow: hidden; 
+    }
+    h2 { 
+      display: flex; 
+      align-items: center; 
+      gap: 0.5rem; 
+      color: #48a3f3; 
+      font-weight: 600; 
+      font-size: 1.1rem; 
+      margin: 0; 
+      padding: 24px 24px 12px; 
+    }
+    .policy-dialog { 
+      padding: 0 24px 12px !important; 
+      margin: 0;
+      overflow-y: auto; 
+    }
+    .policy-actions { 
+      padding: 16px 24px 24px; 
+      margin: 0;
+      display: flex; 
+      justify-content: flex-end; 
+      background-color: #ffffff; 
+    }
     h3 { color: #333; font-size: 0.92rem; font-weight: 600; margin: 1.1rem 0 0.3rem; }
     p  { font-size: 0.88rem; color: #555; line-height: 1.6; margin: 0; }
     .policy-intro { background: #f0f7ff; border-left: 3px solid #48a3f3; padding: 0.6rem 0.8rem; border-radius: 4px; margin-bottom: 0.5rem; }
-    .close-btn { background: linear-gradient(135deg, #48a3f3, #5bb3ff) !important; color: white !important; font-weight: 600 !important; border-radius: 20px !important; padding: 0 25px !important; }
+    .close-btn { 
+      background: linear-gradient(135deg, #48a3f3, #5bb3ff) !important; 
+      color: white !important; 
+      font-weight: 600 !important; 
+      border-radius: 24px !important; 
+      padding: 0 28px !important; 
+      height: 40px !important;
+    }
   `]
 })
 export class PrivacyDialog {}
