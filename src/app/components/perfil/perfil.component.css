@@ -248,6 +248,26 @@
   color: white;
 }
 
+.action-buttons-gap {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.analysis-btn {
+  background: white !important;
+  color: #48a3f3 !important;
+  font-weight: 600 !important;
+  border: 2px solid #48a3f3 !important;
+  transition: all 0.3s !important;
+}
+
+.analysis-btn:hover {
+  background: #e3f2fd !important;
+  transform: translateY(-2px);
+}
+
 .remove-avatar-btn {
   position: absolute;
   top: 5px;

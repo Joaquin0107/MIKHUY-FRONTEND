@@ -86,7 +86,7 @@ export class PerfilComponent implements OnInit {
     private perfilService: PerfilService,
     private studentService: StudentService,
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -125,6 +125,10 @@ export class PerfilComponent implements OnInit {
         this.loadPerfilData();
       }
     });
+  }
+
+  navigateToAnalysis(): void {
+    this.router.navigate(['/dashboards']);
   }
 
   loadEstudianteDataForTeacher(estudianteId: string): void {
@@ -166,7 +170,7 @@ export class PerfilComponent implements OnInit {
     console.log('📡 Cargando perfil del estudiante...');
     console.log(
       '🎟️ Token:',
-      localStorage.getItem('authToken') ? '✓ EXISTE' : '✗ NO EXISTE'
+      localStorage.getItem('authToken') ? '✓ EXISTE' : '✗ NO EXISTE',
     );
 
     this.loading = true;
@@ -206,7 +210,7 @@ export class PerfilComponent implements OnInit {
         if (error.status === 401) {
           this.showMessage(
             'Sesión expirada. Inicia sesión nuevamente.',
-            'error'
+            'error',
           );
           setTimeout(() => {
             this.authService.logout();
@@ -260,7 +264,7 @@ export class PerfilComponent implements OnInit {
   calcularDiasDesdeRegistro(): number {
     if (this.perfilData) {
       const fechaRegistro = new Date(
-        this.perfilData.fechaRegistro || Date.now()
+        this.perfilData.fechaRegistro || Date.now(),
       );
       const hoy = new Date();
       const diff = hoy.getTime() - fechaRegistro.getTime();
@@ -272,8 +276,8 @@ export class PerfilComponent implements OnInit {
   populateForm(data: EstudianteResponse): void {
     // Normalizar sección: si la BD guardó "Sección A" extraer solo "A"
     const seccionNorm = data.seccion
-      ? data.seccion.replace("Sección ", "").trim()
-      : "A";
+      ? data.seccion.replace('Sección ', '').trim()
+      : 'A';
     this.perfilForm.patchValue({
       firstName: data.nombres,
       lastName: data.apellidos,
@@ -295,7 +299,7 @@ export class PerfilComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       telefono: ['', [Validators.pattern(/^[0-9]{9}$/)]],
       peso: ['', [Validators.min(0.5), Validators.max(200)]],
-      talla: ['', [Validators.min(1.00), Validators.max(2.50)]],
+      talla: ['', [Validators.min(1.0), Validators.max(2.5)]],
       edad: ['', [Validators.min(11), Validators.max(17)]],
       grado: ['5to'],
       seccion: ['A'],
@@ -307,7 +311,7 @@ export class PerfilComponent implements OnInit {
         newPassword: ['', [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', Validators.required],
       },
-      { validators: this.passwordMatchValidator }
+      { validators: this.passwordMatchValidator },
     );
   }
 
@@ -352,7 +356,7 @@ export class PerfilComponent implements OnInit {
     if (!this.perfilForm.valid) {
       this.showMessage(
         'Por favor completa todos los campos requeridos',
-        'error'
+        'error',
       );
       return;
     }
@@ -362,11 +366,11 @@ export class PerfilComponent implements OnInit {
     console.log('🔐 Verificando autenticación...');
     console.log(
       '🎟️ Token en localStorage:',
-      localStorage.getItem('authToken') ? '✓' : '✗'
+      localStorage.getItem('authToken') ? '✓' : '✗',
     );
     console.log(
       '🎟️ Token en sessionStorage:',
-      sessionStorage.getItem('authToken') ? '✓' : '✗'
+      sessionStorage.getItem('authToken') ? '✓' : '✗',
     );
     console.log('🎟️ Token disponible:', token ? '✓ SÍ' : '✗ NO');
     if (!token) {
@@ -389,7 +393,8 @@ export class PerfilComponent implements OnInit {
 
     // Normalizar sección: si viene "Sección A" extraer solo "A"
     const seccionRaw = this.perfilForm.value.seccion as string;
-    const seccionNormalizada = seccionRaw?.replace('Sección ', '').trim() ?? seccionRaw;
+    const seccionNormalizada =
+      seccionRaw?.replace('Sección ', '').trim() ?? seccionRaw;
 
     const updateData: UpdateProfileRequest = {
       nombres: this.perfilForm.value.firstName,
@@ -401,19 +406,21 @@ export class PerfilComponent implements OnInit {
       edad: edadValue ? parseInt(edadValue) : undefined,
       peso: pesoValue ? parseFloat(pesoValue) : undefined,
       // ✅ FIX: talla ya está en metros (1.57), NO multiplicar por 100
-      talla: tallaValue ? parseFloat(parseFloat(tallaValue).toFixed(2)) : undefined,
+      talla: tallaValue
+        ? parseFloat(parseFloat(tallaValue).toFixed(2))
+        : undefined,
     };
 
     console.log('📦 Datos a enviar:', updateData);
     console.log(
       '👤 Modo:',
-      this.isViewingOwnProfile ? 'Propio perfil' : 'Perfil de estudiante'
+      this.isViewingOwnProfile ? 'Propio perfil' : 'Perfil de estudiante',
     );
 
     if (!this.isViewingOwnProfile && this.estudianteId) {
       console.log(
         '👨‍🏫 Profesor actualizando perfil del estudiante:',
-        this.estudianteId
+        this.estudianteId,
       );
 
       this.studentService
@@ -423,7 +430,7 @@ export class PerfilComponent implements OnInit {
             console.log('✅ Estudiante actualizado por profesor:', response);
             this.showMessage(
               'Perfil del estudiante actualizado exitosamente',
-              'success'
+              'success',
             );
             this.loading = false;
             this.loadEstudianteDataForTeacher(this.estudianteId!);
@@ -436,7 +443,7 @@ export class PerfilComponent implements OnInit {
             if (error.status === 401) {
               this.showMessage(
                 'Sesión expirada. Inicia sesión nuevamente.',
-                'error'
+                'error',
               );
               setTimeout(() => {
                 this.authService.logout();
@@ -448,7 +455,7 @@ export class PerfilComponent implements OnInit {
               this.showMessage(
                 error.error?.message ||
                   'Error al actualizar el perfil del estudiante',
-                'error'
+                'error',
               );
             }
             this.loading = false;
@@ -484,7 +491,7 @@ export class PerfilComponent implements OnInit {
             console.error('❌ ERROR 401: Token inválido o expirado');
             this.showMessage(
               'Sesión expirada. Inicia sesión nuevamente.',
-              'error'
+              'error',
             );
             setTimeout(() => {
               this.authService.logout();
@@ -496,12 +503,12 @@ export class PerfilComponent implements OnInit {
             console.error('❌ ERROR 0: No se pudo conectar con el servidor');
             this.showMessage(
               'No se pudo conectar con el servidor. Verifica tu conexión.',
-              'error'
+              'error',
             );
           } else {
             this.showMessage(
               error.error?.message || 'Error al actualizar el perfil',
-              'error'
+              'error',
             );
           }
           this.loading = false;
@@ -514,7 +521,7 @@ export class PerfilComponent implements OnInit {
     if (!this.seguridadForm.valid) {
       this.showMessage(
         'Por favor completa todos los campos correctamente',
-        'error'
+        'error',
       );
       return;
     }
@@ -548,7 +555,7 @@ export class PerfilComponent implements OnInit {
         console.error('❌ Error cambiando contraseña:', error);
         this.showMessage(
           error.error?.message || 'Error al cambiar la contraseña.',
-          'error'
+          'error',
         );
         this.loading = false;
       },

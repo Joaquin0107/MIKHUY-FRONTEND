@@ -78,7 +78,12 @@
               <mat-icon *ngIf="!student.avatar">account_circle</mat-icon>
             </div>
             <div class="student-info">
-              <h4 [matTooltip]="student.nombre + ' ' + student.apellido" matTooltipShowDelay="500">{{ student.nombre }} {{ student.apellido }}</h4>
+              <h4
+                [matTooltip]="student.nombre + ' ' + student.apellido"
+                matTooltipShowDelay="500"
+              >
+                {{ student.nombre }} {{ student.apellido }}
+              </h4>
               <p>{{ student.grado }} - Sección {{ student.seccion }}</p>
               <span class="points-badge"
                 >{{ student.puntosAcumulados || 0 }} pts</span
@@ -139,11 +144,19 @@
             mat-raised-button
             class="download-btn"
             (click)="descargarReporte()"
+            [disabled]="isGeneratingPDF"
           >
-            <mat-icon>download</mat-icon>
-            Descargar reporte
+            <mat-icon>{{
+              isGeneratingPDF ? "hourglass_empty" : "download"
+            }}</mat-icon>
+            {{ isGeneratingPDF ? "Generando..." : "Descargar reporte" }}
           </button>
-          <button mat-raised-button class="email-btn" (click)="enviarCorreo()">
+          <button
+            mat-raised-button
+            class="email-btn"
+            (click)="enviarCorreo()"
+            *ngIf="isTeacher"
+          >
             <mat-icon>email</mat-icon>
             Enviar por correo
           </button>
@@ -255,7 +268,9 @@
                     }}</mat-icon>
                     <div>
                       <strong>{{
-                        estaCompletado(nutrimental) ? "¡Completado!" : "En progreso"
+                        estaCompletado(nutrimental)
+                          ? "¡Completado!"
+                          : "En progreso"
                       }}</strong>
                       <span>{{
                         estaCompletado(nutrimental)
@@ -395,7 +410,9 @@
                   </div>
                   <div class="game-stat-item">
                     <mat-icon>{{
-                      estaCompletado(reto7dias) ? "check_circle" : "hourglass_empty"
+                      estaCompletado(reto7dias)
+                        ? "check_circle"
+                        : "hourglass_empty"
                     }}</mat-icon>
                     <span>{{
                       estaCompletado(reto7dias) ? "Completado" : "En progreso"
@@ -545,7 +562,9 @@
                       estaCompletado(coach) ? "check_circle" : "pending"
                     }}</mat-icon>
                     <span>{{
-                      estaCompletado(coach) ? "Evaluación completa" : "En evaluación"
+                      estaCompletado(coach)
+                        ? "Evaluación completa"
+                        : "En evaluación"
                     }}</span>
                   </div>
                 </div>
@@ -620,50 +639,148 @@
                 -->
                 <svg viewBox="0 0 200 105" class="gauge-svg">
                   <!-- Fondo gris -->
-                  <path d="M 25,90 A 75,75 0 0,1 175,90"
-                        fill="none" stroke="#EEEEEE" stroke-width="20" stroke-linecap="round"/>
+                  <path
+                    d="M 25,90 A 75,75 0 0,1 175,90"
+                    fill="none"
+                    stroke="#EEEEEE"
+                    stroke-width="20"
+                    stroke-linecap="round"
+                  />
                   <!-- Bajo peso (azul) 180°→225° -->
-                  <path d="M 25,90 A 75,75 0 0,1 46.97,36.97"
-                        fill="none" stroke="#42A5F5" stroke-width="18" stroke-linecap="round"/>
+                  <path
+                    d="M 25,90 A 75,75 0 0,1 46.97,36.97"
+                    fill="none"
+                    stroke="#42A5F5"
+                    stroke-width="18"
+                    stroke-linecap="round"
+                  />
                   <!-- Normal (verde) 225°→270° -->
-                  <path d="M 46.97,36.97 A 75,75 0 0,1 100,15"
-                        fill="none" stroke="#66BB6A" stroke-width="18" stroke-linecap="round"/>
+                  <path
+                    d="M 46.97,36.97 A 75,75 0 0,1 100,15"
+                    fill="none"
+                    stroke="#66BB6A"
+                    stroke-width="18"
+                    stroke-linecap="round"
+                  />
                   <!-- Sobrepeso (naranja) 270°→315° -->
-                  <path d="M 100,15 A 75,75 0 0,1 153.03,36.97"
-                        fill="none" stroke="#FFA726" stroke-width="18" stroke-linecap="round"/>
+                  <path
+                    d="M 100,15 A 75,75 0 0,1 153.03,36.97"
+                    fill="none"
+                    stroke="#FFA726"
+                    stroke-width="18"
+                    stroke-linecap="round"
+                  />
                   <!-- Obesidad (rojo) 315°→360° -->
-                  <path d="M 153.03,36.97 A 75,75 0 0,1 175,90"
-                        fill="none" stroke="#EF5350" stroke-width="18" stroke-linecap="round"/>
+                  <path
+                    d="M 153.03,36.97 A 75,75 0 0,1 175,90"
+                    fill="none"
+                    stroke="#EF5350"
+                    stroke-width="18"
+                    stroke-linecap="round"
+                  />
                   <!-- Separadores de zona -->
-                  <circle cx="46.97"  cy="36.97" r="2.5" fill="#fff" opacity="0.9"/>
-                  <circle cx="100"    cy="15"    r="2.5" fill="#fff" opacity="0.9"/>
-                  <circle cx="153.03" cy="36.97" r="2.5" fill="#fff" opacity="0.9"/>
+                  <circle
+                    cx="46.97"
+                    cy="36.97"
+                    r="2.5"
+                    fill="#fff"
+                    opacity="0.9"
+                  />
+                  <circle cx="100" cy="15" r="2.5" fill="#fff" opacity="0.9" />
+                  <circle
+                    cx="153.03"
+                    cy="36.97"
+                    r="2.5"
+                    fill="#fff"
+                    opacity="0.9"
+                  />
                   <!-- Aguja — misma fórmula que el PDF -->
-                  <g [attr.transform]="'rotate(' + getIMCAngle(stats.imcActual) + ')'">
+                  <g
+                    [attr.transform]="
+                      'rotate(' + getIMCAngle(stats.imcActual) + ')'
+                    "
+                  >
                     <!-- Sombra -->
-                    <line x1="100" y1="90" x2="158" y2="90"
-                          stroke="rgba(0,0,0,0.12)" stroke-width="3.5"
-                          stroke-linecap="round" transform="translate(1,1)"/>
+                    <line
+                      x1="100"
+                      y1="90"
+                      x2="158"
+                      y2="90"
+                      stroke="rgba(0,0,0,0.12)"
+                      stroke-width="3.5"
+                      stroke-linecap="round"
+                      transform="translate(1,1)"
+                    />
                     <!-- Aguja -->
-                    <line x1="100" y1="90" x2="158" y2="90"
-                          stroke="#2C3E50" stroke-width="2.5" stroke-linecap="round"/>
+                    <line
+                      x1="100"
+                      y1="90"
+                      x2="158"
+                      y2="90"
+                      stroke="#2C3E50"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                    />
                     <!-- Punta -->
-                    <circle cx="158" cy="90" r="3" fill="#2C3E50"/>
+                    <circle cx="158" cy="90" r="3" fill="#2C3E50" />
                     <!-- Pivote -->
-                    <circle cx="100" cy="90" r="7"   fill="#2C3E50"/>
-                    <circle cx="100" cy="90" r="4.5" fill="white"/>
-                    <circle cx="100" cy="90" r="2"   fill="#2C3E50"/>
+                    <circle cx="100" cy="90" r="7" fill="#2C3E50" />
+                    <circle cx="100" cy="90" r="4.5" fill="white" />
+                    <circle cx="100" cy="90" r="2" fill="#2C3E50" />
                   </g>
                   <!-- Etiquetas -->
-                  <text x="8"   y="92"  font-size="7" fill="#bbb" font-family="Poppins,sans-serif">0</text>
-                  <text x="28"  y="31"  font-size="7" fill="#bbb" font-family="Poppins,sans-serif">18.5</text>
-                  <text x="100" y="9"   font-size="7" fill="#bbb" font-family="Poppins,sans-serif" text-anchor="middle">25</text>
-                  <text x="172" y="31"  font-size="7" fill="#bbb" font-family="Poppins,sans-serif" text-anchor="end">30</text>
-                  <text x="193" y="92"  font-size="7" fill="#bbb" font-family="Poppins,sans-serif" text-anchor="end">40</text>
+                  <text
+                    x="8"
+                    y="92"
+                    font-size="7"
+                    fill="#bbb"
+                    font-family="Poppins,sans-serif"
+                  >
+                    0
+                  </text>
+                  <text
+                    x="28"
+                    y="31"
+                    font-size="7"
+                    fill="#bbb"
+                    font-family="Poppins,sans-serif"
+                  >
+                    18.5
+                  </text>
+                  <text
+                    x="100"
+                    y="9"
+                    font-size="7"
+                    fill="#bbb"
+                    font-family="Poppins,sans-serif"
+                    text-anchor="middle"
+                  >
+                    25
+                  </text>
+                  <text
+                    x="172"
+                    y="31"
+                    font-size="7"
+                    fill="#bbb"
+                    font-family="Poppins,sans-serif"
+                    text-anchor="end"
+                  >
+                    30
+                  </text>
+                  <text
+                    x="193"
+                    y="92"
+                    font-size="7"
+                    fill="#bbb"
+                    font-family="Poppins,sans-serif"
+                    text-anchor="end"
+                  >
+                    40
+                  </text>
                 </svg>
 
                 <div class="imc-info">
-                  <h3>{{ stats.imcActual | number : "1.1-1" }}</h3>
+                  <h3>{{ stats.imcActual | number: "1.1-1" }}</h3>
                   <p class="imc-label">Índice de Masa Corporal</p>
                   <span
                     class="estado-badge"
@@ -672,7 +789,7 @@
                         stats.estadoNutricionalActual === 'Bajo peso',
                       normal: stats.estadoNutricionalActual === 'Normal',
                       sobrepeso: stats.estadoNutricionalActual === 'Sobrepeso',
-                      obesidad: stats.estadoNutricionalActual === 'Obesidad'
+                      obesidad: stats.estadoNutricionalActual === 'Obesidad',
                     }"
                   >
                     {{ stats.estadoNutricionalActual }}
@@ -692,7 +809,7 @@
                         class="variacion"
                         [ngClass]="{
                           positivo: stats.variacionPeso > 0,
-                          negativo: stats.variacionPeso < 0
+                          negativo: stats.variacionPeso < 0,
                         }"
                         *ngIf="stats.variacionPeso !== 0"
                       >
@@ -702,7 +819,7 @@
                             : "trending_down"
                         }}</mat-icon>
                         {{ stats.variacionPeso > 0 ? "+" : ""
-                        }}{{ stats.variacionPeso | number : "1.1-1" }}%
+                        }}{{ stats.variacionPeso | number: "1.1-1" }}%
                       </span>
                     </ng-container>
                   </div>
@@ -721,7 +838,7 @@
                         *ngIf="stats.variacionTalla > 0"
                       >
                         <mat-icon>trending_up</mat-icon>
-                        +{{ stats.variacionTalla | number : "1.1-1" }}%
+                        +{{ stats.variacionTalla | number: "1.1-1" }}%
                       </span>
                     </ng-container>
                   </div>
