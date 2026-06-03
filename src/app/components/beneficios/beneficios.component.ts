@@ -149,10 +149,35 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
           b.categoria.toLowerCase().includes(query),
       );
     }
-    // Preservar orden activo después de filtrar
-    if (this.sortOrder !== 'none') {
-      this.sortBeneficios();
+  }
+
+  sortOrder: 'recommended' | 'asc' | 'desc' | 'stock' | 'az' = 'recommended';
+
+  readonly sortOptions = [
+    { value: 'recommended', label: 'Recomendado', icon: 'star' },
+    { value: 'asc', label: 'Menor pts primero', icon: 'arrow_upward' },
+    { value: 'desc', label: 'Mayor pts primero', icon: 'arrow_downward' },
+    { value: 'stock', label: 'Más stock', icon: 'inventory_2' },
+    { value: 'az', label: 'A → Z', icon: 'sort_by_alpha' },
+  ];
+
+  applySort(): void {
+    let result = [...this.beneficios];
+    switch (this.sortOrder) {
+      case 'asc':
+        result.sort((a, b) => a.puntosRequeridos - b.puntosRequeridos);
+        break;
+      case 'desc':
+        result.sort((a, b) => b.puntosRequeridos - a.puntosRequeridos);
+        break;
+      case 'stock':
+        result.sort((a, b) => b.stock - a.stock);
+        break;
+      case 'az':
+        result.sort((a, b) => a.nombre.localeCompare(b.nombre));
+        break;
     }
+    this.filteredBeneficios = result;
   }
 
   /**
@@ -274,22 +299,6 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
   onImageError(event: Event): void {
     const target = event.target as HTMLImageElement;
     target.src = 'assets/images/placeholder-beneficio.jpg';
-  }
-
-  // Propiedad nueva
-  sortOrder: 'asc' | 'desc' | 'none' = 'none';
-
-  // Método nuevo
-  sortBeneficios(): void {
-    if (this.sortOrder === 'none') {
-      this.filteredBeneficios = [...this.beneficios];
-    } else {
-      this.filteredBeneficios = [...this.filteredBeneficios].sort((a, b) =>
-        this.sortOrder === 'asc'
-          ? a.puntosRequeridos - b.puntosRequeridos
-          : b.puntosRequeridos - a.puntosRequeridos,
-      );
-    }
   }
 }
 

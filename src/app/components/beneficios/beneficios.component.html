@@ -55,29 +55,14 @@
     </div>
   </header>
 
-  <!-- Search Bar -->
-<div class="search-section">
-  <div class="search-bar">
-    <mat-icon>search</mat-icon>
-    <input type="text"
-           placeholder="Buscar beneficios..."
-           [value]="searchQuery"
-           (input)="searchQuery=$any($event.target).value; searchBeneficios()">
-    <button mat-icon-button *ngIf="searchQuery" (click)="searchQuery=''; searchBeneficios()">
-      <mat-icon>close</mat-icon>
-    </button>
-
-    <!-- Separador visual -->
-    <div class="sort-divider"></div>
-
-    <!-- Control de ordenamiento -->
-    <div class="sort-control">
-      <mat-icon class="sort-icon">sort</mat-icon>
-      <select [(ngModel)]="sortOrder" (change)="sortBeneficios()" class="sort-select">
-        <option value="none">Ordenar</option>
-        <option value="asc">Menor pts primero</option>
-        <option value="desc">Mayor pts primero</option>
-      </select>
+  <div class="sort-section">
+  <div class="sort-chips">
+    <div class="sort-chip"
+         *ngFor="let opt of sortOptions"
+         [class.active]="sortOrder === opt.value"
+         (click)="sortOrder = $any(opt.value); applySort()">
+      <mat-icon>{{opt.icon}}</mat-icon>
+      {{opt.label}}
     </div>
   </div>
 </div>
