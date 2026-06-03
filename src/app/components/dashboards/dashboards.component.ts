@@ -104,6 +104,8 @@ export class DashboardsComponent implements OnInit {
   imcPoints: any[] = [];
 
   selectedRange: string = 'all';
+  originalJuegos: JuegoResponse[] = [];
+  originalHistorialImc: any[] = [];
   rangeOptions = [
     { value: 'all', label: 'Todo el historial' },
     { value: '1w', label: 'Hace 1 semana' },
@@ -111,9 +113,6 @@ export class DashboardsComponent implements OnInit {
     { value: '3m', label: 'Hace 3 meses' },
     { value: '1y', label: 'Hace 1 año' },
   ];
-
-  originalJuegos: JuegoResponse[] = [];
-  originalHistorialImc: any[] = [];
 
   constructor(
     private router: Router,
@@ -168,24 +167,19 @@ export class DashboardsComponent implements OnInit {
           this.notificationCount =
             response.data.estadisticas?.notificacionesNoLeidas || 0;
 
-          // Corrección de nombres de propiedades
+          // 🔴 CLAVE: Guardamos el respaldo de los datos reales del backend
           this.originalJuegos = response.data.juegos || [];
-          this.originalHistorialImc =
-            response.data.salud?.historialMediciones || [];
+          this.originalHistorialImc = response.data.salud?.historialMediciones || [];
 
           this.selectedStudent = this.mapEstudianteToStudent(
             response.data.estudiante,
           );
 
           this.verificarAlertasSalud(response.data.salud);
-
           this.loading = false;
-
-          // Corrección: Llamada directa a los métodos de gráficos vectoriales
-          setTimeout(() => {
-            this.calcularPuntosRendimiento();
-            this.calcularPuntosImc();
-          }, 50);
+          
+          // Forzamos el renderizado inicial de tus gráficos nativos
+          this.recalcularEstadisticas();
         } else {
           this.error = response.message || 'Error al cargar el dashboard';
           this.loading = false;
@@ -251,20 +245,16 @@ export class DashboardsComponent implements OnInit {
         if (response.success && response.data) {
           this.dashboardData = response.data;
 
+          // 🔴 CLAVE: Respaldamos los datos del estudiante seleccionado
           this.originalJuegos = response.data.juegos || [];
-          this.originalHistorialImc =
-            response.data.salud?.historialMediciones || [];
-          this.selectedRange = 'all';
+          this.originalHistorialImc = response.data.salud?.historialMediciones || [];
+          this.selectedRange = 'all'; // Reseteamos el selector
 
           this.verificarAlertasSalud(response.data.salud);
-
           this.loading = false;
 
-          // Corrección: Llamada directa a los métodos de gráficos vectoriales
-          setTimeout(() => {
-            this.calcularPuntosRendimiento();
-            this.calcularPuntosImc();
-          }, 50);
+          // Forzamos el renderizado de gráficos del nuevo alumno
+          this.recalcularEstadisticas();
         } else {
           this.error =
             response.message || 'Error al cargar datos del estudiante';
@@ -272,6 +262,7 @@ export class DashboardsComponent implements OnInit {
         }
       },
       error: (err) => {
+        console.error('Error cargando dashboard del estudiante:', err);
         this.error = 'Error al cargar datos del estudiante.';
         this.loading = false;
       },
@@ -1877,38 +1868,34 @@ export class DashboardsComponent implements OnInit {
   applyTimeFilter(): void {
     if (!this.dashboardData) return;
 
+    // Si elige 'all', restauramos la data completa desde las copias de respaldo
     if (this.selectedRange === 'all') {
       this.dashboardData.juegos = [...this.originalJuegos];
       if (this.dashboardData.salud) {
-        this.dashboardData.salud.historialMediciones = [
-          ...this.originalHistorialImc,
-        ];
+        this.dashboardData.salud.historialMediciones = [...this.originalHistorialImc];
       }
       this.recalcularEstadisticas();
       return;
     }
 
     const cutoffDate = new Date();
-    if (this.selectedRange === '1w')
-      cutoffDate.setDate(cutoffDate.getDate() - 7);
-    else if (this.selectedRange === '1m')
-      cutoffDate.setMonth(cutoffDate.getMonth() - 1);
-    else if (this.selectedRange === '3m')
-      cutoffDate.setMonth(cutoffDate.getMonth() - 3);
-    else if (this.selectedRange === '1y')
-      cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+    if (this.selectedRange === '1w') cutoffDate.setDate(cutoffDate.getDate() - 7);
+    else if (this.selectedRange === '1m') cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+    else if (this.selectedRange === '3m') cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+    else if (this.selectedRange === '1y') cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
 
+    // Filtramos el arreglo de juegos en memoria
     this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
       const juegoDate = new Date(juego.fechaModificacion || juego.fecha);
       return juegoDate >= cutoffDate;
     });
 
+    // Filtramos el historial de mediciones IMC en memoria
     if (this.dashboardData.salud && this.originalHistorialImc) {
-      this.dashboardData.salud.historialMediciones =
-        this.originalHistorialImc.filter((medicion: any) => {
-          const medicionDate = new Date(medicion.fecha);
-          return medicionDate >= cutoffDate;
-        });
+      this.dashboardData.salud.historialMediciones = this.originalHistorialImc.filter((medicion: any) => {
+        const medicionDate = new Date(medicion.fecha);
+        return medicionDate >= cutoffDate;
+      });
     }
 
     this.recalcularEstadisticas();
@@ -1919,21 +1906,22 @@ export class DashboardsComponent implements OnInit {
 
     const juegos = this.dashboardData.juegos || [];
     if (juegos.length > 0) {
-      const totalPuntaje = juegos.reduce(
-        (acc: number, j: any) => acc + (j.puntaje || 0),
-        0,
-      );
+      const totalPuntaje = juegos.reduce((acc: number, j: any) => acc + (j.puntaje || 0), 0);
       if (this.dashboardData.estadisticas) {
-        (this.dashboardData.estadisticas as any).promedioPuntaje =
-          totalPuntaje / juegos.length;
+        (this.dashboardData.estadisticas as any).promedioPuntaje = totalPuntaje / juegos.length;
       }
     } else if (this.dashboardData.estadisticas) {
       (this.dashboardData.estadisticas as any).promedioPuntaje = 0;
     }
 
-    // Ejecuta las llamadas de actualización de gráficos de forma segura
-    this.calcularPuntosRendimiento();
-    this.calcularPuntosImc();
+    // 🔴 RE-RENDERIZADO AUTOMÁTICO: Ejecuta tus métodos matemáticos nativos de dibujo SVG
+    const self = this as any;
+    if (typeof self.generarGraficoRendimiento === 'function') {
+      self.generarGraficoRendimiento();
+    }
+    if (typeof self.generarGraficoImc === 'function') {
+      self.generarGraficoImc();
+    }
   }
 
   // 🔴 DECLARACIÓN FORMAL DE LOS MÉTODOS PARA ELIMINAR EL ERROR DE TYPESCRIPT:
