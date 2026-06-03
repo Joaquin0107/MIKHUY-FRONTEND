@@ -11,6 +11,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatOptionModule } from '@angular/material/core';
 import {
   MatDialogModule,
   MatDialog,
@@ -76,6 +77,7 @@ interface Student {
     MatTooltipModule,
     ReactiveFormsModule,
     MatSnackBarModule,
+    MatOptionModule,
   ],
   templateUrl: './dashboards.component.html',
   styleUrls: ['./dashboards.component.css'],
