@@ -245,6 +245,10 @@ export class GamePlayDialog implements OnInit, OnDestroy {
   loading: boolean = false;
   loadingMessage: string = '';
 
+  // ── Instrucciones / pausa ─────────────────────────────────────────────────
+  mostrandoInstrucciones: boolean = false;
+  tiempoAcumuladoAlPausar: number = 0;   // segundos acumulados antes de pausar
+
   sesionId: string | null = null;
   tiempoInicio: number = 0;
   tiempoTranscurrido: number = 0;
@@ -359,10 +363,83 @@ export class GamePlayDialog implements OnInit, OnDestroy {
   }
 
   iniciarCronometro(): void {
+    this.tiempoAcumuladoAlPausar = 0;
     this.tiempoInicio = Date.now();
     this.intervalo = setInterval(() => {
-      this.tiempoTranscurrido = Math.floor((Date.now() - this.tiempoInicio) / 1000);
+      this.tiempoTranscurrido = this.tiempoAcumuladoAlPausar +
+        Math.floor((Date.now() - this.tiempoInicio) / 1000);
     }, 1000);
+  }
+
+  pausarCronometro(): void {
+    if (this.intervalo) {
+      clearInterval(this.intervalo);
+      this.intervalo = null;
+      this.tiempoAcumuladoAlPausar = this.tiempoTranscurrido;
+    }
+  }
+
+  reanudarCronometro(): void {
+    if (!this.intervalo) {
+      this.tiempoInicio = Date.now();
+      this.intervalo = setInterval(() => {
+        this.tiempoTranscurrido = this.tiempoAcumuladoAlPausar +
+          Math.floor((Date.now() - this.tiempoInicio) / 1000);
+      }, 1000);
+    }
+  }
+
+  abrirInstrucciones(): void {
+    if (this.gameStarted && !this.gameEnded) this.pausarCronometro();
+    this.mostrandoInstrucciones = true;
+  }
+
+  cerrarInstrucciones(): void {
+    this.mostrandoInstrucciones = false;
+    if (this.gameStarted && !this.gameEnded) this.reanudarCronometro();
+  }
+
+  instruccionesDelJuego(): { titulo: string; pasos: string[] } {
+    if (this.esNutrimental()) {
+      return {
+        titulo: '¿Cómo jugar Desafío Nutrimental?',
+        pasos: [
+          '📋 Se te presentarán 5 preguntas de opción múltiple sobre nutrición.',
+          '🎯 Selecciona la respuesta que consideres correcta y presiona "Responder".',
+          '✅ Recibirás retroalimentación inmediata y una explicación de la respuesta.',
+          '⭐ Ganas 10 puntos por cada respuesta correcta.',
+          '⏱️ El tiempo cuenta, ¡trata de responder con precisión y rapidez!',
+          '🔀 Las preguntas son aleatorias cada vez que juegas el mismo nivel.',
+        ],
+      };
+    }
+    if (this.esCoachExpres()) {
+      return {
+        titulo: '¿Cómo funciona Coach Exprés?',
+        pasos: [
+          '🧠 Responderás 8 preguntas basadas en el modelo transteórico del cambio.',
+          '📊 Cada pregunta tiene una escala del 1 al 5: desde "Totalmente en desacuerdo" hasta "Totalmente de acuerdo".',
+          '🎯 Responde con honestidad; no hay respuestas incorrectas.',
+          '⭐ Ganas 5 puntos por cada pregunta completada.',
+          '💡 Tus respuestas ayudan a identificar tu etapa de cambio en hábitos saludables.',
+          '🔀 Las preguntas son aleatorias dentro de la etapa de cada nivel.',
+        ],
+      };
+    }
+    if (this.esReto7Dias()) {
+      return {
+        titulo: '¿Cómo funciona el Reto 7 Días?',
+        pasos: [
+          '📅 Cada nivel representa un día del reto (del día 1 al día 7).',
+          '🍽️ Registra la cantidad de porciones de cada grupo alimenticio que consumiste hoy.',
+          '😊 Indica cómo te sentiste durante el día.',
+          '📝 Puedes añadir notas personales sobre tu experiencia.',
+          '⭐ Ganas 15 puntos al completar el registro de cada día.',
+          '📈 Al finalizar los 7 días habrás completado el reto y obtendrás todos tus puntos.',
+        ],
+      };
+    }
+    return { titulo: 'Instrucciones', pasos: ['Sigue las indicaciones en pantalla.'] };
   }
 
   // ── NUTRIMENTAL ───────────────────────────────────────────────────────────

@@ -22,618 +22,383 @@ import { MatBadgeModule } from '@angular/material/badge';
     MatBadgeModule,
   ],
   template: `
-    <div class="ranking-dialog">
-      <!-- Header -->
-      <div class="dialog-header">
-        <div class="header-icon">
+    <div class="rk-wrap">
+
+      <!-- HEADER -->
+      <div class="rk-header">
+        <div class="rk-header-icon">
           <mat-icon>emoji_events</mat-icon>
         </div>
-        <div class="header-text">
+        <div class="rk-header-text">
           <h2>Ranking del Juego</h2>
           <p>{{ data.juegoNombre }}</p>
         </div>
-        <button mat-icon-button class="close-btn" (click)="cerrar()">
+        <button mat-icon-button class="rk-close" (click)="cerrar()">
           <mat-icon>close</mat-icon>
         </button>
       </div>
 
-      <!-- Stats Info (fuera de mat-dialog-content) -->
-      <div class="stats-info" *ngIf="data.totalEstudiantes">
+      <!-- STATS -->
+      <div class="rk-stats" *ngIf="data.totalEstudiantes">
         <mat-icon>group</mat-icon>
-        <span
-          >{{ data.totalEstudiantes }} estudiante{{
-            data.totalEstudiantes !== 1 ? 's' : ''
-          }}
-          participando</span
-        >
+        <span>{{ data.totalEstudiantes }} estudiante{{ data.totalEstudiantes !== 1 ? 's' : '' }} participando</span>
       </div>
 
-      <!-- Content -->
-      <mat-dialog-content>
-        <!-- Ranking List -->
+      <!-- PODIO TOP 3 -->
+      <div class="rk-podium" *ngIf="data.ranking && data.ranking.length >= 3">
+        <!-- 2do lugar -->
+        <div class="pod pod-2" [class.mi-pod]="data.ranking[1]?.esMiPosicion">
+          <div class="pod-trophy">🥈</div>
+          <div class="pod-avatar">{{ getInitials(data.ranking[1]?.nombre) }}</div>
+          <div class="pod-name">{{ data.ranking[1]?.nombre }}</div>
+          <div class="pod-grade">{{ data.ranking[1]?.grado }}{{ data.ranking[1]?.seccion ? '-' + data.ranking[1].seccion : '' }}</div>
+          <div class="pod-pts">{{ data.ranking[1]?.puntosAcumulados }}</div>
+          <div class="pod-pts-label">pts</div>
+          <div class="pod-me-tag" *ngIf="data.ranking[1]?.esMiPosicion">Tú</div>
+        </div>
+        <!-- 1er lugar -->
+        <div class="pod pod-1" [class.mi-pod]="data.ranking[0]?.esMiPosicion">
+          <div class="pod-trophy">🥇</div>
+          <div class="pod-avatar">{{ getInitials(data.ranking[0]?.nombre) }}</div>
+          <div class="pod-name">{{ data.ranking[0]?.nombre }}</div>
+          <div class="pod-grade">{{ data.ranking[0]?.grado }}{{ data.ranking[0]?.seccion ? '-' + data.ranking[0].seccion : '' }}</div>
+          <div class="pod-pts">{{ data.ranking[0]?.puntosAcumulados }}</div>
+          <div class="pod-pts-label">pts</div>
+          <div class="pod-me-tag" *ngIf="data.ranking[0]?.esMiPosicion">Tú</div>
+        </div>
+        <!-- 3er lugar -->
+        <div class="pod pod-3" [class.mi-pod]="data.ranking[2]?.esMiPosicion">
+          <div class="pod-trophy">🥉</div>
+          <div class="pod-avatar">{{ getInitials(data.ranking[2]?.nombre) }}</div>
+          <div class="pod-name">{{ data.ranking[2]?.nombre }}</div>
+          <div class="pod-grade">{{ data.ranking[2]?.grado }}{{ data.ranking[2]?.seccion ? '-' + data.ranking[2].seccion : '' }}</div>
+          <div class="pod-pts">{{ data.ranking[2]?.puntosAcumulados }}</div>
+          <div class="pod-pts-label">pts</div>
+          <div class="pod-me-tag" *ngIf="data.ranking[2]?.esMiPosicion">Tú</div>
+        </div>
+      </div>
+
+      <!-- LISTA SCROLLEABLE (#4 en adelante) -->
+      <div class="rk-scroll-area" *ngIf="data.ranking && data.ranking.length > 3">
         <div
-          class="ranking-container"
-          *ngIf="data.ranking && data.ranking.length > 0; else sinDatos"
+          class="rk-item"
+          *ngFor="let item of data.ranking.slice(3)"
+          [class.me]="item.esMiPosicion"
+          [id]="item.esMiPosicion ? 'mi-item' : ''"
         >
-          <div
-            class="ranking-item"
-            *ngFor="let item of data.ranking"
-            [class.top-1]="item.posicion === 1"
-            [class.top-2]="item.posicion === 2"
-            [class.top-3]="item.posicion === 3"
-            [class.mi-posicion]="item.esMiPosicion"
-          >
-            <!-- Position Badge -->
-            <div class="position-badge">
-              <mat-icon *ngIf="item.posicion === 1" class="trophy-icon gold"
-                >emoji_events</mat-icon
-              >
-              <mat-icon *ngIf="item.posicion === 2" class="trophy-icon silver"
-                >emoji_events</mat-icon
-              >
-              <mat-icon *ngIf="item.posicion === 3" class="trophy-icon bronze"
-                >emoji_events</mat-icon
-              >
-              <span *ngIf="item.posicion > 3" class="position-number"
-                >#{{ item.posicion }}</span
-              >
+          <div class="rk-pos">#{{ item.posicion }}</div>
+          <div class="rk-info">
+            <div class="rk-info-name">
+              {{ item.nombre }}
+              <span class="me-tag" *ngIf="item.esMiPosicion">Tú</span>
             </div>
-
-            <!-- Student Info -->
-            <div class="student-info">
-              <div class="student-name">
-                {{ item.nombre }}
-                <mat-icon *ngIf="item.esMiPosicion" class="me-badge"
-                  >person</mat-icon
-                >
-              </div>
-              <div class="student-meta">
-                {{ item.grado }}{{ item.seccion ? '-' + item.seccion : '' }}
-                <span class="separator">•</span>
-                <span class="games-completed">
-                  <mat-icon>sports_esports</mat-icon>
-                  {{ item.juegosCompletados || 0 }} juegos
-                </span>
-              </div>
+            <div class="rk-info-sub">
+              <span>{{ item.grado }}{{ item.seccion ? '-' + item.seccion : '' }}</span>
+              <span class="sep">·</span>
+              <mat-icon>sports_esports</mat-icon>
+              <span>{{ item.juegosCompletados || 0 }} juego{{ (item.juegosCompletados || 0) !== 1 ? 's' : '' }}</span>
             </div>
-
-            <!-- Points -->
-            <div class="points-display">
-              <span class="points-value">{{ item.puntosAcumulados }}</span>
-              <span class="points-label">pts</span>
-            </div>
+          </div>
+          <div class="rk-pts-col">
+            <span class="rk-pts-num">{{ item.puntosAcumulados }}</span>
+            <span class="rk-pts-lbl">pts</span>
           </div>
         </div>
 
-        <!-- Empty State -->
-        <ng-template #sinDatos>
-          <div class="empty-state">
-            <mat-icon>leaderboard</mat-icon>
-            <h3>No hay datos de ranking aún</h3>
-            <p>Sé el primero en completar este juego</p>
-          </div>
-        </ng-template>
+        <!-- Estado vacío si solo hay 3 o menos -->
+        <div class="empty-rest" *ngIf="data.ranking.length === 3">
+          <p>Solo hay 3 participantes hasta ahora.</p>
+        </div>
+      </div>
 
-        <!-- Mi Posición (destacada) -->
-        <div
-          class="mi-posicion-card"
-          *ngIf="data.miPosicion && !isInTopRanking(data.miPosicion.posicion)"
-        >
-          <div class="card-header">
-            <mat-icon>person_pin</mat-icon>
-            <span>Tu Posición</span>
+      <!-- Estado vacío general -->
+      <div class="empty-state" *ngIf="!data.ranking || data.ranking.length === 0">
+        <mat-icon>leaderboard</mat-icon>
+        <h3>No hay datos de ranking aún</h3>
+        <p>Sé el primero en completar este juego</p>
+      </div>
+
+      <!-- STICKY: Mi posición (siempre visible si no estoy en top 3) -->
+      <div class="rk-sticky" *ngIf="data.miPosicion && !isInTop3(data.miPosicion.posicion)">
+        <div class="rk-mypos-banner">
+          <div class="mypos-circle">
+            <span>#{{ data.miPosicion.posicion }}</span>
           </div>
-          <div class="card-content">
-            <div class="position-circle">
-              <span class="big-number">#{{ data.miPosicion.posicion }}</span>
+          <div class="mypos-info">
+            <div class="mypos-label">Tu posición</div>
+            <div class="mypos-name">
+              {{ data.miPosicion.nombre }}
+              <span class="me-tag">Tú</span>
             </div>
-            <div class="position-details">
-              <h4>{{ data.miPosicion.nombre }}</h4>
-              <div class="detail-row">
-                <mat-icon>emoji_events</mat-icon>
-                <span>{{ data.miPosicion.puntosAcumulados }} puntos</span>
-              </div>
-              <div class="detail-row">
-                <mat-icon>sports_esports</mat-icon>
-                <span
-                  >{{ data.miPosicion.juegosCompletados || 0 }} juegos
-                  completados</span
-                >
-              </div>
+            <div class="mypos-meta">
+              <span>{{ data.miPosicion.grado }}{{ data.miPosicion.seccion ? '-' + data.miPosicion.seccion : '' }}</span>
+              <span class="sep">·</span>
+              <mat-icon>sports_esports</mat-icon>
+              <span>{{ data.miPosicion.juegosCompletados || 0 }} juego{{ (data.miPosicion.juegosCompletados || 0) !== 1 ? 's' : '' }}</span>
             </div>
+          </div>
+          <div class="mypos-pts">
+            <span class="mypos-pts-num">{{ data.miPosicion.puntosAcumulados }}</span>
+            <span class="mypos-pts-lbl">pts</span>
           </div>
         </div>
-      </mat-dialog-content>
+      </div>
 
-      <!-- Actions -->
-      <mat-dialog-actions>
+      <!-- FOOTER -->
+      <div class="rk-footer">
+        <button mat-raised-button color="primary"
+          *ngIf="data.miPosicion && !isInTop3(data.miPosicion.posicion)"
+          (click)="scrollAMiPosicion()">
+          <mat-icon>my_location</mat-icon>
+          Ver mi posición
+        </button>
         <button mat-raised-button color="primary" (click)="cerrar()">
           <mat-icon>check</mat-icon>
           Entendido
         </button>
-      </mat-dialog-actions>
+      </div>
+
     </div>
   `,
-  styles: [
-    `
-      .ranking-dialog {
-        font-family: 'Poppins', sans-serif;
-        width: 550px;
-        max-width: 100%;
-      }
-
-      /* ========== HEADER ========== */
-      .dialog-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1.25rem;
-        background: linear-gradient(135deg, #ffb74d 0%, #ffa726 100%);
-        margin: -24px -24px 1.5rem -24px;
-        border-radius: 4px 4px 0 0;
-      }
-
-      .header-icon {
-        width: 50px;
-        height: 50px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .header-icon mat-icon {
-        color: white;
-        font-size: 28px;
-        width: 28px;
-        height: 28px;
-      }
-
-      .header-text {
-        flex: 1;
-      }
-
-      .header-text h2 {
-        margin: 0;
-        color: white;
-        font-size: 1.3rem;
-        font-weight: 700;
-      }
-
-      .header-text p {
-        margin: 0.25rem 0 0;
-        color: rgba(255, 255, 255, 0.95);
-        font-size: 0.9rem;
-        font-weight: 500;
-      }
-
-      .close-btn {
-        color: white;
-      }
-
-      .close-btn:hover {
-        background: rgba(255, 255, 255, 0.15);
-      }
-
-      /* ========== CONTENT ========== */
-      .stats-info {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.25rem;
-        background: #e3f2fd;
-        border-radius: 0;
-        margin: 0 -24px;
-        font-size: 0.9rem;
-        color: #1976d2;
-        font-weight: 500;
-        border-bottom: 1px solid #e0e0e0;
-      }
-
-      .stats-info mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        color: #48a3f3;
-      }
-
-      mat-dialog-content {
-        padding: 0 !important;
-        margin: 0 !important;
-        max-height: 450px;
-        overflow-y: auto;
-      }
-
-      /* ========== RANKING LIST ========== */
-      .ranking-container {
-        padding: 0.75rem 1.25rem;
-      }
-
-      .ranking-item {
-        display: grid;
-        grid-template-columns: 60px 1fr auto;
-        align-items: center;
-        gap: 1rem;
-        padding: 0.875rem;
-        margin-bottom: 0.625rem;
-        background: #f8f9fa;
-        border-radius: 10px;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-      }
-
-      .ranking-item:hover {
-        background: #f0f7ff;
-        transform: translateX(4px);
-      }
-
-      .ranking-item.top-1 {
-        background: linear-gradient(135deg, #fff9e6 0%, #fffaef 100%);
-        border-color: #ffd700;
-        box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
-      }
-
-      .ranking-item.top-2 {
-        background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
-        border-color: #c0c0c0;
-        box-shadow: 0 4px 12px rgba(192, 192, 192, 0.2);
-      }
-
-      .ranking-item.top-3 {
-        background: linear-gradient(135deg, #fff3e0 0%, #fff8f0 100%);
-        border-color: #cd7f32;
-        box-shadow: 0 4px 12px rgba(205, 127, 50, 0.2);
-      }
-
-      .ranking-item.mi-posicion {
-        background: #e3f2fd;
-        border-color: #48a3f3;
-        box-shadow: 0 4px 16px rgba(72, 163, 243, 0.3);
-      }
-
-      /* Position Badge */
-      .position-badge {
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: white;
-        border-radius: 50%;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      }
-
-      .trophy-icon {
-        font-size: 32px;
-        width: 32px;
-        height: 32px;
-      }
-
-      .trophy-icon.gold {
-        color: #ffd700;
-      }
-
-      .trophy-icon.silver {
-        color: #c0c0c0;
-      }
-
-      .trophy-icon.bronze {
-        color: #cd7f32;
-      }
-
-      .position-number {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #666;
-      }
-
-      /* Student Info */
-      .student-info {
-        min-width: 0;
-      }
-
-      .student-name {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 0.25rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .me-badge {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        color: #48a3f3;
-      }
-
-      .student-meta {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: 0.8rem;
-        color: #666;
-      }
-
-      .separator {
-        color: #ccc;
-      }
-
-      .games-completed {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-      }
-
-      .games-completed mat-icon {
-        font-size: 16px;
-        width: 16px;
-        height: 16px;
-      }
-
-      /* Points Display */
-      .points-display {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-      }
-
-      .points-value {
-        font-size: 1.35rem;
-        font-weight: 700;
-        color: #ffb74d;
-        line-height: 1;
-      }
-
-      .points-label {
-        font-size: 0.7rem;
-        color: #999;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-top: 0.15rem;
-      }
-
-      /* ========== EMPTY STATE ========== */
-      .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 3rem 2rem;
-        text-align: center;
-      }
-
-      .empty-state mat-icon {
-        font-size: 80px;
-        width: 80px;
-        height: 80px;
-        color: #ddd;
-        margin-bottom: 1rem;
-      }
-
-      .empty-state h3 {
-        margin: 0 0 0.5rem;
-        font-size: 1.2rem;
-        color: #666;
-      }
-
-      .empty-state p {
-        margin: 0;
-        font-size: 0.95rem;
-        color: #999;
-      }
-
-      /* ========== MI POSICIÓN CARD ========== */
-      .mi-posicion-card {
-        margin: 0.75rem 1.25rem 0;
-        padding: 1rem;
-        background: linear-gradient(135deg, #e3f2fd 0%, #f0f7ff 100%);
-        border: 2px solid #48a3f3;
-        border-radius: 10px;
-      }
-
-      .card-header {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 0.75rem;
-        font-weight: 600;
-        color: #1976d2;
-        font-size: 0.9rem;
-      }
-
-      .card-header mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-      }
-
-      .card-content {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-      }
-
-      .position-circle {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(72, 163, 243, 0.3);
-        flex-shrink: 0;
-      }
-
-      .big-number {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: white;
-      }
-
-      .position-details {
-        flex: 1;
-        min-width: 0;
-      }
-
-      .position-details h4 {
-        margin: 0 0 0.4rem;
-        font-size: 1rem;
-        color: #333;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .detail-row {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        margin-bottom: 0.2rem;
-        font-size: 0.85rem;
-        color: #666;
-      }
-
-      .detail-row mat-icon {
-        font-size: 18px;
-        width: 18px;
-        height: 18px;
-        color: #48a3f3;
-      }
-
-      /* ========== ACTIONS ========== */
-      mat-dialog-actions {
-        padding: 0.875rem 0 0 !important;
-        margin: 0.875rem 0 0 0 !important;
-        border-top: 1px solid #eee;
-        display: flex;
-        justify-content: center;
-      }
-
-      mat-dialog-actions button {
-        min-width: 160px;
-        height: 40px;
-        border-radius: 8px !important;
-        font-weight: 600;
-        background: linear-gradient(
-          135deg,
-          #48a3f3 0%,
-          #5bb3ff 100%
-        ) !important;
-        font-size: 0.9rem;
-      }
-
-      mat-dialog-actions button mat-icon {
-        margin-right: 0.5rem;
-      }
-
-      /* ========== SCROLLBAR ========== */
-      mat-dialog-content::-webkit-scrollbar {
-        width: 8px;
-      }
-
-      mat-dialog-content::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-      }
-
-      mat-dialog-content::-webkit-scrollbar-thumb {
-        background: #48a3f3;
-        border-radius: 4px;
-      }
-
-      mat-dialog-content::-webkit-scrollbar-thumb:hover {
-        background: #3d8fd9;
-      }
-
-      /* ========== RESPONSIVE ========== */
-      @media (max-width: 600px) {
-        .ranking-dialog {
-          width: 100%;
-        }
-
-        .dialog-header {
-          padding: 1rem;
-        }
-
-        .header-icon {
-          width: 40px;
-          height: 40px;
-        }
-
-        .header-icon mat-icon {
-          font-size: 24px;
-          width: 24px;
-          height: 24px;
-        }
-
-        .header-text h2 {
-          font-size: 1.1rem;
-        }
-
-        .header-text p {
-          font-size: 0.85rem;
-        }
-
-        .ranking-item {
-          padding: 0.75rem;
-          gap: 0.75rem;
-        }
-
-        .position-badge {
-          width: 40px;
-          height: 40px;
-        }
-
-        .trophy-icon {
-          font-size: 26px;
-          width: 26px;
-          height: 26px;
-        }
-
-        .position-number {
-          font-size: 1rem;
-        }
-
-        .student-name {
-          font-size: 0.9rem;
-        }
-
-        .student-meta {
-          font-size: 0.75rem;
-          flex-wrap: wrap;
-        }
-
-        .points-value {
-          font-size: 1.2rem;
-        }
-
-        .card-content {
-          flex-direction: column;
-          text-align: center;
-        }
-
-        .position-circle {
-          width: 60px;
-          height: 60px;
-        }
-
-        .big-number {
-          font-size: 1.3rem;
-        }
-
-        mat-dialog-actions button {
-          min-width: 100%;
-        }
-      }
-    `,
-  ],
+  styles: [`
+    /* ── Wrap ────────────────────────────────────────────────────────────── */
+    .rk-wrap {
+      font-family: 'Poppins', sans-serif;
+      width: 550px;
+      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+      overflow: hidden;
+    }
+
+    /* ── Header ──────────────────────────────────────────────────────────── */
+    .rk-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 1.25rem 1.5rem;
+      background: linear-gradient(135deg, #ffb74d 0%, #f9a825 100%);
+      margin: -24px -24px 0 -24px;
+      flex-shrink: 0;
+    }
+
+    .rk-header-icon {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .rk-header-icon mat-icon { color: #fff; font-size: 28px; width: 28px; height: 28px; }
+
+    .rk-header-text { flex: 1; }
+    .rk-header-text h2 { margin: 0; color: #fff; font-size: 1.25rem; font-weight: 700; }
+    .rk-header-text p  { margin: 2px 0 0; color: rgba(255,255,255,0.9); font-size: 0.88rem; }
+
+    .rk-close { color: white !important; }
+    .rk-close:hover { background: rgba(255,255,255,0.15) !important; }
+
+    /* ── Stats ───────────────────────────────────────────────────────────── */
+    .rk-stats {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 1.5rem;
+      background: #e3f2fd;
+      border-bottom: 1px solid #b3d9f7;
+      font-size: 0.88rem; font-weight: 500; color: #1565c0;
+      flex-shrink: 0;
+    }
+    .rk-stats mat-icon { font-size: 18px; width: 18px; height: 18px; color: #42a5f5; }
+
+    /* ── Podio ───────────────────────────────────────────────────────────── */
+    .rk-podium {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      padding: 1.25rem 1.5rem;
+      background: #fafafa;
+      border-bottom: 1px solid #eee;
+      align-items: end;
+      flex-shrink: 0;
+    }
+
+    .pod {
+      display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 12px 6px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      position: relative;
+    }
+
+    .pod-1 {
+      order: 2;
+      padding-top: 20px;
+      border: 2px solid #f9a825;
+      box-shadow: 0 0 0 4px rgba(249,168,37,0.12);
+    }
+    .pod-2 { order: 1; }
+    .pod-3 { order: 3; }
+    .pod.mi-pod { box-shadow: 0 0 0 3px #42a5f5; }
+
+    .pod-trophy { font-size: 28px; }
+    .pod-1 .pod-trophy { font-size: 36px; }
+
+    .pod-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600;
+    }
+    .pod-1 .pod-avatar { width: 52px; height: 52px; font-size: 16px; background: #fff3e0; color: #e65100; }
+    .pod-2 .pod-avatar { background: #f0f0f0; color: #555; }
+    .pod-3 .pod-avatar { background: #fbe9e7; color: #bf360c; }
+
+    .pod-name { font-size: 11px; font-weight: 600; color: #333; text-align: center; max-width: 110px; line-height: 1.3; }
+    .pod-1 .pod-name { font-size: 12px; }
+    .pod-grade { font-size: 10px; color: #888; }
+    .pod-pts { font-size: 17px; font-weight: 700; color: #f9a825; }
+    .pod-1 .pod-pts { font-size: 22px; }
+    .pod-pts-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .5px; margin-top: -3px; }
+
+    .pod-me-tag {
+      position: absolute; top: 6px; right: 6px;
+      font-size: 9px; font-weight: 600; color: #1565c0;
+      background: #bbdefb; padding: 2px 6px; border-radius: 20px;
+    }
+
+    /* ── Scroll area ─────────────────────────────────────────────────────── */
+    .rk-scroll-area {
+      overflow-y: auto;
+      flex: 1;
+      padding: 0.875rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      min-height: 0;
+    }
+
+    .rk-scroll-area::-webkit-scrollbar { width: 6px; }
+    .rk-scroll-area::-webkit-scrollbar-track { background: transparent; }
+    .rk-scroll-area::-webkit-scrollbar-thumb { background: #b0d4f1; border-radius: 4px; }
+
+    .rk-item {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1px solid #ebebeb;
+      background: #fff;
+      transition: transform 0.15s;
+    }
+    .rk-item:hover { transform: translateX(3px); }
+    .rk-item.me { border: 2px solid #42a5f5; background: #e3f2fd; }
+
+    .rk-pos {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: #f0f0f0;
+      font-size: 12px; font-weight: 600; color: #666;
+      flex-shrink: 0;
+    }
+    .rk-item.me .rk-pos { background: #42a5f5; color: #fff; }
+
+    .rk-info-name {
+      font-size: 0.9rem; font-weight: 600; color: #333;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .me-tag {
+      font-size: 10px; font-weight: 600; color: #1565c0;
+      background: #bbdefb; padding: 2px 7px; border-radius: 20px; flex-shrink: 0;
+    }
+
+    .rk-info-sub {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 0.78rem; color: #888; margin-top: 2px;
+    }
+    .rk-info-sub mat-icon { font-size: 14px; width: 14px; height: 14px; }
+    .sep { color: #ccc; }
+
+    .rk-pts-col { text-align: right; }
+    .rk-pts-num { font-size: 1.2rem; font-weight: 700; color: #f9a825; display: block; }
+    .rk-pts-lbl { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .5px; }
+
+    /* ── Empty states ────────────────────────────────────────────────────── */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 3rem 2rem; text-align: center;
+    }
+    .empty-state mat-icon { font-size: 72px; width: 72px; height: 72px; color: #ddd; margin-bottom: 1rem; }
+    .empty-state h3 { margin: 0 0 .5rem; font-size: 1.1rem; color: #666; }
+    .empty-state p  { margin: 0; font-size: .9rem; color: #999; }
+    .empty-rest p   { text-align: center; color: #999; font-size: .85rem; padding: .5rem 0; }
+
+    /* ── Sticky mi posición ──────────────────────────────────────────────── */
+    .rk-sticky {
+      flex-shrink: 0;
+      padding: 10px 1.5rem;
+      border-top: 1px solid #eee;
+      background: #fff;
+    }
+
+    .rk-mypos-banner {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: 2px solid #42a5f5;
+      background: #e3f2fd;
+    }
+
+    .mypos-circle {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: #42a5f5;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .mypos-circle span { font-size: 13px; font-weight: 700; color: #fff; }
+
+    .mypos-label { font-size: 10px; color: #1565c0; text-transform: uppercase; letter-spacing: .6px; font-weight: 600; margin-bottom: 2px; }
+    .mypos-name  { font-size: 14px; font-weight: 600; color: #333; display: flex; align-items: center; gap: 6px; }
+    .mypos-meta  { font-size: 12px; color: #666; display: flex; align-items: center; gap: 4px; margin-top: 3px; }
+    .mypos-meta mat-icon { font-size: 14px; width: 14px; height: 14px; }
+
+    .mypos-pts { text-align: right; }
+    .mypos-pts-num { font-size: 1.4rem; font-weight: 700; color: #42a5f5; display: block; }
+    .mypos-pts-lbl { font-size: 10px; color: #1565c0; text-transform: uppercase; letter-spacing: .5px; }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    .rk-footer {
+      flex-shrink: 0;
+      padding: 12px 1.5rem;
+      border-top: 1px solid #eee;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      background: #fff;
+    }
+
+    .rk-footer button {
+      min-width: 140px;
+      height: 40px;
+      border-radius: 8px !important;
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .rk-wrap { width: 100%; }
+      .rk-podium { padding: 1rem; gap: 8px; }
+      .rk-item { padding: 10px 12px; gap: 10px; }
+      .rk-footer button { min-width: 120px; }
+    }
+  `],
 })
 export class RankingInlineDialog {
   constructor(
@@ -641,9 +406,23 @@ export class RankingInlineDialog {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
-  isInTopRanking(position: number): boolean {
-    const topCount = Math.min(10, this.data.ranking?.length || 0);
-    return position <= topCount;
+  /** Devuelve las iniciales (hasta 2 letras) del nombre completo */
+  getInitials(nombre: string): string {
+    if (!nombre) return '?';
+    const partes = nombre.trim().split(' ');
+    if (partes.length === 1) return partes[0][0].toUpperCase();
+    return (partes[0][0] + partes[1][0]).toUpperCase();
+  }
+
+  /** true si la posición está dentro del podio (top 3) */
+  isInTop3(posicion: number): boolean {
+    return posicion <= 3;
+  }
+
+  /** Hace scroll al ítem del usuario en la lista */
+  scrollAMiPosicion(): void {
+    const el = document.getElementById('mi-item');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   cerrar(): void {

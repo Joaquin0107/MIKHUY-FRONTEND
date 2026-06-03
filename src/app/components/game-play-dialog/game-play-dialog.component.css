@@ -365,3 +365,152 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* ── Header actions ──────────────────────────────────────────────────────── */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.help-btn {
+  color: #1976d2 !important;
+  background: rgba(25, 118, 210, 0.08);
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.help-btn:hover {
+  background: rgba(25, 118, 210, 0.18);
+}
+
+/* ── Instrucciones previas (pantalla inicio) ─────────────────────────────── */
+.instrucciones-previas {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f0f7ff;
+  border: 1px solid #b3d9f7;
+  border-radius: 10px;
+}
+
+.instrucciones-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #1565c0;
+  margin-bottom: 12px;
+}
+
+.instrucciones-titulo mat-icon {
+  color: #1976d2;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.instrucciones-lista {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.instrucciones-lista li {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* ── Overlay instrucciones (durante el juego) ────────────────────────────── */
+.instrucciones-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+  backdrop-filter: blur(2px);
+}
+
+.instrucciones-modal {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.instrucciones-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.instrucciones-modal-header mat-icon {
+  color: #1976d2;
+  font-size: 26px;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.instrucciones-modal-header h3 {
+  margin: 0;
+  flex: 1;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1565c0;
+  line-height: 1.3;
+}
+
+.cerrar-inst-btn {
+  flex-shrink: 0;
+  color: #666 !important;
+}
+
+.pausa-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #fff3e0;
+  border: 1px solid #ffcc80;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #e65100;
+}
+
+.pausa-badge mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.instrucciones-lista-modal {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.instrucciones-lista-modal li {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.5;
+}
+
+.btn-reanudar {
+  align-self: center;
+  min-width: 180px;
+}
