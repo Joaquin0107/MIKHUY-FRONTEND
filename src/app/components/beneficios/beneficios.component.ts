@@ -56,7 +56,6 @@ import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.c
 export class BeneficiosComponent implements OnInit, OnDestroy {
   notificationCount = 0;
   studentPoints = 0;
-  searchQuery = '';
   isLoading = false;
 
   beneficios: Beneficio[] = [];
@@ -138,20 +137,8 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
   /**
    * Buscar beneficios por nombre o categoría
    */
-  searchBeneficios(): void {
-    if (!this.searchQuery.trim()) {
-      this.filteredBeneficios = [...this.beneficios];
-    } else {
-      const query = this.searchQuery.toLowerCase();
-      this.filteredBeneficios = this.beneficios.filter(
-        (b) =>
-          b.nombre.toLowerCase().includes(query) ||
-          b.categoria.toLowerCase().includes(query),
-      );
-    }
-  }
-
   sortOrder: 'recommended' | 'asc' | 'desc' | 'stock' | 'az' = 'recommended';
+  searchQuery = '';
 
   readonly sortOptions = [
     { value: 'recommended', label: 'Recomendado', icon: 'star' },
@@ -161,8 +148,15 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
     { value: 'az', label: 'A → Z', icon: 'sort_by_alpha' },
   ];
 
-  applySort(): void {
-    let result = [...this.beneficios];
+  applyFilters(): void {
+    let result = this.searchQuery.trim()
+      ? this.beneficios.filter(
+          (b) =>
+            b.nombre.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+            b.categoria.toLowerCase().includes(this.searchQuery.toLowerCase()),
+        )
+      : [...this.beneficios];
+
     switch (this.sortOrder) {
       case 'asc':
         result.sort((a, b) => a.puntosRequeridos - b.puntosRequeridos);
@@ -177,7 +171,13 @@ export class BeneficiosComponent implements OnInit, OnDestroy {
         result.sort((a, b) => a.nombre.localeCompare(b.nombre));
         break;
     }
+
     this.filteredBeneficios = result;
+  }
+
+  // Reemplaza searchBeneficios() existente:
+  searchBeneficios(): void {
+    this.applyFilters();
   }
 
   /**

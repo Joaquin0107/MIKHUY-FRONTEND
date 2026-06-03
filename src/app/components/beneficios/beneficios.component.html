@@ -56,11 +56,24 @@
   </header>
 
   <div class="sort-section">
+  <!-- Buscador -->
+  <div class="search-bar">
+    <mat-icon>search</mat-icon>
+    <input type="text"
+           placeholder="Buscar beneficios..."
+           [value]="searchQuery"
+           (input)="searchQuery=$any($event.target).value; applyFilters()">
+    <button mat-icon-button *ngIf="searchQuery" (click)="searchQuery=''; applyFilters()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Chips de ordenamiento -->
   <div class="sort-chips">
     <div class="sort-chip"
          *ngFor="let opt of sortOptions"
          [class.active]="sortOrder === opt.value"
-         (click)="sortOrder = $any(opt.value); applySort()">
+         (click)="sortOrder = $any(opt.value); applyFilters()">
       <mat-icon>{{opt.icon}}</mat-icon>
       {{opt.label}}
     </div>
