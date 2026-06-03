@@ -317,13 +317,35 @@
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background: #f44336;
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  font-family: 'Poppins', sans-serif;
+  z-index: 2;
+}
+
+.stock-normal {
+  background: rgba(46, 204, 113, 0.95); /* Verde esmeralda limpio */
+}
+
+.stock-low {
+  background: #f44336; /* Rojo vibrante */
   animation: pulse 1.5s infinite;
+}
+
+.stock-icon {
+  font-size: 14px !important;
+  width: 14px !important;
+  height: 14px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes pulse {

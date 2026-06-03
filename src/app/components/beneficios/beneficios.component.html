@@ -5,7 +5,11 @@
       <button mat-icon-button class="back-btn" (click)="goBack()">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <img src="assets/images/MIKHUY.png" alt="MIKHUY Logo" class="header-logo">
+      <img
+        src="assets/images/MIKHUY.png"
+        alt="MIKHUY Logo"
+        class="header-logo"
+      />
     </div>
 
     <div class="header-center">
@@ -22,10 +26,10 @@
     <div class="header-right">
       <div class="points-display">
         <mat-icon class="points-icon">stars</mat-icon>
-        <span class="points-value">{{studentPoints}}</span>
+        <span class="points-value">{{ studentPoints }}</span>
       </div>
 
-    <!--Apartado de Notificaciones (a futuro)-->
+      <!--Apartado de Notificaciones (a futuro)-->
       <mat-menu #notificationMenu="matMenu" class="notification-menu">
         <div class="notification-header">
           <h3>Notificaciones</h3>
@@ -56,29 +60,37 @@
   </header>
 
   <div class="sort-section">
-  <!-- Buscador -->
-  <div class="search-bar">
-    <mat-icon>search</mat-icon>
-    <input type="text"
-           placeholder="Buscar beneficios..."
-           [value]="searchQuery"
-           (input)="searchQuery=$any($event.target).value; applyFilters()">
-    <button mat-icon-button *ngIf="searchQuery" (click)="searchQuery=''; applyFilters()">
-      <mat-icon>close</mat-icon>
-    </button>
-  </div>
+    <!-- Buscador -->
+    <div class="search-bar">
+      <mat-icon>search</mat-icon>
+      <input
+        type="text"
+        placeholder="Buscar beneficios..."
+        [value]="searchQuery"
+        (input)="searchQuery = $any($event.target).value; applyFilters()"
+      />
+      <button
+        mat-icon-button
+        *ngIf="searchQuery"
+        (click)="searchQuery = ''; applyFilters()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
 
-  <!-- Chips de ordenamiento -->
-  <div class="sort-chips">
-    <div class="sort-chip"
-         *ngFor="let opt of sortOptions"
-         [class.active]="sortOrder === opt.value"
-         (click)="sortOrder = $any(opt.value); applyFilters()">
-      <mat-icon>{{opt.icon}}</mat-icon>
-      {{opt.label}}
+    <!-- Chips de ordenamiento -->
+    <div class="sort-chips">
+      <div
+        class="sort-chip"
+        *ngFor="let opt of sortOptions"
+        [class.active]="sortOrder === opt.value"
+        (click)="sortOrder = $any(opt.value); applyFilters()"
+      >
+        <mat-icon>{{ opt.icon }}</mat-icon>
+        {{ opt.label }}
+      </div>
     </div>
   </div>
-</div>
 
   <!-- Loading Spinner -->
   <div class="loading-container" *ngIf="isLoading">
@@ -88,39 +100,66 @@
 
   <!-- Beneficios Grid -->
   <div class="beneficios-grid" *ngIf="!isLoading">
-    <mat-card *ngFor="let beneficio of filteredBeneficios" class="beneficio-card">
+    <mat-card
+      *ngFor="let beneficio of filteredBeneficios"
+      class="beneficio-card"
+    >
       <div class="card-image">
-        <img [src]="beneficio.imagenUrl" [alt]="beneficio.nombre" (error)="onImageError($event)">
-        <div class="stock-badge" *ngIf="beneficio.stock && beneficio.stock <= 5">
-          ¡Solo {{beneficio.stock}}!
+        <img
+          [src]="beneficio.imagenUrl"
+          [alt]="beneficio.nombre"
+          (error)="onImageError($event)"
+        />
+        <div
+          class="stock-badge"
+          *ngIf="beneficio.stock !== undefined && beneficio.stock !== null"
+          [ngClass]="beneficio.stock <= 5 ? 'stock-low' : 'stock-normal'"
+        >
+          <mat-icon class="stock-icon">inventory_2</mat-icon>
+          <span>Stock: {{ beneficio.stock }}</span>
         </div>
       </div>
 
       <mat-card-content>
-        <h3>{{beneficio.nombre}}</h3>
+        <h3>{{ beneficio.nombre }}</h3>
         <div class="puntos-info">
-          <span class="puntos">{{beneficio.puntosRequeridos}}pts</span>
+          <span class="puntos">{{ beneficio.puntosRequeridos }}pts</span>
         </div>
       </mat-card-content>
 
       <mat-card-actions>
-        <button mat-raised-button 
-                class="canjear-btn"
-                [disabled]="!canCanjear(beneficio)"
-                (click)="canjearBeneficio(beneficio)">
-          <mat-icon>shopping_cart</mat-icon>
-          {{canCanjear(beneficio) ? 'Canjear' : 'Sin puntos'}}
+        <button
+          mat-raised-button
+          class="canjear-btn"
+          [disabled]="!canCanjear(beneficio)"
+          (click)="canjearBeneficio(beneficio)"
+        >
+          <mat-icon>{{
+            beneficio.stock === 0 ? "block" : "shopping_cart"
+          }}</mat-icon>
+          <span>
+            {{
+              beneficio.stock === 0
+                ? "Agotado"
+                : studentPoints >= beneficio.puntosRequeridos
+                  ? "Canjear"
+                  : "Sin puntos"
+            }}
+          </span>
         </button>
       </mat-card-actions>
     </mat-card>
   </div>
 
   <!-- Empty state -->
-  <div class="empty-state" *ngIf="!isLoading && filteredBeneficios.length === 0">
+  <div
+    class="empty-state"
+    *ngIf="!isLoading && filteredBeneficios.length === 0"
+  >
     <mat-icon>search_off</mat-icon>
     <p>No se encontraron beneficios</p>
   </div>
 
   <!-- Floating Chatbot Button -->
-<app-floating-chatbot></app-floating-chatbot>
+  <app-floating-chatbot></app-floating-chatbot>
 </div>
