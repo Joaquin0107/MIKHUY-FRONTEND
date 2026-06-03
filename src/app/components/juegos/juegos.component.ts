@@ -83,7 +83,7 @@ import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.c
 
     .inst-header {
       display: flex; align-items: center; gap: 12px;
-      padding: 1.25rem 1.5rem;
+      padding: 35px 3.5rem;
       background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%);
       margin: -24px -24px 1.5rem -24px;
       border-radius: 4px 4px 0 0;
