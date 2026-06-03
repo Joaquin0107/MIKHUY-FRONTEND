@@ -140,6 +140,21 @@
           </div>
         </div>
         <div class="profile-actions">
+          <mat-form-field appearance="outline" class="filter-select-field">
+            <mat-label>Filtrar historial</mat-label>
+            <mat-select
+              [(value)]="selectedRange"
+              (selectionChange)="applyTimeFilter()"
+            >
+              <mat-option
+                *ngFor="let option of rangeOptions"
+                [value]="option.value"
+              >
+                {{ option.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
           <button
             mat-raised-button
             class="download-btn"

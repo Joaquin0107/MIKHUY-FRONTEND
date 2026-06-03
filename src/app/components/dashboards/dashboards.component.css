@@ -1796,6 +1796,19 @@
   font-weight: 500;
 }
 
+.filter-select-field {
+  min-width: 200px;
+  margin-right: 1rem;
+}
+
+@media (max-width: 768px) {
+  .filter-select-field {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+}
+
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1400px) {
   .charts-grid {
