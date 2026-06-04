@@ -56,13 +56,13 @@ export interface StudentListResponse {
   peso?: number;
   puntosAcumulados: number;
   avatarUrl?: string;
-  juegosCompletados?: number; 
-  totalSesiones?: number; 
-  fechaRegistro?: string; 
+  juegosCompletados?: number;
+  totalSesiones?: number;
+  fechaRegistro?: string;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class StudentService {
   private apiUrl = `${environment.apiUrl}/api/estudiantes`;
@@ -81,22 +81,22 @@ export class StudentService {
   }
 
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('authToken') || 
-                  sessionStorage.getItem('authToken');
-    
+    const token =
+      localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     });
   }
 
   getMisPuntos(): Observable<ApiResponse<number>> {
     return this.http.get<ApiResponse<number>>(`${this.apiUrl}/puntos`).pipe(
-      tap(response => {
+      tap((response) => {
         if (response.success && response.data !== undefined) {
           this.actualizarPuntos(response.data);
         }
-      })
+      }),
     );
   }
 
@@ -105,12 +105,13 @@ export class StudentService {
   }
 
   getMisNotificaciones(): Observable<ApiResponse<Notificacion[]>> {
-    return this.http.get<ApiResponse<Notificacion[]>>(`${this.apiUrl}/mis-notificaciones`).pipe(
-      tap(response => {
+    const notifUrl = `${environment.apiUrl}/notificaciones`;
+    return this.http.get<ApiResponse<Notificacion[]>>(notifUrl).pipe(
+      tap((response) => {
         if (response.success && response.data) {
           this.notificacionesSubject.next(response.data);
         }
-      })
+      }),
     );
   }
 
@@ -136,24 +137,27 @@ export class StudentService {
       },
       error: (err) => {
         console.error('Error al refrescar puntos:', err);
-      }
+      },
     });
   }
 
-  marcarNotificacionLeida(notificacionId: string): Observable<ApiResponse<void>> {
-    return this.http.put<ApiResponse<void>>(
-      `${this.apiUrl}/notificaciones/${notificacionId}/leer`,
-      {}
-    ).pipe(
-      tap(response => {
-        if (response.success) {
-          const notificaciones = this.notificacionesSubject.value.map(n =>
-            n.id === notificacionId ? { ...n, leida: true } : n
-          );
-          this.notificacionesSubject.next(notificaciones);
-        }
-      })
-    );
+  marcarNotificacionLeida(
+    notificacionId: string,
+  ): Observable<ApiResponse<void>> {
+    return this.http
+      .put<
+        ApiResponse<void>
+      >(`${environment.apiUrl}/notificaciones/${notificacionId}/leer`, {})
+      .pipe(
+        tap((response) => {
+          if (response.success) {
+            const notificaciones = this.notificacionesSubject.value.map((n) =>
+              n.id === notificacionId ? { ...n, leida: true } : n,
+            );
+            this.notificacionesSubject.next(notificaciones);
+          }
+        }),
+      );
   }
 
   limpiarDatos(): void {
@@ -163,59 +167,61 @@ export class StudentService {
   }
 
   getAll(): Observable<ApiResponse<StudentListResponse[]>> {
-    return this.http.get<ApiResponse<StudentListResponse[]>>(
-      this.apiUrl,
-      { headers: this.getHeaders() }
-    );
+    return this.http.get<ApiResponse<StudentListResponse[]>>(this.apiUrl, {
+      headers: this.getHeaders(),
+    });
   }
 
   getById(estudianteId: string): Observable<ApiResponse<StudentListResponse>> {
     console.log('📡 GET: Obteniendo estudiante:', estudianteId);
     return this.http.get<ApiResponse<StudentListResponse>>(
       `${this.apiUrl}/${estudianteId}`,
-      { headers: this.getHeaders() }
+      { headers: this.getHeaders() },
     );
   }
 
   getByGrado(grado: string): Observable<ApiResponse<StudentListResponse[]>> {
     return this.http.get<ApiResponse<StudentListResponse[]>>(
       `${this.apiUrl}/grado/${grado}`,
-      { headers: this.getHeaders() }
+      { headers: this.getHeaders() },
     );
   }
 
-  getByGradoAndSeccion(grado: string, seccion: string): Observable<ApiResponse<StudentListResponse[]>> {
+  getByGradoAndSeccion(
+    grado: string,
+    seccion: string,
+  ): Observable<ApiResponse<StudentListResponse[]>> {
     return this.http.get<ApiResponse<StudentListResponse[]>>(
       `${this.apiUrl}/grado/${grado}/seccion/${seccion}`,
-      { headers: this.getHeaders() }
+      { headers: this.getHeaders() },
     );
   }
 
   getRanking(): Observable<ApiResponse<RankingResponse>> {
     return this.http.get<ApiResponse<RankingResponse>>(
       `${this.apiUrl}/ranking`,
-      { headers: this.getHeaders() }
+      { headers: this.getHeaders() },
     );
   }
 
   getEstadisticas(estudianteId: string): Observable<ApiResponse<any>> {
     return this.http.get<ApiResponse<any>>(
       `${this.apiUrl}/${estudianteId}/estadisticas`,
-      { headers: this.getHeaders() }
+      { headers: this.getHeaders() },
     );
   }
 
   updateEstudiante(
-    estudianteId: string, 
-    data: UpdateProfileRequest
+    estudianteId: string,
+    data: UpdateProfileRequest,
   ): Observable<ApiResponse<StudentListResponse>> {
     console.log('👨‍🏫 PUT: Profesor actualizando estudiante:', estudianteId);
     console.log('📦 Datos enviados:', data);
-    
+
     return this.http.put<ApiResponse<StudentListResponse>>(
       `${this.apiUrl}/${estudianteId}/perfil`,
       data,
-      { headers: this.getHeaders() }
+      { headers: this.getHeaders() },
     );
   }
 }

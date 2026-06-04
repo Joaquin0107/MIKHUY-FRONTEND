@@ -105,7 +105,10 @@
             </button>
           </div>
 
-          <div class="profile-actions" *ngIf="currentUserRole === 'student'">
+          <div
+            class="profile-actions action-buttons-gap"
+            *ngIf="currentUserRole === 'student'"
+          >
             <input
               type="file"
               #avatarInput
