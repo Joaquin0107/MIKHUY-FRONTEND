@@ -649,6 +649,304 @@
       </div>
       <!-- ========== FIN GRÁFICOS DE JUEGOS ========== -->
 
+      <!-- ══════════════════════════════════════════════════════════════════════
+           ANÁLISIS NUTRICIONAL DEL DÍA — Solo visible para el alumno
+           CP019: Dashboard con registros del día
+           CP023: Análisis del día disponible
+           CP025: Análisis por tipo de comida
+           CP032: Distribución de macronutrientes del día
+           CP033: Comparación con distribución ideal
+      ════════════════════════════════════════════════════════════════════════ -->
+      <ng-container *ngIf="analisisDelDia as analisis">
+
+        <!-- ── Encabezado de sección ─────────────────────────────────────── -->
+        <div class="analisis-section-header">
+          <mat-icon>today</mat-icon>
+          <h2>Análisis Nutricional del Día</h2>
+          <span class="analisis-fecha">{{ analisis.fecha | date:'EEEE d MMMM':'':'es' }}</span>
+        </div>
+
+        <!-- ── CP019 / CP023 : Métricas del día + barras vs meta ─────────── -->
+        <mat-card class="analisis-card analisis-resumen-card">
+          <mat-card-header>
+            <mat-icon class="analisis-icon">bar_chart</mat-icon>
+            <mat-card-title>Resumen del Día</mat-card-title>
+            <span class="data-source">Consumo acumulado vs meta calórica</span>
+          </mat-card-header>
+          <mat-card-content>
+
+            <!-- Barra de Calorías totales -->
+            <div class="macro-row">
+              <div class="macro-label">
+                <mat-icon style="color:#ff7043">local_fire_department</mat-icon>
+                <span>Calorías Totales</span>
+              </div>
+              <div class="macro-bar-wrap">
+                <div class="macro-bar-track">
+                  <div class="macro-bar-fill calorias"
+                    [style.width.%]="getMacroPct(analisis.caloriasConsumidas, analisis.metaCalorica)">
+                  </div>
+                </div>
+                <span class="macro-values">
+                  <strong>{{ analisis.caloriasConsumidas | number:'1.0-0' }}</strong>
+                  / {{ analisis.metaCalorica | number:'1.0-0' }} kcal
+                </span>
+              </div>
+              <span class="macro-pct" [class.over]="analisis.caloriasConsumidas > analisis.metaCalorica">
+                {{ getMacroPct(analisis.caloriasConsumidas, analisis.metaCalorica) }}%
+              </span>
+            </div>
+
+            <!-- Barra de Proteínas -->
+            <div class="macro-row">
+              <div class="macro-label">
+                <mat-icon style="color:#42a5f5">egg_alt</mat-icon>
+                <span>Proteínas</span>
+              </div>
+              <div class="macro-bar-wrap">
+                <div class="macro-bar-track">
+                  <div class="macro-bar-fill proteinas"
+                    [style.width.%]="getMacroPct(analisis.proteinasG, analisis.metaProteinasG)">
+                  </div>
+                </div>
+                <span class="macro-values">
+                  <strong>{{ analisis.proteinasG | number:'1.0-1' }}</strong>
+                  / {{ analisis.metaProteinasG | number:'1.0-0' }} g
+                </span>
+              </div>
+              <span class="macro-pct" [class.over]="analisis.proteinasG > analisis.metaProteinasG">
+                {{ getMacroPct(analisis.proteinasG, analisis.metaProteinasG) }}%
+              </span>
+            </div>
+
+            <!-- Barra de Carbohidratos -->
+            <div class="macro-row">
+              <div class="macro-label">
+                <mat-icon style="color:#ffca28">grain</mat-icon>
+                <span>Carbohidratos</span>
+              </div>
+              <div class="macro-bar-wrap">
+                <div class="macro-bar-track">
+                  <div class="macro-bar-fill carbohidratos"
+                    [style.width.%]="getMacroPct(analisis.carbohidratosG, analisis.metaCarbohidratosG)">
+                  </div>
+                </div>
+                <span class="macro-values">
+                  <strong>{{ analisis.carbohidratosG | number:'1.0-1' }}</strong>
+                  / {{ analisis.metaCarbohidratosG | number:'1.0-0' }} g
+                </span>
+              </div>
+              <span class="macro-pct" [class.over]="analisis.carbohidratosG > analisis.metaCarbohidratosG">
+                {{ getMacroPct(analisis.carbohidratosG, analisis.metaCarbohidratosG) }}%
+              </span>
+            </div>
+
+            <!-- Barra de Grasas -->
+            <div class="macro-row">
+              <div class="macro-label">
+                <mat-icon style="color:#ab47bc">opacity</mat-icon>
+                <span>Grasas</span>
+              </div>
+              <div class="macro-bar-wrap">
+                <div class="macro-bar-track">
+                  <div class="macro-bar-fill grasas"
+                    [style.width.%]="getMacroPct(analisis.grasasG, analisis.metaGrasasG)">
+                  </div>
+                </div>
+                <span class="macro-values">
+                  <strong>{{ analisis.grasasG | number:'1.0-1' }}</strong>
+                  / {{ analisis.metaGrasasG | number:'1.0-0' }} g
+                </span>
+              </div>
+              <span class="macro-pct" [class.over]="analisis.grasasG > analisis.metaGrasasG">
+                {{ getMacroPct(analisis.grasasG, analisis.metaGrasasG) }}%
+              </span>
+            </div>
+
+          </mat-card-content>
+        </mat-card>
+
+        <!-- ── CP025 : Filtro por tipo de comida ──────────────────────────── -->
+        <mat-card class="analisis-card analisis-comidas-card"
+          *ngIf="analisis.desglosePorComida && analisis.desglosePorComida.length > 0">
+          <mat-card-header>
+            <mat-icon class="analisis-icon">restaurant</mat-icon>
+            <mat-card-title>Análisis por Tipo de Comida</mat-card-title>
+            <span class="data-source">Desglose por comida del día</span>
+          </mat-card-header>
+          <mat-card-content>
+
+            <!-- Chips de selección de comida -->
+            <div class="comida-chips">
+              <button
+                *ngFor="let comida of analisis.desglosePorComida"
+                class="comida-chip"
+                [class.active]="selectedComida === comida.tipo"
+                (click)="selectComida(comida.tipo)">
+                <span class="comida-emoji">{{ getComidaEmoji(comida.tipo) }}</span>
+                {{ comida.tipo }}
+              </button>
+              <button class="comida-chip" [class.active]="selectedComida === 'Todos'"
+                (click)="selectComida('Todos')">
+                📊 Todos
+              </button>
+            </div>
+
+            <!-- Detalle de la comida seleccionada -->
+            <ng-container *ngFor="let comida of analisis.desglosePorComida">
+              <div class="comida-detalle"
+                *ngIf="selectedComida === comida.tipo || selectedComida === 'Todos'">
+                <div class="comida-detalle-header">
+                  <span class="comida-tipo-badge">{{ getComidaEmoji(comida.tipo) }} {{ comida.tipo }}</span>
+                </div>
+                <div class="comida-macros-grid">
+                  <div class="comida-macro-item calorias-bg">
+                    <mat-icon>local_fire_department</mat-icon>
+                    <span class="cmacro-val">{{ comida.calorias | number:'1.0-0' }}</span>
+                    <span class="cmacro-lbl">kcal</span>
+                  </div>
+                  <div class="comida-macro-item proteinas-bg">
+                    <mat-icon>egg_alt</mat-icon>
+                    <span class="cmacro-val">{{ comida.proteinasG | number:'1.0-1' }}</span>
+                    <span class="cmacro-lbl">g Prot.</span>
+                  </div>
+                  <div class="comida-macro-item carbos-bg">
+                    <mat-icon>grain</mat-icon>
+                    <span class="cmacro-val">{{ comida.carbohidratosG | number:'1.0-1' }}</span>
+                    <span class="cmacro-lbl">g Carb.</span>
+                  </div>
+                  <div class="comida-macro-item grasas-bg">
+                    <mat-icon>opacity</mat-icon>
+                    <span class="cmacro-val">{{ comida.grasasG | number:'1.0-1' }}</span>
+                    <span class="cmacro-lbl">g Grasas</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+          </mat-card-content>
+        </mat-card>
+
+        <!-- ── CP032 + CP033 : Torta de macros + toggle distribución ideal ── -->
+        <mat-card class="analisis-card analisis-distribucion-card">
+          <mat-card-header>
+            <mat-icon class="analisis-icon">pie_chart</mat-icon>
+            <mat-card-title>Distribución de Macronutrientes</mat-card-title>
+            <span class="data-source">Porcentaje del día</span>
+          </mat-card-header>
+          <mat-card-content>
+
+            <!-- Toggle CP033 -->
+            <div class="ideal-toggle">
+              <label class="toggle-label">
+                <input type="checkbox" [(ngModel)]="mostrarDistribucionIdeal"
+                  class="toggle-input" />
+                <span class="toggle-slider"></span>
+                Mostrar Distribución Ideal
+              </label>
+            </div>
+
+            <div class="donut-distribucion-wrap">
+
+              <!-- Gráfico de torta SVG (CP032) -->
+              <div class="donut-chart-container">
+                <svg viewBox="0 0 200 200" class="donut-chart-day">
+
+                  <!-- Segmento Proteínas -->
+                  <circle cx="100" cy="100" r="70"
+                    class="donut-seg proteinas-seg"
+                    [attr.stroke-dasharray]="getCircleSegmentR(analisis.proteinasPorcentaje, 70) + ' ' + (2 * 3.1416 * 70)"
+                    stroke-dashoffset="0" />
+
+                  <!-- Segmento Carbohidratos -->
+                  <circle cx="100" cy="100" r="70"
+                    class="donut-seg carbos-seg"
+                    [attr.stroke-dasharray]="getCircleSegmentR(analisis.carbohidratosPorcentaje, 70) + ' ' + (2 * 3.1416 * 70)"
+                    [attr.stroke-dashoffset]="-(getCircleSegmentR(analisis.proteinasPorcentaje, 70))" />
+
+                  <!-- Segmento Grasas -->
+                  <circle cx="100" cy="100" r="70"
+                    class="donut-seg grasas-seg"
+                    [attr.stroke-dasharray]="getCircleSegmentR(analisis.grasasPorcentaje, 70) + ' ' + (2 * 3.1416 * 70)"
+                    [attr.stroke-dashoffset]="-(getCircleSegmentR(analisis.proteinasPorcentaje, 70) + getCircleSegmentR(analisis.carbohidratosPorcentaje, 70))" />
+
+                  <!-- Texto central -->
+                  <text x="100" y="96" class="donut-center-label">HOY</text>
+                  <text x="100" y="112" class="donut-center-sub">{{ analisis.caloriasConsumidas | number:'1.0-0' }} kcal</text>
+                </svg>
+
+                <!-- Leyenda -->
+                <div class="donut-legend">
+                  <div class="legend-row">
+                    <span class="legend-dot proteinas-dot"></span>
+                    <span>Proteínas <strong>{{ analisis.proteinasPorcentaje }}%</strong></span>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-dot carbos-dot"></span>
+                    <span>Carbohidratos <strong>{{ analisis.carbohidratosPorcentaje }}%</strong></span>
+                  </div>
+                  <div class="legend-row">
+                    <span class="legend-dot grasas-dot"></span>
+                    <span>Grasas <strong>{{ analisis.grasasPorcentaje }}%</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CP033: Distribución ideal superpuesta (visible con toggle) -->
+              <div class="ideal-distribucion" *ngIf="mostrarDistribucionIdeal">
+                <div class="ideal-header">
+                  <mat-icon>track_changes</mat-icon>
+                  <span>Distribución Ideal — Tu Perfil</span>
+                </div>
+
+                <!-- Barra comparativa para cada macro -->
+                <div class="ideal-row" *ngFor="let macro of getMacrosComparativa(analisis)">
+                  <span class="ideal-macro-name">{{ macro.nombre }}</span>
+                  <div class="ideal-bars">
+                    <div class="ideal-bar-group">
+                      <div class="ideal-bar real-bar" [style.width.%]="macro.real"
+                        [class.deficit]="macro.real < macro.ideal"
+                        [class.superavit]="macro.real > macro.ideal">
+                      </div>
+                      <span class="ideal-bar-lbl real-lbl">Real {{ macro.real }}%</span>
+                    </div>
+                    <div class="ideal-bar-group">
+                      <div class="ideal-bar ideal-bar-fill" [style.width.%]="macro.ideal"></div>
+                      <span class="ideal-bar-lbl ideal-lbl">Ideal {{ macro.ideal }}%</span>
+                    </div>
+                  </div>
+                  <span class="ideal-delta"
+                    [class.pos]="macro.real >= macro.ideal"
+                    [class.neg]="macro.real < macro.ideal">
+                    {{ macro.real >= macro.ideal ? '+' : '' }}{{ macro.real - macro.ideal }}%
+                  </span>
+                </div>
+
+                <p class="ideal-nota">
+                  <mat-icon>info</mat-icon>
+                  Referencia basada en tu IMC y objetivo de salud.
+                </p>
+              </div>
+
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+      </ng-container>
+
+      <!-- Estado vacío si el alumno aún no tiene análisis del día -->
+      <mat-card class="analisis-empty-card"
+        *ngIf="!analisisDelDia">
+        <mat-card-content>
+          <div class="empty-state">
+            <mat-icon>insert_chart_outlined</mat-icon>
+            <h3>Sin análisis del día</h3>
+            <p>Completa el <strong>Reto 7 Días</strong> para ver tu análisis nutricional diario aquí.</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      <!-- ════════════ FIN ANÁLISIS NUTRICIONAL DEL DÍA ════════════ -->
+
       <!-- ========== SECCIÓN DE SALUD COMPLETA ========== -->
       <ng-container *ngIf="dashboardData?.salud as salud">
         <!-- Estado de Salud Actual -->

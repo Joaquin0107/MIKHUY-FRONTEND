@@ -113,6 +113,12 @@ export class DashboardsComponent implements OnInit {
   selectedDateLabel: string = '';     // texto legible en el botón
   todayStr: string = new Date().toISOString().split('T')[0];
 
+  // ── CP019/CP023/CP025/CP032/CP033: Análisis nutricional del día ──────────
+  /** Comida actualmente seleccionada en el filtro de CP025 */
+  selectedComida: string = 'Todos';
+  /** Toggle del panel de distribución ideal CP033 */
+  mostrarDistribucionIdeal: boolean = false;
+
   constructor(
     private router: Router,
     private dialog: MatDialog,
@@ -360,7 +366,7 @@ export class DashboardsComponent implements OnInit {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const PW = pdf.internal.pageSize.getWidth(); // 210 mm
       const PH = pdf.internal.pageSize.getHeight(); // 297 mm
-      const TOTAL_PAGES = 4;
+      const TOTAL_PAGES = 5;
 
       // ── Paleta ──────────────────────────────────────────────
       const BLUE = [48, 130, 220] as [number, number, number];
@@ -525,7 +531,7 @@ export class DashboardsComponent implements OnInit {
         pdf,
         'REPORTE NUTRICIONAL',
         'Plataforma MIKHUY  |  Sistema de Seguimiento Estudiantil',
-        '1 de 4',
+        '1 de 5',
         PW,
         BLUE,
         BLUE_DARK,
@@ -751,7 +757,7 @@ export class DashboardsComponent implements OnInit {
         pdf,
         'PROGRESO POR JUEGO',
         'Plataforma MIKHUY',
-        '2 de 4',
+        '2 de 5',
         PW,
         BLUE,
         BLUE_DARK,
@@ -839,7 +845,7 @@ export class DashboardsComponent implements OnInit {
           pdf,
           'EVOLUCION DE INDICADORES DE SALUD',
           'Plataforma MIKHUY',
-          '3 de 4',
+          '3 de 5',
           PW,
           BLUE,
           BLUE_DARK,
@@ -896,14 +902,193 @@ export class DashboardsComponent implements OnInit {
       this.pdfFooter(pdf, 3, TOTAL_PAGES, PW, PH, BLUE, WHITE);
 
       // ═══════════════════════════════════════════════
-      // PÁGINA 4 — Recomendaciones y Conclusiones
+      // PÁGINA 4 — Análisis Nutricional del Día
+      // CP019 / CP023 / CP025 / CP032 / CP033
+      // ═══════════════════════════════════════════════
+      pdf.addPage();
+      this.pdfHeader(
+        pdf,
+        'ANALISIS NUTRICIONAL DEL DIA',
+        'Plataforma MIKHUY',
+        '4 de 5',
+        PW,
+        BLUE,
+        BLUE_DARK,
+        WHITE,
+      );
+      let y4n = 48;
+
+      const analDia = (this.dashboardData as any)?.analisisDelDia;
+
+      if (!analDia) {
+        // Sin datos: mensaje informativo
+        rr(15, y4n, PW - 30, 28, GRAY_BG, 5);
+        st(TEXT_GRAY);
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'italic');
+        pdf.text(
+          'No hay registros de consumo nutricional para el dia de hoy.',
+          PW / 2,
+          y4n + 16,
+          { align: 'center' },
+        );
+        y4n += 38;
+      } else {
+        // ── Resumen calorías vs meta (CP019 / CP023) ─────────────────
+        rect(15, y4n, 3, 9, ORANGE);
+        st(TEXT_DARK);
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('RESUMEN CALORICO DEL DIA', 21, y4n + 6.5);
+        y4n += 13;
+
+        // Fila de totales
+        const macroData: { label: string; real: number; meta: number; unit: string; color: [number,number,number] }[] = [
+          { label: 'Calorias Totales', real: analDia.caloriasConsumidas ?? 0, meta: analDia.metaCalorica ?? 2000, unit: 'kcal', color: [255, 112, 67] },
+          { label: 'Proteinas',        real: analDia.proteinasG ?? 0,          meta: analDia.metaProteinasG ?? 60,   unit: 'g',    color: [66, 165, 245] },
+          { label: 'Carbohidratos',    real: analDia.carbohidratosG ?? 0,      meta: analDia.metaCarbohidratosG ?? 250, unit: 'g', color: [255, 202, 40] },
+          { label: 'Grasas',           real: analDia.grasasG ?? 0,             meta: analDia.metaGrasasG ?? 70,      unit: 'g',    color: [171, 71, 188] },
+        ];
+
+        const barX = 15, barW = PW - 30, cellH = 18;
+        macroData.forEach((m) => {
+          const pct = m.meta > 0 ? Math.min(100, Math.round((m.real / m.meta) * 100)) : 0;
+          const fillW = ((barW - 80) * pct) / 100;
+          rr(barX, y4n, barW, cellH, GRAY_BG, 3);
+          // Etiqueta
+          st(TEXT_DARK);
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(m.label, barX + 4, y4n + 11);
+          // Barra de fondo
+          rr(barX + 68, y4n + 5, barW - 80, 8, [224, 224, 224] as [number,number,number], 3);
+          // Barra relleno
+          if (fillW > 0) rr(barX + 68, y4n + 5, fillW, 8, m.color, 3);
+          // Valores
+          st(TEXT_GRAY);
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(`${m.real} / ${m.meta} ${m.unit} (${pct}%)`, barX + 69 + (barW - 80) + 2, y4n + 11);
+          y4n += cellH + 3;
+        });
+
+        y4n += 6;
+
+        // ── Desglose por tipo de comida (CP025) ──────────────────────
+        if (analDia.desglosePorComida && analDia.desglosePorComida.length > 0) {
+          rect(15, y4n, 3, 9, BLUE);
+          st(TEXT_DARK);
+          pdf.setFontSize(11);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('DESGLOSE POR TIPO DE COMIDA', 21, y4n + 6.5);
+          y4n += 13;
+
+          // Cabecera de tabla
+          const cols = { tipo: 15, cal: 75, prot: 110, carb: 140, gras: 165 };
+          rr(15, y4n, PW - 30, 10, BLUE_LIGHT, 3);
+          st(BLUE_DARK);
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Comida',        cols.tipo + 2, y4n + 7);
+          pdf.text('Calorias',      cols.cal,      y4n + 7);
+          pdf.text('Proteinas (g)', cols.prot,     y4n + 7);
+          pdf.text('Carbos (g)',    cols.carb,      y4n + 7);
+          pdf.text('Grasas (g)',    cols.gras,      y4n + 7);
+          y4n += 11;
+
+          analDia.desglosePorComida.forEach((c: any, idx: number) => {
+            const bg = idx % 2 === 0 ? WHITE : GRAY_BG;
+            rr(15, y4n, PW - 30, 9, bg, 0);
+            st(TEXT_DARK);
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', idx === 0 ? 'bold' : 'normal');
+            pdf.text(c.tipo ?? '-',                            cols.tipo + 2, y4n + 6.5);
+            pdf.text(String(c.calorias ?? 0),                  cols.cal,      y4n + 6.5);
+            pdf.text(String((c.proteinasG ?? 0).toFixed(1)),   cols.prot,     y4n + 6.5);
+            pdf.text(String((c.carbohidratosG ?? 0).toFixed(1)), cols.carb,   y4n + 6.5);
+            pdf.text(String((c.grasasG ?? 0).toFixed(1)),      cols.gras,     y4n + 6.5);
+            y4n += 10;
+          });
+          y4n += 6;
+        }
+
+        // ── Distribución de macronutrientes % (CP032 / CP033) ────────
+        rect(15, y4n, 3, 9, PURPLE);
+        st(TEXT_DARK);
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('DISTRIBUCION DE MACRONUTRIENTES', 21, y4n + 6.5);
+        y4n += 13;
+
+        const ideal = analDia.distribucionIdeal ?? { proteinasPct: 15, carbohidratosPct: 55, grasasPct: 30 };
+        const macrosPct = [
+          { nombre: 'Proteinas',     real: analDia.proteinasPorcentaje ?? 0,     ideal: ideal.proteinasPct,     color: [66, 165, 245] as [number,number,number] },
+          { nombre: 'Carbohidratos', real: analDia.carbohidratosPorcentaje ?? 0, ideal: ideal.carbohidratosPct, color: [255, 202, 40] as [number,number,number] },
+          { nombre: 'Grasas',        real: analDia.grasasPorcentaje ?? 0,        ideal: ideal.grasasPct,        color: [171, 71, 188] as [number,number,number] },
+        ];
+
+        // Cabecera de comparativa
+        rr(15, y4n, PW - 30, 10, BLUE_LIGHT, 3);
+        st(BLUE_DARK);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text('Macronutriente', 17, y4n + 7);
+        pdf.text('Real (%)',        70, y4n + 7);
+        pdf.text('Ideal (%)',      100, y4n + 7);
+        pdf.text('Diferencia',    130, y4n + 7);
+        pdf.text('Estado',        165, y4n + 7);
+        y4n += 11;
+
+        macrosPct.forEach((m, idx) => {
+          const diff = m.real - m.ideal;
+          const estado = diff > 5 ? 'Superavit' : diff < -5 ? 'Deficit' : 'Optimo';
+          const estadoColor: [number,number,number] = diff > 5 ? ORANGE : diff < -5 ? RED : GREEN;
+          const bg = idx % 2 === 0 ? WHITE : GRAY_BG;
+          rr(15, y4n, PW - 30, 10, bg, 0);
+          // Dot de color
+          pdf.setFillColor(m.color[0], m.color[1], m.color[2]);
+          pdf.circle(18, y4n + 5, 2.5, 'F');
+          st(TEXT_DARK);
+          pdf.setFontSize(8.5);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(m.nombre,         22,  y4n + 7);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(`${m.real}%`,      72,  y4n + 7);
+          pdf.text(`${m.ideal}%`,    102,  y4n + 7);
+          const diffStr = (diff >= 0 ? '+' : '') + diff + '%';
+          pdf.text(diffStr,          132,  y4n + 7);
+          st(estadoColor);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(estado,           167,  y4n + 7);
+          y4n += 11;
+        });
+
+        y4n += 6;
+
+        // Nota al pie de la sección
+        rr(15, y4n, PW - 30, 14, GRAY_BG, 3);
+        st(TEXT_GRAY);
+        pdf.setFontSize(7.5);
+        pdf.setFont('helvetica', 'italic');
+        pdf.text(
+          'Distribucion ideal basada en el IMC y objetivo de salud del alumno (referencia OMS).',
+          PW / 2, y4n + 9,
+          { align: 'center' },
+        );
+        y4n += 18;
+      }
+
+      this.pdfFooter(pdf, 4, TOTAL_PAGES, PW, PH, BLUE, WHITE);
+
+      // ═══════════════════════════════════════════════
+      // PÁGINA 5 — Recomendaciones y Conclusiones
       // ═══════════════════════════════════════════════
       pdf.addPage();
       this.pdfHeader(
         pdf,
         'RECOMENDACIONES Y CONCLUSIONES',
         'Plataforma MIKHUY',
-        '4 de 4',
+        '5 de 5',
         PW,
         BLUE,
         BLUE_DARK,
@@ -986,7 +1171,7 @@ export class DashboardsComponent implements OnInit {
         { align: 'center' },
       );
 
-      this.pdfFooter(pdf, 4, TOTAL_PAGES, PW, PH, BLUE, WHITE);
+      this.pdfFooter(pdf, 5, TOTAL_PAGES, PW, PH, BLUE, WHITE);
 
       const fileName = `Reporte_${this.selectedStudent.nombre}_${this.selectedStudent.apellido}_${Date.now()}.pdf`;
       pdf.save(fileName);
@@ -2018,11 +2203,73 @@ export class DashboardsComponent implements OnInit {
     }
   }
 
+  /** Getter tipado como any para evitar error de TypeScript en DashboardEstudianteResponse */
+  get analisisDelDia(): any {
+    return (this.dashboardData as any)?.analisisDelDia ?? null;
+  }
+
   logout(): void {
     this.authService.logout();
     localStorage.clear();
     sessionStorage.clear();
     this.router.navigate(['/']);
+  }
+
+  // ─── CP019/CP023: Porcentaje de macro vs meta (capped a 100 para la barra) ──
+  getMacroPct(consumido: number, meta: number): number {
+    if (!meta || meta <= 0) return 0;
+    return Math.min(100, Math.round((consumido / meta) * 100));
+  }
+
+  // ─── CP025: Selección de comida ──────────────────────────────────────────
+  selectComida(tipo: string): void {
+    this.selectedComida = tipo;
+  }
+
+  /** Retorna el emoji representativo de cada tipo de comida */
+  getComidaEmoji(tipo: string): string {
+    const map: Record<string, string> = {
+      'Desayuno': '🍳',
+      'Almuerzo': '🍽️',
+      'Cena':     '🌙',
+      'Merienda': '🍎',
+      'Snack':    '🥨',
+    };
+    return map[tipo] || '🍴';
+  }
+
+  // ─── CP032: Segmento de donut para un radio dado ──────────────────────────
+  /** Longitud de arco = porcentaje × circunferencia del radio indicado */
+  getCircleSegmentR(percentage: number, radius: number): number {
+    return ((percentage ?? 0) / 100) * (2 * Math.PI * radius);
+  }
+
+  // ─── CP033: Comparativa real vs ideal por macro ───────────────────────────
+  getMacrosComparativa(analisis: any): { nombre: string; real: number; ideal: number }[] {
+    // Distribución ideal estándar para control de sobrepeso / normal
+    // Se adapta si el backend devuelve `distribucionIdeal`, si no, se usa la referencia OMS
+    const ideal = analisis?.distribucionIdeal ?? {
+      proteinasPct: 15,
+      carbohidratosPct: 55,
+      grasasPct: 30,
+    };
+    return [
+      {
+        nombre: 'Proteínas',
+        real:   analisis?.proteinasPorcentaje ?? 0,
+        ideal:  ideal.proteinasPct,
+      },
+      {
+        nombre: 'Carbohidratos',
+        real:   analisis?.carbohidratosPorcentaje ?? 0,
+        ideal:  ideal.carbohidratosPct,
+      },
+      {
+        nombre: 'Grasas',
+        real:   analisis?.grasasPorcentaje ?? 0,
+        ideal:  ideal.grasasPct,
+      },
+    ];
   }
 }
 

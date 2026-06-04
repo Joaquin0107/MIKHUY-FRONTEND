@@ -207,10 +207,80 @@ import { MatBadgeModule } from '@angular/material/badge';
           <mat-icon>my_location</mat-icon>
           Ver mi posición
         </button>
+        <button mat-raised-button
+          [color]="mostrandoEvolucion ? 'accent' : 'basic'"
+          (click)="mostrandoEvolucion = !mostrandoEvolucion"
+          *ngIf="data.evolucionSemanal && data.evolucionSemanal.length > 1"
+        >
+          <mat-icon>{{ mostrandoEvolucion ? 'close' : 'show_chart' }}</mat-icon>
+          {{ mostrandoEvolucion ? 'Ocultar' : 'Mi Evolución' }}
+        </button>
         <button mat-raised-button color="primary" (click)="cerrar()">
           <mat-icon>check</mat-icon>
           Entendido
         </button>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           CP118: Gráfico lineal de evolución de posición semanal
+      ═══════════════════════════════════════════════════════════ -->
+      <div class="rk-evolucion" *ngIf="mostrandoEvolucion && data.evolucionSemanal && data.evolucionSemanal.length > 1">
+        <div class="rk-evolucion-header">
+          <mat-icon>show_chart</mat-icon>
+          <h3>Mi Evolución de Posición</h3>
+          <span class="rk-evolucion-sub">Semana a semana</span>
+        </div>
+
+        <div class="rk-chart-wrap">
+          <svg [attr.viewBox]="'0 0 ' + evChartW + ' ' + evChartH" class="rk-line-chart">
+
+            <!-- Líneas de cuadrícula horizontales -->
+            <line *ngFor="let gridY of getGridLines()"
+              [attr.x1]="evPadL" [attr.y1]="gridY"
+              [attr.x2]="evChartW - evPadR" [attr.y2]="gridY"
+              stroke="#f0f0f0" stroke-width="1" />
+
+            <!-- Área bajo la curva -->
+            <polygon
+              [attr.points]="getEvolucionAreaPoints()"
+              class="ev-area" />
+
+            <!-- Línea de evolución -->
+            <polyline
+              [attr.points]="getEvolucionLinePoints()"
+              class="ev-line" />
+
+            <!-- Puntos + tooltip label -->
+            <g *ngFor="let pt of getEvolucionPoints(); let i = index">
+              <circle
+                [attr.cx]="pt.x" [attr.cy]="pt.y" r="5"
+                class="ev-point"
+                [class.ev-point-best]="pt.esMejor" />
+              <text [attr.x]="pt.x" [attr.y]="pt.y - 10"
+                class="ev-pos-label">#{{ pt.posicion }}</text>
+              <text [attr.x]="pt.x" [attr.y]="evChartH - evPadB + 14"
+                class="ev-week-label">S{{ i + 1 }}</text>
+            </g>
+
+            <!-- Eje Y: etiqueta posición -->
+            <text [attr.x]="evPadL - 6" [attr.y]="evPadT + 4"
+              class="ev-axis-label" text-anchor="end">#{{ getEvolucionMinPos() }}</text>
+            <text [attr.x]="evPadL - 6" [attr.y]="evChartH - evPadB + 4"
+              class="ev-axis-label" text-anchor="end">#{{ getEvolucionMaxPos() }}</text>
+          </svg>
+        </div>
+
+        <!-- Leyenda inferior -->
+        <div class="rk-evolucion-legend">
+          <div class="ev-legend-item">
+            <span class="ev-dot-best"></span>
+            <span>Mejor posición alcanzada</span>
+          </div>
+          <div class="ev-legend-item">
+            <span class="ev-dot-normal"></span>
+            <span>Posición semanal</span>
+          </div>
+        </div>
       </div>
     </div>
   `,
@@ -673,10 +743,150 @@ import { MatBadgeModule } from '@angular/material/badge';
           min-width: 120px;
         }
       }
+
+      /* ── Evolución semanal CP118 ──────────────────────────────────────────── */
+      .rk-evolucion {
+        border-top: 2px solid #e3f2fd;
+        background: #f8fbff;
+        padding: 16px 20px 20px;
+        flex-shrink: 0;
+      }
+
+      .rk-evolucion-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .rk-evolucion-header mat-icon {
+        color: #1976d2;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+      }
+
+      .rk-evolucion-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1565c0;
+        flex: 1;
+      }
+
+      .rk-evolucion-sub {
+        font-size: 0.78rem;
+        color: #90a4ae;
+      }
+
+      .rk-chart-wrap {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .rk-line-chart {
+        width: 100%;
+        max-width: 520px;
+        display: block;
+        margin: 0 auto;
+      }
+
+      .ev-area {
+        fill: rgba(25, 118, 210, 0.08);
+      }
+
+      .ev-line {
+        fill: none;
+        stroke: #1976d2;
+        stroke-width: 2.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .ev-point {
+        fill: #1976d2;
+        stroke: white;
+        stroke-width: 2;
+      }
+
+      .ev-point-best {
+        fill: #f9a825;
+        stroke: white;
+        stroke-width: 2.5;
+        r: 7;
+      }
+
+      .ev-pos-label {
+        font-size: 10px;
+        fill: #1565c0;
+        font-weight: 700;
+        text-anchor: middle;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      .ev-week-label {
+        font-size: 9px;
+        fill: #90a4ae;
+        text-anchor: middle;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      .ev-axis-label {
+        font-size: 9px;
+        fill: #bbb;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      .rk-evolucion-legend {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 10px;
+      }
+
+      .ev-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: #666;
+      }
+
+      .ev-dot-best {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #f9a825;
+        border: 2px solid white;
+        box-shadow: 0 0 0 1.5px #f9a825;
+        flex-shrink: 0;
+      }
+
+      .ev-dot-normal {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #1976d2;
+        border: 2px solid white;
+        box-shadow: 0 0 0 1.5px #1976d2;
+        flex-shrink: 0;
+      }
     `,
   ],
 })
 export class RankingInlineDialog {
+
+  // ── CP118: Evolución de posición semanal ──────────────────────────────────
+  mostrandoEvolucion = false;
+
+  // Dimensiones del SVG del gráfico lineal
+  readonly evChartW = 480;
+  readonly evChartH = 160;
+  readonly evPadL   = 36;
+  readonly evPadR   = 16;
+  readonly evPadT   = 24;
+  readonly evPadB   = 24;
+
   constructor(
     public dialogRef: MatDialogRef<RankingInlineDialog>,
     @Inject(MAT_DIALOG_DATA) public data: any,
@@ -703,5 +913,70 @@ export class RankingInlineDialog {
 
   cerrar(): void {
     this.dialogRef.close();
+  }
+
+  // ── CP118: helpers para el gráfico de evolución semanal ──────────────────
+
+  /** Posiciones de la serie (ascendente = mejor = más arriba en SVG) */
+  private getEvolucionSerie(): { semana: number; posicion: number }[] {
+    return (this.data.evolucionSemanal || []) as { semana: number; posicion: number }[];
+  }
+
+  getEvolucionMinPos(): number {
+    const s = this.getEvolucionSerie();
+    return s.length ? Math.min(...s.map(e => e.posicion)) : 1;
+  }
+
+  getEvolucionMaxPos(): number {
+    const s = this.getEvolucionSerie();
+    return s.length ? Math.max(...s.map(e => e.posicion)) : 10;
+  }
+
+  /** Convierte posición a coordenada Y (posición baja → arriba del chart) */
+  private posToY(pos: number): number {
+    const minP = this.getEvolucionMinPos();
+    const maxP = this.getEvolucionMaxPos();
+    const range = maxP - minP || 1;
+    const chartH = this.evChartH - this.evPadT - this.evPadB;
+    // posición mejor (menor número) → Y más arriba (evPadT)
+    return this.evPadT + ((pos - minP) / range) * chartH;
+  }
+
+  private indexToX(i: number, total: number): number {
+    const chartW = this.evChartW - this.evPadL - this.evPadR;
+    return this.evPadL + (total <= 1 ? chartW / 2 : (i / (total - 1)) * chartW);
+  }
+
+  getEvolucionPoints(): { x: number; y: number; posicion: number; esMejor: boolean }[] {
+    const s = this.getEvolucionSerie();
+    const minP = this.getEvolucionMinPos();
+    return s.map((e, i) => ({
+      x: this.indexToX(i, s.length),
+      y: this.posToY(e.posicion),
+      posicion: e.posicion,
+      esMejor: e.posicion === minP,
+    }));
+  }
+
+  getEvolucionLinePoints(): string {
+    return this.getEvolucionPoints().map(p => `${p.x},${p.y}`).join(' ');
+  }
+
+  getEvolucionAreaPoints(): string {
+    const pts = this.getEvolucionPoints();
+    if (!pts.length) return '';
+    const bottom = this.evChartH - this.evPadB;
+    const top = pts.map(p => `${p.x},${p.y}`).join(' ');
+    return `${pts[0].x},${bottom} ${top} ${pts[pts.length - 1].x},${bottom}`;
+  }
+
+  /** Líneas horizontales de cuadrícula a intervalos fijos */
+  getGridLines(): number[] {
+    const lines: number[] = [];
+    const steps = 4;
+    for (let i = 0; i <= steps; i++) {
+      lines.push(this.evPadT + (i / steps) * (this.evChartH - this.evPadT - this.evPadB));
+    }
+    return lines;
   }
 }

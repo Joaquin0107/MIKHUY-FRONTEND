@@ -2116,3 +2116,450 @@
   width: 16px;
   height: 16px;
 }
+/* ════════════════════════════════════════════════════════════════════════════
+   ANÁLISIS NUTRICIONAL DEL DÍA — CP019 / CP023 / CP025 / CP032 / CP033
+   Solo visible para el alumno (via !isTeacher en el HTML)
+════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Encabezado de sección ─────────────────────────────────────────────── */
+.analisis-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 2rem 0 1rem;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e3f2fd;
+}
+
+.analisis-section-header mat-icon {
+  color: #1976d2;
+  font-size: 26px;
+  width: 26px;
+  height: 26px;
+}
+
+.analisis-section-header h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1565c0;
+  flex: 1;
+}
+
+.analisis-fecha {
+  font-size: 0.82rem;
+  color: #90a4ae;
+  text-transform: capitalize;
+}
+
+/* ── Tarjetas de análisis ──────────────────────────────────────────────── */
+.analisis-card {
+  margin-bottom: 1.5rem;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 12px rgba(25, 118, 210, 0.08) !important;
+}
+
+.analisis-icon {
+  color: #1976d2;
+  margin-right: 8px;
+}
+
+/* ── CP019/CP023: Barras de progreso de macros ─────────────────────────── */
+.macro-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.macro-row:last-child {
+  border-bottom: none;
+}
+
+.macro-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 140px;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+}
+
+.macro-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.macro-bar-track {
+  height: 10px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.macro-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s ease;
+  max-width: 100%;
+}
+
+.macro-bar-fill.calorias      { background: linear-gradient(90deg, #ff7043, #ff8a65); }
+.macro-bar-fill.proteinas     { background: linear-gradient(90deg, #42a5f5, #64b5f6); }
+.macro-bar-fill.carbohidratos { background: linear-gradient(90deg, #ffca28, #ffd54f); }
+.macro-bar-fill.grasas        { background: linear-gradient(90deg, #ab47bc, #ce93d8); }
+
+.macro-values {
+  font-size: 0.78rem;
+  color: #666;
+}
+
+.macro-pct {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1976d2;
+  width: 44px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.macro-pct.over {
+  color: #e53935;
+}
+
+/* ── CP025: Filtro por comida ──────────────────────────────────────────── */
+.comida-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.comida-chip {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #555;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.comida-chip:hover {
+  border-color: #1976d2;
+  color: #1976d2;
+  background: #e3f2fd;
+}
+
+.comida-chip.active {
+  background: #1976d2;
+  color: white;
+  border-color: #1976d2;
+}
+
+.comida-detalle {
+  margin-bottom: 12px;
+}
+
+.comida-detalle-header {
+  margin-bottom: 8px;
+}
+
+.comida-tipo-badge {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1565c0;
+}
+
+.comida-macros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+}
+
+.comida-macro-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 8px;
+  border-radius: 10px;
+  gap: 4px;
+}
+
+.comida-macro-item mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.calorias-bg   { background: #fff3e0; color: #e64a19; }
+.proteinas-bg  { background: #e3f2fd; color: #1565c0; }
+.carbos-bg     { background: #fffde7; color: #f57f17; }
+.grasas-bg     { background: #f3e5f5; color: #6a1b9a; }
+
+.cmacro-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.cmacro-lbl {
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+
+/* ── CP032: Gráfico donut del día ─────────────────────────────────────── */
+.ideal-toggle {
+  margin-bottom: 16px;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+  user-select: none;
+}
+
+.toggle-input {
+  display: none;
+}
+
+.toggle-slider {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  background: #ccc;
+  border-radius: 11px;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+
+.toggle-input:checked + .toggle-slider {
+  background: #1976d2;
+}
+
+.toggle-input:checked + .toggle-slider::before {
+  transform: translateX(18px);
+}
+
+.donut-distribucion-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.donut-chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.donut-chart-day {
+  width: 180px;
+  height: 180px;
+  transform: rotate(-90deg);
+}
+
+.donut-seg {
+  fill: none;
+  stroke-width: 36;
+}
+
+.proteinas-seg { stroke: #42a5f5; }
+.carbos-seg    { stroke: #ffca28; }
+.grasas-seg    { stroke: #ab47bc; }
+
+.donut-center-label {
+  font-size: 14px;
+  font-weight: 700;
+  fill: #1565c0;
+  text-anchor: middle;
+  transform: rotate(90deg);
+  transform-origin: 100px 100px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.donut-center-sub {
+  font-size: 9px;
+  fill: #90a4ae;
+  text-anchor: middle;
+  transform: rotate(90deg);
+  transform-origin: 100px 100px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.proteinas-dot { background: #42a5f5; }
+.carbos-dot    { background: #ffca28; }
+.grasas-dot    { background: #ab47bc; }
+
+/* ── CP033: Distribución ideal ─────────────────────────────────────────── */
+.ideal-distribucion {
+  flex: 1;
+  min-width: 200px;
+  background: #f0f7ff;
+  border: 1.5px solid #b3d9f7;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.ideal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1565c0;
+  margin-bottom: 14px;
+}
+
+.ideal-header mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #1976d2;
+}
+
+.ideal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ideal-macro-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #444;
+  width: 90px;
+  flex-shrink: 0;
+}
+
+.ideal-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ideal-bar-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ideal-bar {
+  height: 8px;
+  border-radius: 4px;
+  min-width: 4px;
+  transition: width 0.5s ease;
+}
+
+.real-bar {
+  background: #1976d2;
+}
+
+.real-bar.deficit {
+  background: #ef5350;
+}
+
+.real-bar.superavit {
+  background: #66bb6a;
+}
+
+.ideal-bar-fill {
+  background: rgba(25, 118, 210, 0.2);
+  border: 1px dashed #1976d2;
+}
+
+.ideal-bar-lbl {
+  font-size: 0.7rem;
+  color: #888;
+  white-space: nowrap;
+}
+
+.real-lbl  { color: #1976d2; font-weight: 600; }
+.ideal-lbl { color: #90a4ae; }
+
+.ideal-delta {
+  font-size: 0.8rem;
+  font-weight: 700;
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.ideal-delta.pos { color: #43a047; }
+.ideal-delta.neg { color: #e53935; }
+
+.ideal-nota {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: #90a4ae;
+  margin: 10px 0 0;
+}
+
+.ideal-nota mat-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Estado vacío análisis del día ──────────────────────────────────────── */
+.analisis-empty-card {
+  margin-bottom: 1.5rem;
+  border-radius: 12px !important;
+}
