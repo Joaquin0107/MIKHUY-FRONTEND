@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -7,22 +8,31 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import {
-  MatDialogModule, MatDialog, MatDialogConfig,
-  MatDialogRef, MAT_DIALOG_DATA
+  MatDialogModule,
+  MatDialog,
+  MatDialogConfig,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { AuthService } from '../../services/auth.service';
 import { JuegosService, JuegoResponse } from '../../services/juego.service';
 import { StudentService } from '../../services/student.service';
+import { AmigoService, Companero } from '../../services/amigo.service';
 import { GamePlayDialog } from '../game-play-dialog/game-play-dialog.component';
 import { RankingInlineDialog } from '../ranking-dialog/ranking-dialog.component';
 import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.component';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Dialog de instrucciones de la tarjeta (standalone, inline)
+// Dialog de instrucciones (sin cambios)
 // ─────────────────────────────────────────────────────────────────────────────
 @Component({
   selector: 'instrucciones-juego-dialog',
@@ -30,11 +40,8 @@ import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.c
   imports: [CommonModule, MatButtonModule, MatIconModule, MatDialogModule],
   template: `
     <div class="inst-wrap">
-      <!-- Header -->
       <div class="inst-header">
-        <div class="inst-header-icon">
-          <mat-icon>help_outline</mat-icon>
-        </div>
+        <div class="inst-header-icon"><mat-icon>help_outline</mat-icon></div>
         <div class="inst-header-text">
           <h2>{{ data.titulo }}</h2>
           <p>{{ data.juegoNombre }}</p>
@@ -43,125 +50,794 @@ import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.c
           <mat-icon>close</mat-icon>
         </button>
       </div>
-
-      <!-- Contenido -->
       <mat-dialog-content>
         <ol class="inst-lista">
           <li *ngFor="let paso of data.pasos">{{ paso }}</li>
         </ol>
-
-        <!-- Info extra -->
         <div class="inst-extra">
           <div class="inst-extra-item">
             <mat-icon>bar_chart</mat-icon>
-            <span><strong>Nivel actual:</strong> {{ data.nivelActual }} / {{ data.maxNiveles }}</span>
+            <span
+              ><strong>Nivel actual:</strong> {{ data.nivelActual }} /
+              {{ data.maxNiveles }}</span
+            >
           </div>
           <div class="inst-extra-item">
             <mat-icon>stars</mat-icon>
-            <span><strong>Puntos acumulados:</strong> {{ data.puntosGanados }} pts</span>
+            <span
+              ><strong>Puntos acumulados:</strong>
+              {{ data.puntosGanados }} pts</span
+            >
           </div>
           <div class="inst-extra-item">
             <mat-icon>emoji_events</mat-icon>
-            <span><strong>Puntos por nivel:</strong> {{ data.puntosPorNivel }} pts</span>
+            <span
+              ><strong>Puntos por nivel:</strong>
+              {{ data.puntosPorNivel }} pts</span
+            >
           </div>
         </div>
       </mat-dialog-content>
-
-      <!-- Acciones -->
       <mat-dialog-actions>
         <button mat-button mat-dialog-close>Cerrar</button>
-        <button mat-raised-button color="primary" mat-dialog-close
-          (click)="data.onJugar()">
-          <mat-icon>play_arrow</mat-icon>
-          ¡Jugar ahora!
+        <button
+          mat-raised-button
+          color="primary"
+          mat-dialog-close
+          (click)="data.onJugar()"
+        >
+          <mat-icon>play_arrow</mat-icon> ¡Jugar ahora!
         </button>
       </mat-dialog-actions>
     </div>
   `,
-  styles: [`
-    .inst-wrap { font-family: 'Poppins', sans-serif; width: 480px; max-width: 100%; }
-
-    .inst-header {
-      display: flex; align-items: center; gap: 12px;
-      padding: 35px 3.5rem;
-      background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%);
-      margin: -2px -24px 1.5rem -24px;
-      border-radius: 4px 4px 0 0;
-    }
-    .inst-header-icon {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: rgba(255,255,255,0.25);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .inst-header-icon mat-icon { color: #fff; font-size: 24px; width: 24px; height: 24px; }
-    .inst-header-text { flex: 1; }
-    .inst-header-text h2 { margin: 0; color: #fff; font-size: 1.1rem; font-weight: 700; }
-    .inst-header-text p  { margin: 2px 0 0; color: rgba(255,255,255,0.9); font-size: 0.85rem; }
-    .inst-close { color: white !important; }
-
-    mat-dialog-content {
-      padding: 0 !important;
-      margin: 0 !important;
-      max-height: 60vh;
-      overflow-y: auto;
-    }
-
-    .inst-lista {
-      margin: 0 0 1.25rem;
-      padding: 0 1.5rem;
-      display: flex; flex-direction: column; gap: 10px;
-      list-style: none; counter-reset: inst-counter;
-    }
-    .inst-lista li {
-      counter-increment: inst-counter;
-      display: flex; align-items: flex-start; gap: 10px;
-      font-size: 14px; color: #333; line-height: 1.55;
-    }
-    .inst-lista li::before {
-      content: counter(inst-counter);
-      min-width: 24px; height: 24px;
-      background: #e3f2fd; color: #1565c0;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px;
-    }
-
-    .inst-extra {
-      margin: 0 1.5rem 1rem;
-      padding: 12px 14px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      border: 1px solid #eee;
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .inst-extra-item {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: #555;
-    }
-    .inst-extra-item mat-icon { font-size: 18px; width: 18px; height: 18px; color: #48a3f3; }
-
-    mat-dialog-actions {
-      padding: 0.875rem 1.5rem !important;
-      margin: 0 !important;
-      border-top: 1px solid #eee;
-      display: flex; justify-content: flex-end; gap: 8px;
-    }
-    mat-dialog-actions button:last-child { min-width: 140px; }
-  `],
+  styles: [
+    `
+      .inst-wrap {
+        font-family: 'Poppins', sans-serif;
+        width: 480px;
+        max-width: 100%;
+      }
+      .inst-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 35px 3.5rem;
+        background: linear-gradient(135deg, #48a3f3 0%, #5bb3ff 100%);
+        margin: -2px -24px 1.5rem -24px;
+        border-radius: 4px 4px 0 0;
+      }
+      .inst-header-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .inst-header-icon mat-icon {
+        color: #fff;
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+      .inst-header-text {
+        flex: 1;
+      }
+      .inst-header-text h2 {
+        margin: 0;
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 700;
+      }
+      .inst-header-text p {
+        margin: 2px 0 0;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.85rem;
+      }
+      .inst-close {
+        color: white !important;
+      }
+      mat-dialog-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-height: 60vh;
+        overflow-y: auto;
+      }
+      .inst-lista {
+        margin: 0 0 1.25rem;
+        padding: 0 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        list-style: none;
+        counter-reset: inst-counter;
+      }
+      .inst-lista li {
+        counter-increment: inst-counter;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 14px;
+        color: #333;
+        line-height: 1.55;
+      }
+      .inst-lista li::before {
+        content: counter(inst-counter);
+        min-width: 24px;
+        height: 24px;
+        background: #e3f2fd;
+        color: #1565c0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .inst-extra {
+        margin: 0 1.5rem 1rem;
+        padding: 12px 14px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        border: 1px solid #eee;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .inst-extra-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #555;
+      }
+      .inst-extra-item mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #48a3f3;
+      }
+      mat-dialog-actions {
+        padding: 0.875rem 1.5rem !important;
+        margin: 0 !important;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      mat-dialog-actions button:last-child {
+        min-width: 140px;
+      }
+    `,
+  ],
 })
 export class InstruccionesJuegoDialog {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
-    public dialogRef: MatDialogRef<InstruccionesJuegoDialog>
+    public dialogRef: MatDialogRef<InstruccionesJuegoDialog>,
   ) {}
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Instrucciones por tipo de juego
+// Dialog de Amigos/Compañeros — NUEVO
 // ─────────────────────────────────────────────────────────────────────────────
-function getInstruccionesPorJuego(nombre: string): { titulo: string; pasos: string[] } {
-  const n = nombre.toLowerCase();
+@Component({
+  selector: 'amigos-dialog',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    MatProgressSpinnerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatTooltipModule,
+  ],
+  template: `
+    <div class="amigos-wrap">
+      <!-- Header -->
+      <div class="amigos-header">
+        <div class="amigos-header-icon"><mat-icon>group</mat-icon></div>
+        <div class="amigos-header-text">
+          <h2>Compañeros</h2>
+          <p>{{ data.grado }} – Sección {{ data.seccion }}</p>
+        </div>
+        <button mat-icon-button class="close-btn" mat-dialog-close>
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
 
+      <mat-dialog-content>
+        <!-- Solicitudes recibidas -->
+        <div
+          *ngIf="solicitudesRecibidas.length > 0"
+          class="solicitudes-section"
+        >
+          <div class="section-label">
+            <mat-icon>person_add</mat-icon>
+            Solicitudes recibidas ({{ solicitudesRecibidas.length }})
+          </div>
+          <div class="solicitud-row" *ngFor="let s of solicitudesRecibidas">
+            <mat-icon class="sol-avatar">account_circle</mat-icon>
+            <span class="sol-nombre">{{ s.nombre }}</span>
+            <button
+              mat-raised-button
+              color="primary"
+              class="sol-btn"
+              (click)="aceptar(s.id, s.nombre)"
+              [disabled]="loadingId === s.id"
+            >
+              <mat-icon>check</mat-icon> Aceptar
+            </button>
+            <button
+              mat-stroked-button
+              class="sol-btn rechazar"
+              (click)="rechazar(s.id)"
+              [disabled]="loadingId === s.id"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mis amigos -->
+        <div *ngIf="amigosConfirmados.length > 0" class="amigos-section">
+          <div class="section-label">
+            <mat-icon>favorite</mat-icon>
+            Mis amigos ({{ amigosConfirmados.length }})
+          </div>
+          <div class="amigo-chip" *ngFor="let a of amigosConfirmados">
+            <mat-icon class="chip-avatar-icon">account_circle</mat-icon>
+            <div class="chip-info">
+              <span class="chip-nombre">{{ a.nombres }} {{ a.apellidos }}</span>
+              <span class="chip-pts"
+                ><mat-icon>stars</mat-icon>{{ a.puntosAcumulados }} pts</span
+              >
+            </div>
+            <button
+              mat-icon-button
+              class="eliminar-btn"
+              matTooltip="Eliminar amigo"
+              (click)="eliminar(a.id)"
+            >
+              <mat-icon>person_remove</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Buscador -->
+        <div class="section-label" style="margin-top:1rem">
+          <mat-icon>people</mat-icon>
+          Todos mis compañeros
+        </div>
+
+        <div class="buscar-wrap">
+          <mat-icon class="buscar-icon">search</mat-icon>
+          <input
+            class="buscar-input"
+            [(ngModel)]="busqueda"
+            placeholder="Buscar por nombre..."
+          />
+        </div>
+
+        <!-- Loading -->
+        <div class="spinner-wrap" *ngIf="loading">
+          <mat-spinner diameter="36"></mat-spinner>
+        </div>
+
+        <!-- Vacío -->
+        <div
+          class="empty-wrap"
+          *ngIf="!loading && companerosFiltrados.length === 0"
+        >
+          <mat-icon>group_off</mat-icon>
+          <p>
+            {{
+              busqueda ? 'Sin resultados' : 'No hay compañeros registrados aún'
+            }}
+          </p>
+        </div>
+
+        <!-- Lista -->
+        <div class="companero-row" *ngFor="let c of companerosFiltrados">
+          <mat-icon class="comp-avatar-icon">account_circle</mat-icon>
+          <div class="comp-info">
+            <span class="comp-nombre">{{ c.nombres }} {{ c.apellidos }}</span>
+            <span class="comp-sub">
+              <mat-icon>stars</mat-icon>{{ c.puntosAcumulados }} ·
+              <mat-icon>sports_esports</mat-icon>{{ c.juegosCompletados }}
+            </span>
+          </div>
+          <!-- Estado -->
+          <button
+            mat-raised-button
+            color="primary"
+            class="comp-btn"
+            *ngIf="getEstado(c.id) === 'ninguno'"
+            (click)="enviar(c)"
+            [disabled]="loadingId === c.id"
+          >
+            <mat-icon>person_add</mat-icon> Agregar
+          </button>
+          <button
+            mat-stroked-button
+            class="comp-btn pendiente"
+            *ngIf="getEstado(c.id) === 'pendiente_enviada'"
+            disabled
+          >
+            <mat-icon>hourglass_empty</mat-icon> Pendiente
+          </button>
+          <div
+            class="recibida-row"
+            *ngIf="getEstado(c.id) === 'pendiente_recibida'"
+          >
+            <button
+              mat-raised-button
+              color="primary"
+              class="comp-btn"
+              (click)="aceptar(c.id, c.nombres + ' ' + c.apellidos)"
+              [disabled]="loadingId === c.id"
+            >
+              <mat-icon>check</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="warn"
+              (click)="rechazar(c.id)"
+              [disabled]="loadingId === c.id"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <div class="amigo-tag" *ngIf="getEstado(c.id) === 'amigos'">
+            <mat-icon>favorite</mat-icon> Amigos
+          </div>
+        </div>
+      </mat-dialog-content>
+
+      <mat-dialog-actions>
+        <button mat-button mat-dialog-close>Cerrar</button>
+      </mat-dialog-actions>
+    </div>
+  `,
+  styles: [
+    `
+      .amigos-wrap {
+        font-family: 'Poppins', sans-serif;
+        width: 520px;
+        max-width: 100%;
+      }
+
+      .amigos-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 1.25rem 1.5rem;
+        background: linear-gradient(135deg, #48a3f3, #5bb3ff);
+        margin: -2px -24px 0 -24px;
+        border-radius: 4px 4px 0 0;
+      }
+      .amigos-header-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .amigos-header-icon mat-icon {
+        color: #fff;
+        font-size: 22px;
+        width: 22px;
+        height: 22px;
+      }
+      .amigos-header-text {
+        flex: 1;
+      }
+      .amigos-header-text h2 {
+        margin: 0;
+        color: #fff;
+        font-size: 1.05rem;
+        font-weight: 700;
+      }
+      .amigos-header-text p {
+        margin: 2px 0 0;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.8rem;
+      }
+      .close-btn {
+        color: white !important;
+      }
+
+      mat-dialog-content {
+        padding: 1rem 1.5rem !important;
+        max-height: 55vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .section-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #48a3f3;
+        margin: 0.75rem 0 0.5rem;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 0.4rem;
+      }
+      .section-label mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+
+      /* Solicitudes */
+      .solicitud-row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f5f5f5;
+      }
+      .sol-avatar {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+        color: #ff9800;
+      }
+      .sol-nombre {
+        flex: 1;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #333;
+      }
+      .sol-btn {
+        font-size: 0.8rem !important;
+        height: 32px !important;
+        padding: 0 0.6rem !important;
+      }
+      .sol-btn.rechazar {
+        border-color: #f44336 !important;
+        color: #f44336 !important;
+      }
+
+      /* Amigos confirmados */
+      .amigo-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.5rem 0.75rem;
+        background: #f1f8e9;
+        border-radius: 8px;
+        margin-bottom: 0.4rem;
+      }
+      .chip-avatar-icon {
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
+        color: #4caf50;
+      }
+      .chip-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .chip-nombre {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #333;
+      }
+      .chip-pts {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 0.75rem;
+        color: #888;
+      }
+      .chip-pts mat-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        color: #ffd700;
+      }
+      .eliminar-btn mat-icon {
+        color: #bdbdbd;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+      .eliminar-btn:hover mat-icon {
+        color: #f44336;
+      }
+
+      /* Buscador */
+      .buscar-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0.4rem 0.75rem;
+        margin-bottom: 0.5rem;
+      }
+      .buscar-icon {
+        color: #aaa;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+      .buscar-input {
+        border: none;
+        outline: none;
+        flex: 1;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        background: transparent;
+      }
+
+      .spinner-wrap {
+        display: flex;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .empty-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem;
+        gap: 0.5rem;
+        color: #bbb;
+      }
+      .empty-wrap mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+      }
+      .empty-wrap p {
+        margin: 0;
+        font-size: 0.9rem;
+      }
+
+      /* Compañeros */
+      .companero-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #f5f5f5;
+      }
+      .comp-avatar-icon {
+        font-size: 38px;
+        width: 38px;
+        height: 38px;
+        color: #48a3f3;
+        flex-shrink: 0;
+      }
+      .comp-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .comp-nombre {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #222;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .comp-sub {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.75rem;
+        color: #888;
+      }
+      .comp-sub mat-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        color: #ffd700;
+      }
+      .comp-btn {
+        font-size: 0.8rem !important;
+        height: 34px !important;
+        padding: 0 0.75rem !important;
+        white-space: nowrap;
+      }
+      .comp-btn.pendiente {
+        border-color: #bdbdbd !important;
+        color: #9e9e9e !important;
+      }
+      .recibida-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .amigo-tag {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #4caf50;
+        white-space: nowrap;
+      }
+      .amigo-tag mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: #e53935;
+      }
+
+      mat-dialog-actions {
+        padding: 0.75rem 1.5rem !important;
+        margin: 0 !important;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
+      }
+    `,
+  ],
+})
+export class AmigosDialog implements OnInit {
+  busqueda = '';
+  loading = true;
+  loadingId: string | null = null;
+  companeros: Companero[] = [];
+  solicitudesRecibidas: { id: string; nombre: string }[] = [];
+
+  get companerosFiltrados(): Companero[] {
+    if (!this.busqueda.trim()) return this.companeros;
+    const q = this.busqueda.toLowerCase();
+    return this.companeros.filter(
+      (c) =>
+        c.nombres.toLowerCase().includes(q) ||
+        c.apellidos.toLowerCase().includes(q),
+    );
+  }
+
+  get amigosConfirmados(): Companero[] {
+    return this.companeros.filter(
+      (c) =>
+        this.amigoService.getEstado(this.data.miEstudianteId, c.id) ===
+        'amigos',
+    );
+  }
+
+  constructor(
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      miEstudianteId: string;
+      miNombre: string;
+      grado: string;
+      seccion: string;
+    },
+    public dialogRef: MatDialogRef<AmigosDialog>,
+    private amigoService: AmigoService,
+    private snackBar: MatSnackBar,
+  ) {}
+
+  ngOnInit(): void {
+    this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(
+      this.data.miEstudianteId,
+    );
+    this.amigoService.getCompaneros().subscribe({
+      next: (lista) => {
+        this.companeros = lista;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
+  }
+
+  getEstado(otroId: string): string {
+    return this.amigoService.getEstado(this.data.miEstudianteId, otroId);
+  }
+
+  enviar(c: Companero): void {
+    this.loadingId = c.id;
+    this.amigoService
+      .enviarSolicitud(this.data.miEstudianteId, this.data.miNombre, c)
+      .subscribe({
+        next: () => {
+          this.snackBar.open(`Solicitud enviada a ${c.nombres}`, '', {
+            duration: 2500,
+            panelClass: 'snackbar-success',
+          });
+          this.loadingId = null;
+        },
+        error: (err) => {
+          this.snackBar.open(
+            err.error?.message || 'Error al enviar solicitud',
+            '',
+            { duration: 2500, panelClass: 'snackbar-error' },
+          );
+          // Revertir localStorage si el back falló
+          const store = this.amigoService.getStore(this.data.miEstudianteId);
+          store.enviadas = store.enviadas.filter((e: string) => e !== c.id);
+          this.amigoService.saveStore(this.data.miEstudianteId, store);
+          this.loadingId = null;
+        },
+      });
+  }
+
+  aceptar(remitenteId: string, remitenteNombre: string): void {
+    this.loadingId = remitenteId;
+    this.amigoService
+      .aceptarSolicitud(
+        this.data.miEstudianteId,
+        this.data.miNombre,
+        remitenteId,
+        remitenteNombre,
+      )
+      .subscribe({
+        next: () => {
+          this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(
+            this.data.miEstudianteId,
+          );
+          this.snackBar.open(`¡Ahora eres amigo de ${remitenteNombre}!`, '', {
+            duration: 2500,
+            panelClass: 'snackbar-success',
+          });
+          this.loadingId = null;
+        },
+        error: () => {
+          this.loadingId = null;
+        },
+      });
+  }
+
+  rechazar(remitenteId: string): void {
+    this.loadingId = remitenteId;
+    this.amigoService
+      .rechazarSolicitud(
+        this.data.miEstudianteId,
+        this.data.miNombre,
+        remitenteId,
+      )
+      .subscribe({
+        next: () => {
+          this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(
+            this.data.miEstudianteId,
+          );
+          this.loadingId = null;
+        },
+        error: () => {
+          this.loadingId = null;
+        },
+      });
+  }
+
+  eliminar(amigoId: string): void {
+    this.amigoService.eliminarAmigo(this.data.miEstudianteId, amigoId);
+    this.snackBar.open('Amigo eliminado', '', { duration: 2000 });
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Instrucciones por tipo de juego (sin cambios)
+// ─────────────────────────────────────────────────────────────────────────────
+function getInstruccionesPorJuego(nombre: string): {
+  titulo: string;
+  pasos: string[];
+} {
+  const n = nombre.toLowerCase();
   if (n.includes('nutrimental') || n.includes('desafío')) {
     return {
       titulo: '¿Cómo jugar Desafío Nutrimental?',
@@ -175,13 +851,12 @@ function getInstruccionesPorJuego(nombre: string): { titulo: string; pasos: stri
       ],
     };
   }
-
   if (n.includes('coach')) {
     return {
       titulo: '¿Cómo funciona Coach Exprés?',
       pasos: [
         '🧠 Responderás 8 preguntas del modelo transteórico del cambio.',
-        '📊 Cada pregunta tiene escala del 1 al 5 (Totalmente en desacuerdo → Totalmente de acuerdo).',
+        '📊 Cada pregunta tiene escala del 1 al 5.',
         '🎯 Responde con honestidad — no hay respuestas incorrectas.',
         '⭐ Ganas 5 puntos por cada pregunta completada.',
         '💡 Tus respuestas identifican tu etapa de cambio en hábitos saludables.',
@@ -189,7 +864,6 @@ function getInstruccionesPorJuego(nombre: string): { titulo: string; pasos: stri
       ],
     };
   }
-
   if (n.includes('reto') || n.includes('7 días') || n.includes('7dias')) {
     return {
       titulo: '¿Cómo funciona el Reto 7 Días?',
@@ -203,7 +877,6 @@ function getInstruccionesPorJuego(nombre: string): { titulo: string; pasos: stri
       ],
     };
   }
-
   return {
     titulo: 'Instrucciones del juego',
     pasos: ['Sigue las indicaciones en pantalla para completar cada nivel.'],
@@ -211,7 +884,7 @@ function getInstruccionesPorJuego(nombre: string): { titulo: string; pasos: stri
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Componente principal
+// Componente principal JuegosComponent
 // ─────────────────────────────────────────────────────────────────────────────
 @Component({
   selector: 'app-juegos',
@@ -225,6 +898,7 @@ function getInstruccionesPorJuego(nombre: string): { titulo: string; pasos: stri
     MatProgressBarModule,
     MatBadgeModule,
     MatMenuModule,
+    MatSnackBarModule,
     FloatingChatbotComponent,
   ],
   templateUrl: './juegos.component.html',
@@ -232,9 +906,16 @@ function getInstruccionesPorJuego(nombre: string): { titulo: string; pasos: stri
 })
 export class JuegosComponent implements OnInit, OnDestroy {
   juegos: JuegoResponse[] = [];
-  studentPoints: number = 0;
-  notificationCount: number = 0;
-  loading: boolean = false;
+  studentPoints = 0;
+  notificationCount = 0;
+  loading = false;
+
+  // Datos del estudiante autenticado (para el dialog de amigos)
+  miEstudianteId = '';
+  miNombre = '';
+  miGrado = '';
+  miSeccion = '';
+  solicitudesCount = 0; // badge en el botón de amigos
 
   private destroy$ = new Subject<void>();
 
@@ -243,7 +924,9 @@ export class JuegosComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private authService: AuthService,
     private juegosService: JuegosService,
-    private studentService: StudentService
+    private studentService: StudentService,
+    private amigoService: AmigoService,
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -254,7 +937,9 @@ export class JuegosComponent implements OnInit, OnDestroy {
 
     this.studentService.puntos$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(puntos => { this.studentPoints = puntos; });
+      .subscribe((puntos) => {
+        this.studentPoints = puntos;
+      });
 
     this.loadJuegos();
     this.loadStudentInfo();
@@ -292,17 +977,79 @@ export class JuegosComponent implements OnInit, OnDestroy {
     });
   }
 
-  calcularNotificaciones(juegos: JuegoResponse[]): number {
-    return juegos.filter(
-      (j) => !j.vecesJugado || j.vecesJugado === 0 ||
-        (j.nivelActual && j.nivelActual < j.maxNiveles)
-    ).length;
-  }
-
   loadStudentInfo(): void {
     this.studentService.getMisPuntos().subscribe({
       error: (err) => console.error('Error cargando puntos:', err),
     });
+
+    // Cargar perfil para obtener id, nombre, grado y sección
+    this.studentService.getMiPerfil().subscribe({
+      next: (response: any) => {
+        const data = response?.data ?? response;
+        if (data?.id) {
+          this.miEstudianteId = data.id.toString();
+          this.miNombre = `${data.nombres} ${data.apellidos}`;
+          this.miGrado = data.grado ?? '';
+          this.miSeccion = data.seccion ?? '';
+          // Actualizar badge de solicitudes pendientes
+          this.solicitudesCount = this.amigoService.getSolicitudesRecibidas(
+            this.miEstudianteId,
+          ).length;
+          // Procesar notificaciones de amistad
+          this.procesarNotificacionesAmistad();
+        }
+      },
+      error: (err) => console.error('Error cargando perfil:', err),
+    });
+  }
+
+  procesarNotificacionesAmistad(): void {
+    this.studentService.getMisNotificaciones().subscribe({
+      next: (response: any) => {
+        const notifs = Array.isArray(response)
+          ? response
+          : (response?.data ?? []);
+        this.amigoService.procesarNotificacionesAmistad(
+          this.miEstudianteId,
+          notifs,
+        );
+        this.solicitudesCount = this.amigoService.getSolicitudesRecibidas(
+          this.miEstudianteId,
+        ).length;
+      },
+      error: () => {},
+    });
+  }
+
+  // ── Dialog de Amigos ─────────────────────────────────────────────────────
+  abrirAmigos(): void {
+    const dialogRef = this.dialog.open(AmigosDialog, {
+      width: '560px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      data: {
+        miEstudianteId: this.miEstudianteId,
+        miNombre: this.miNombre,
+        grado: this.miGrado,
+        seccion: this.miSeccion,
+      },
+    });
+
+    // Al cerrar refrescar badge
+    dialogRef.afterClosed().subscribe(() => {
+      this.solicitudesCount = this.amigoService.getSolicitudesRecibidas(
+        this.miEstudianteId,
+      ).length;
+    });
+  }
+
+  calcularNotificaciones(juegos: JuegoResponse[]): number {
+    return juegos.filter(
+      (j) =>
+        !j.vecesJugado ||
+        j.vecesJugado === 0 ||
+        (j.nivelActual && j.nivelActual < j.maxNiveles),
+    ).length;
   }
 
   getDefaultImage(categoria: string): string {
@@ -319,10 +1066,8 @@ export class JuegosComponent implements OnInit, OnDestroy {
     return ((juego.nivelActual || 0) / juego.maxNiveles) * 100;
   }
 
-  // ── Instrucciones de la tarjeta ──────────────────────────────────────────
   verInstrucciones(juego: JuegoResponse): void {
     const inst = getInstruccionesPorJuego(juego.nombre);
-
     this.dialog.open(InstruccionesJuegoDialog, {
       width: '500px',
       maxWidth: '95vw',
@@ -334,16 +1079,13 @@ export class JuegosComponent implements OnInit, OnDestroy {
         maxNiveles: juego.maxNiveles,
         puntosGanados: juego.puntosGanados,
         puntosPorNivel: juego.puntosPorNivel,
-        // Callback para jugar directo desde el dialog de instrucciones
         onJugar: () => this.jugar(juego),
       },
     });
   }
 
-  // ── Jugar ────────────────────────────────────────────────────────────────
   jugar(juego: JuegoResponse): void {
     const nivelAJugar = juego.nivelActual || 1;
-
     const dialogRef = this.dialog.open(GamePlayDialog, {
       width: '90vw',
       maxWidth: '1200px',
@@ -351,7 +1093,6 @@ export class JuegosComponent implements OnInit, OnDestroy {
       data: { juego, nivelAJugar },
       disableClose: true,
     });
-
     dialogRef.afterClosed().subscribe((result) => {
       if (result?.completed) {
         this.loadJuegos();
@@ -360,7 +1101,6 @@ export class JuegosComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Ranking ──────────────────────────────────────────────────────────────
   verPosiciones(juego: JuegoResponse): void {
     this.juegosService.getRankingPorJuego(juego.id).subscribe({
       next: (res) => {
@@ -384,9 +1124,20 @@ export class JuegosComponent implements OnInit, OnDestroy {
     });
   }
 
-  navigateToBenefits(): void { this.router.navigate(['/beneficios']); }
-  openProfile(): void { this.router.navigate(['/perfil']); }
-  goBack(): void { this.router.navigate(['/landing-alumnos']); }
-  onImageError(event: any): void { event.target.src = 'assets/images/placeholder-game.jpg'; }
-  logout(): void { localStorage.clear(); this.router.navigate(['/']); }
+  navigateToBenefits(): void {
+    this.router.navigate(['/beneficios']);
+  }
+  openProfile(): void {
+    this.router.navigate(['/perfil']);
+  }
+  goBack(): void {
+    this.router.navigate(['/landing-alumnos']);
+  }
+  onImageError(event: any): void {
+    event.target.src = 'assets/images/placeholder-game.jpg';
+  }
+  logout(): void {
+    localStorage.clear();
+    this.router.navigate(['/']);
+  }
 }

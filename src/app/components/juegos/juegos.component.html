@@ -18,6 +18,19 @@
         BENEFICIOS
       </button>
 
+      <!-- ── Botón Amigos ── -->
+      <button
+        mat-raised-button
+        class="amigos-btn"
+        (click)="abrirAmigos()"
+        [matBadge]="solicitudesCount > 0 ? solicitudesCount : null"
+        matBadgeColor="warn"
+        matBadgeSize="small"
+      >
+        <mat-icon>group</mat-icon>
+        AMIGOS
+      </button>
+
       <div class="points-display">
         <mat-icon class="points-icon">stars</mat-icon>
         <span class="points-value">{{ studentPoints }}</span>
@@ -84,19 +97,14 @@
 
       <!-- Acciones -->
       <mat-card-actions>
-        <!-- Posiciones -->
         <button mat-button class="action-btn-posiciones" (click)="verPosiciones(juego)">
           <mat-icon>leaderboard</mat-icon>
           Posiciones
         </button>
-
-        <!-- Instrucciones -->
         <button mat-icon-button class="action-btn-instrucciones"
           title="Ver instrucciones" (click)="verInstrucciones(juego)">
           <mat-icon>help_outline</mat-icon>
         </button>
-
-        <!-- Jugar -->
         <button mat-raised-button color="primary" class="action-btn-jugar"
           (click)="jugar(juego)">
           <mat-icon>play_arrow</mat-icon>

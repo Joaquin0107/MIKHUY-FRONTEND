@@ -389,3 +389,27 @@ mat-card-actions button mat-icon {
     flex: 1;
   }
 }
+
+.amigos-btn {
+  height: 48px !important;
+  padding: 0 1.5rem !important;
+  border-radius: 24px !important;
+  font-weight: 600 !important;
+  font-size: 0.95rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s !important;
+  background: linear-gradient(135deg, #7BC67E 0%, #5FB83D 100%) !important;
+  color: white !important;
+}
+ 
+.amigos-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(123, 198, 126, 0.35) !important;
+}
+ 
+.amigos-btn mat-icon {
+  margin-right: 0.4rem;
+}
+ 
