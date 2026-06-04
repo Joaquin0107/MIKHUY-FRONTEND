@@ -2584,3 +2584,113 @@
   width: 13px;
   height: 13px;
 }
+
+/* ── CP118: Tarjeta ranking con botón evolución ────────────────────────── */
+.stat-card-ranking {
+  flex-direction: column;
+  align-items: flex-start !important;
+  gap: 8px;
+}
+
+.evolucion-btn {
+  font-size: 0.78rem !important;
+  padding: 2px 10px !important;
+  line-height: 28px !important;
+  height: 28px !important;
+  color: #1976d2 !important;
+  border-color: #1976d2 !important;
+  min-width: unset !important;
+}
+
+.evolucion-btn mat-icon {
+  font-size: 15px !important;
+  width: 15px !important;
+  height: 15px !important;
+  margin-right: 4px;
+}
+
+/* ── CP118: Gráfico de evolución semanal ───────────────────────────────── */
+.evolucion-ranking-card {
+  margin-bottom: 1.5rem;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 12px rgba(25, 118, 210, 0.08) !important;
+}
+
+.evolucion-empty {
+  border: 1.5px dashed #e0e0e0 !important;
+  box-shadow: none !important;
+}
+
+.evolucion-chart-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.evolucion-line-chart {
+  width: 100%;
+  max-width: 520px;
+  display: block;
+  margin: 0 auto;
+}
+
+.ev-area-dash  { fill: rgba(25, 118, 210, 0.07); }
+.ev-line-dash  { fill: none; stroke: #1976d2; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.ev-pt         { fill: #1976d2; stroke: white; stroke-width: 2; }
+.ev-pt-best    { fill: #f9a825; stroke: white; stroke-width: 2.5; r: 7; }
+
+.ev-lbl-pos {
+  font-size: 9px;
+  fill: #1565c0;
+  font-weight: 700;
+  text-anchor: middle;
+  font-family: 'Poppins', sans-serif;
+}
+
+.ev-lbl-week {
+  font-size: 9px;
+  fill: #90a4ae;
+  text-anchor: middle;
+  font-family: 'Poppins', sans-serif;
+}
+
+.ev-axis {
+  font-size: 8px;
+  fill: #bbb;
+  text-anchor: end;
+  font-family: 'Poppins', sans-serif;
+}
+
+.evolucion-legend {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.ev-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #666;
+}
+
+.ev-dot-best-sm {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #f9a825; border: 2px solid white;
+  box-shadow: 0 0 0 1.5px #f9a825; flex-shrink: 0;
+}
+
+.ev-dot-normal-sm {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #1976d2; border: 2px solid white;
+  box-shadow: 0 0 0 1.5px #1976d2; flex-shrink: 0;
+}
+
+.ev-legend-nota {
+  font-size: 0.75rem;
+  color: #90a4ae;
+  font-style: italic;
+}

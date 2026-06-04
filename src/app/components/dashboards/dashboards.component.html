@@ -230,14 +230,88 @@
           </div>
         </mat-card>
 
-        <mat-card class="stat-card">
+        <mat-card class="stat-card stat-card-ranking">
           <mat-icon class="stat-icon ranking">leaderboard</mat-icon>
           <div class="stat-content">
             <h3>#{{ dashboardData.estadisticas.posicionRanking }}</h3>
             <p>Posición Ranking</p>
           </div>
+          <button mat-stroked-button class="evolucion-btn"
+            *ngIf="!isTeacher"
+            (click)="mostrandoEvolucionRanking = !mostrandoEvolucionRanking"
+            title="Ver gráfico de evolución semanal">
+            <mat-icon>{{ mostrandoEvolucionRanking ? 'expand_less' : 'show_chart' }}</mat-icon>
+            Mi Evolución
+          </button>
         </mat-card>
       </div>
+
+      <!-- ══ CP118: Gráfico de evolución de posición semanal ══════════════════ -->
+      <mat-card class="evolucion-ranking-card"
+        *ngIf="!isTeacher && mostrandoEvolucionRanking && getEvolucionSemanalData().length > 0">
+        <mat-card-header>
+          <mat-icon class="analisis-icon">show_chart</mat-icon>
+          <mat-card-title>Mi Evolución de Posición</mat-card-title>
+          <span class="data-source">Semana a semana — Reto 7 Días</span>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="evolucion-chart-wrap">
+            <svg viewBox="0 0 480 160" class="evolucion-line-chart">
+
+              <!-- Cuadrícula -->
+              <line *ngFor="let gy of [24, 51, 78, 105, 132]"
+                x1="36" [attr.y1]="gy" x2="464" [attr.y2]="gy"
+                stroke="#f0f0f0" stroke-width="1"/>
+
+              <!-- Área -->
+              <polygon [attr.points]="getEvolucionAreaStr()" class="ev-area-dash"/>
+
+              <!-- Línea -->
+              <polyline [attr.points]="getEvolucionLineStr()" class="ev-line-dash"/>
+
+              <!-- Puntos -->
+              <g *ngFor="let pt of getEvolucionPoints2(); let i = index">
+                <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="5"
+                  [class]="pt.esMejor ? 'ev-pt-best' : 'ev-pt'"/>
+                <text [attr.x]="pt.x" [attr.y]="pt.y - 9"
+                  class="ev-lbl-pos">#{{ pt.pos }}</text>
+                <text [attr.x]="pt.x" [attr.y]="148"
+                  class="ev-lbl-week">S{{ i + 1 }}</text>
+              </g>
+
+              <!-- Eje Y -->
+              <text x="30" y="28" class="ev-axis">#{{ getEvMinPos() }}</text>
+              <text x="30" y="136" class="ev-axis">#{{ getEvMaxPos() }}</text>
+            </svg>
+          </div>
+
+          <!-- Leyenda -->
+          <div class="evolucion-legend">
+            <span class="ev-legend-item">
+              <span class="ev-dot-best-sm"></span> Mejor posición
+            </span>
+            <span class="ev-legend-item">
+              <span class="ev-dot-normal-sm"></span> Posición semanal
+            </span>
+            <span class="ev-legend-nota" *ngIf="getEvolucionSemanalData().length < 2">
+              Completa más días del Reto 7 Días para ver la tendencia.
+            </span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Mensaje si solo hay 1 punto -->
+      <mat-card class="evolucion-ranking-card evolucion-empty"
+        *ngIf="!isTeacher && mostrandoEvolucionRanking && getEvolucionSemanalData().length < 2">
+        <mat-card-content>
+          <div class="empty-state">
+            <mat-icon>show_chart</mat-icon>
+            <p>Necesitas al menos <strong>2 registros</strong> del Reto 7 Días para ver la evolución.</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- ════════════════════════ FIN CP118 ════════════════════════════════ -->
 
       <!-- ========== GRÁFICOS DE JUEGOS ========== -->
       <div class="charts-grid">
