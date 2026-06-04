@@ -417,10 +417,11 @@ mat-card-actions button mat-icon {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+  padding-right: 0 !important; 
 }
 
 mat-dialog-content {
-  padding: 1rem 1.5rem !important;
+  padding: 1rem 0 1rem 1.5rem !important;
   max-height: 55vh;
   overflow-y: auto;
   display: flex;
@@ -428,6 +429,14 @@ mat-dialog-content {
   gap: 0.5rem;
   border: none !important;
   outline: none !important;
+}
+
+.solicitud-row, 
+.buscar-wrap, 
+.section-label, 
+.companero-row, 
+.amigo-chip {
+  margin-right: 1.5rem !important; 
 }
 
 .buscar-wrap {
@@ -439,4 +448,10 @@ mat-dialog-content {
   padding: 0.4rem 0.75rem;
   margin-bottom: 0.5rem;
   background-color: white;
+}
+
+.buscar-field mat-icon[matSuffix] {
+  color: #757575; /* O el color principal de tu paleta */
+  margin-right: 4px; /* Le da un pequeño aire antes del borde del input */
+  cursor: pointer;
 }
