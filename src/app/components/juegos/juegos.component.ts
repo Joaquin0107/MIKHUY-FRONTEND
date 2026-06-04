@@ -419,7 +419,7 @@ export class InstruccionesJuegoDialog {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 1.25rem 1.5rem;
+        padding: 20px 2.5rem;
         background: linear-gradient(135deg, #48a3f3, #5bb3ff);
         margin: -2px -24px 0 -24px;
         border-radius: 4px 4px 0 0;
