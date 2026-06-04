@@ -2694,3 +2694,38 @@
   color: #90a4ae;
   font-style: italic;
 }
+
+/* ── CP118: Contexto del ranking general ───────────────────────────────── */
+.evolucion-contexto {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: #f8fbff;
+  border-radius: 8px;
+  border: 1px solid #e3f2fd;
+}
+
+.evolucion-ctx-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  color: #555;
+}
+
+.evolucion-ctx-item mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.evolucion-ctx-tendencia {
+  color: #90a4ae;
+}
+
+.evolucion-ctx-tendencia.subiendo {
+  color: #43a047;
+  font-weight: 600;
+}

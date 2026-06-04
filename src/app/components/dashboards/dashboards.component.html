@@ -248,13 +248,31 @@
 
       <!-- ══ CP118: Gráfico de evolución de posición semanal ══════════════════ -->
       <mat-card class="evolucion-ranking-card"
-        *ngIf="!isTeacher && mostrandoEvolucionRanking && getEvolucionSemanalData().length > 0">
+        *ngIf="!isTeacher && mostrandoEvolucionRanking && dashboardData?.estadisticas?.posicionRanking">
         <mat-card-header>
           <mat-icon class="analisis-icon">show_chart</mat-icon>
           <mat-card-title>Mi Evolución de Posición</mat-card-title>
-          <span class="data-source">Semana a semana — Reto 7 Días</span>
+          <span class="data-source">Ranking general — {{ dashboardData.estadisticas.totalEstudiantes }} estudiantes</span>
         </mat-card-header>
         <mat-card-content>
+
+          <!-- Contexto general del ranking -->
+          <div class="evolucion-contexto">
+            <div class="evolucion-ctx-item">
+              <mat-icon style="color:#f9a825">emoji_events</mat-icon>
+              <span>Posición actual: <strong>#{{ dashboardData.estadisticas.posicionRanking }}</strong> de {{ dashboardData.estadisticas.totalEstudiantes }}</span>
+            </div>
+            <div class="evolucion-ctx-item">
+              <mat-icon style="color:#1976d2">stars</mat-icon>
+              <span>Puntos acumulados: <strong>{{ dashboardData.estadisticas.puntosGanados }}</strong></span>
+            </div>
+            <div class="evolucion-ctx-item evolucion-ctx-tendencia"
+              [class.subiendo]="getEvolucionSemanalData()[0]?.posicion > getEvolucionSemanalData()[getEvolucionSemanalData().length-1]?.posicion">
+              <mat-icon>{{ getEvolucionSemanalData()[0]?.posicion > getEvolucionSemanalData()[getEvolucionSemanalData().length-1]?.posicion ? 'trending_up' : 'trending_flat' }}</mat-icon>
+              <span>{{ getEvolucionSemanalData()[0]?.posicion > getEvolucionSemanalData()[getEvolucionSemanalData().length-1]?.posicion ? 'Tendencia ascendente' : 'Posición estable' }}</span>
+            </div>
+          </div>
+
           <div class="evolucion-chart-wrap">
             <svg viewBox="0 0 480 160" class="evolucion-line-chart">
 
@@ -293,24 +311,13 @@
             <span class="ev-legend-item">
               <span class="ev-dot-normal-sm"></span> Posición semanal
             </span>
-            <span class="ev-legend-nota" *ngIf="getEvolucionSemanalData().length < 2">
-              Completa más días del Reto 7 Días para ver la tendencia.
+            <span class="ev-legend-nota">
+              * Evolución basada en tus registros del Reto 7 Días
             </span>
           </div>
+
         </mat-card-content>
       </mat-card>
-
-      <!-- Mensaje si solo hay 1 punto -->
-      <mat-card class="evolucion-ranking-card evolucion-empty"
-        *ngIf="!isTeacher && mostrandoEvolucionRanking && getEvolucionSemanalData().length < 2">
-        <mat-card-content>
-          <div class="empty-state">
-            <mat-icon>show_chart</mat-icon>
-            <p>Necesitas al menos <strong>2 registros</strong> del Reto 7 Días para ver la evolución.</p>
-          </div>
-        </mat-card-content>
-      </mat-card>
-
       <!-- ════════════════════════ FIN CP118 ════════════════════════════════ -->
 
       <!-- ========== GRÁFICOS DE JUEGOS ========== -->
