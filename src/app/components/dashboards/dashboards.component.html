@@ -480,7 +480,7 @@
                 <div
                   class="stage-circle"
                   [class.active]="
-                    dashboardData.ultimoAnalisis?.etapaCambio ===
+                    dashboardData.ultimoAnalisis.etapaCambio ===
                     'Pre-contemplación'
                   "
                 >
@@ -494,7 +494,7 @@
                 <div
                   class="stage-circle"
                   [class.active]="
-                    dashboardData.ultimoAnalisis?.etapaCambio ===
+                    dashboardData.ultimoAnalisis.etapaCambio ===
                     'Contemplación'
                   "
                 >
@@ -508,7 +508,7 @@
                 <div
                   class="stage-circle"
                   [class.active]="
-                    dashboardData.ultimoAnalisis?.etapaCambio === 'Preparación'
+                    dashboardData.ultimoAnalisis.etapaCambio === 'Preparación'
                   "
                 >
                   <span class="stage-number">3</span>
@@ -521,7 +521,7 @@
                 <div
                   class="stage-circle"
                   [class.active]="
-                    dashboardData.ultimoAnalisis?.etapaCambio === 'Acción'
+                    dashboardData.ultimoAnalisis.etapaCambio === 'Acción'
                   "
                 >
                   <span class="stage-number">4</span>
@@ -530,14 +530,14 @@
                 <div
                   class="stage-connector"
                   [class.active]="
-                    dashboardData.ultimoAnalisis?.etapaCambio ===
+                    dashboardData.ultimoAnalisis.etapaCambio ===
                     'Mantenimiento'
                   "
                 ></div>
                 <div
                   class="stage-circle"
                   [class.active]="
-                    dashboardData.ultimoAnalisis?.etapaCambio ===
+                    dashboardData.ultimoAnalisis.etapaCambio ===
                     'Mantenimiento'
                   "
                 >
@@ -550,11 +550,11 @@
                 <div>
                   <strong
                     >Etapa Actual:
-                    {{ dashboardData.ultimoAnalisis?.etapaCambio }}</strong
+                    {{ dashboardData.ultimoAnalisis.etapaCambio }}</strong
                   >
-                  <p *ngIf="dashboardData.ultimoAnalisis?.porcentajeAciertos">
+                  <p *ngIf="dashboardData.ultimoAnalisis.porcentajeAciertos">
                     Conocimiento:
-                    {{ dashboardData.ultimoAnalisis?.porcentajeAciertos }}% de
+                    {{ dashboardData.ultimoAnalisis.porcentajeAciertos }}% de
                     aciertos
                   </p>
                 </div>
@@ -948,7 +948,7 @@
       <!-- ════════════ FIN ANÁLISIS NUTRICIONAL DEL DÍA ════════════ -->
 
       <!-- ========== SECCIÓN DE SALUD COMPLETA ========== -->
-      <ng-container *ngIf="dashboardData?.salud as salud">
+      <ng-container *ngIf="dashboardData.salud as salud">
         <!-- Estado de Salud Actual -->
         <mat-card class="health-summary-card" *ngIf="salud.medicionActual">
           <mat-card-header>
@@ -1401,7 +1401,7 @@
       <!-- Empty state para salud -->
       <mat-card
         class="health-empty-card"
-        *ngIf="!dashboardData?.salud?.medicionActual"
+        *ngIf="!dashboardData.salud.medicionActual"
       >
         <mat-card-content>
           <div class="empty-state">
