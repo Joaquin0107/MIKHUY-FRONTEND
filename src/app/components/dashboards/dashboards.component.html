@@ -494,7 +494,7 @@
                 <div
                   class="stage-circle"
                   [class.active]="
-                    dashboardData.ultimoAnalisis.etapaCambio ===
+                    dashboardData.ultimoAnalisis?.etapaCambio ===
                     'Contemplación'
                   "
                 >
@@ -508,7 +508,7 @@
                 <div
                   class="stage-circle"
                   [class.active]="
-                    dashboardData.ultimoAnalisis.etapaCambio === 'Preparación'
+                    dashboardData.ultimoAnalisis?.etapaCambio === 'Preparación'
                   "
                 >
                   <span class="stage-number">3</span>
@@ -521,7 +521,7 @@
                 <div
                   class="stage-circle"
                   [class.active]="
-                    dashboardData.ultimoAnalisis.etapaCambio === 'Acción'
+                    dashboardData.ultimoAnalisis?.etapaCambio === 'Acción'
                   "
                 >
                   <span class="stage-number">4</span>
@@ -530,14 +530,14 @@
                 <div
                   class="stage-connector"
                   [class.active]="
-                    dashboardData.ultimoAnalisis.etapaCambio ===
+                    dashboardData.ultimoAnalisis?.etapaCambio ===
                     'Mantenimiento'
                   "
                 ></div>
                 <div
                   class="stage-circle"
                   [class.active]="
-                    dashboardData.ultimoAnalisis.etapaCambio ===
+                    dashboardData.ultimoAnalisis?.etapaCambio ===
                     'Mantenimiento'
                   "
                 >
