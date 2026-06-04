@@ -2426,7 +2426,11 @@ export class DashboardsComponent implements OnInit {
   getEvolucionLineStr(): string {
     return this.evCoords().map(p => `${p.x},${p.y}`).join(' ');
   }
-  getEvolucionAreaStr(): string {
+  get evolucionEsAscendente(): boolean {
+    const data = this.getEvolucionSemanalData();
+    if (data.length < 2) return false;
+    return data[0].posicion > data[data.length - 1].posicion;
+  }
     const pts = this.evCoords();
     if (!pts.length) return '';
     const bottom = 132;

@@ -267,9 +267,9 @@
               <span>Puntos acumulados: <strong>{{ dashboardData.estadisticas.puntosGanados }}</strong></span>
             </div>
             <div class="evolucion-ctx-item evolucion-ctx-tendencia"
-              [class.subiendo]="getEvolucionSemanalData()[0]?.posicion > getEvolucionSemanalData()[getEvolucionSemanalData().length-1]?.posicion">
-              <mat-icon>{{ getEvolucionSemanalData()[0]?.posicion > getEvolucionSemanalData()[getEvolucionSemanalData().length-1]?.posicion ? 'trending_up' : 'trending_flat' }}</mat-icon>
-              <span>{{ getEvolucionSemanalData()[0]?.posicion > getEvolucionSemanalData()[getEvolucionSemanalData().length-1]?.posicion ? 'Tendencia ascendente' : 'Posición estable' }}</span>
+              [class.subiendo]="evolucionEsAscendente">
+              <mat-icon>{{ evolucionEsAscendente ? 'trending_up' : 'trending_flat' }}</mat-icon>
+              <span>{{ evolucionEsAscendente ? 'Tendencia ascendente' : 'Posición estable' }}</span>
             </div>
           </div>
 
