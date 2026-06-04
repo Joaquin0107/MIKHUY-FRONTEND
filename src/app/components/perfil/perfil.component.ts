@@ -18,7 +18,10 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { AmigoService, Companero } from '../../services/amigo.service';
 import {
   PerfilService,
   EstudianteResponse,
@@ -33,6 +36,7 @@ import { AuthService } from '../../services/auth.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
@@ -43,6 +47,7 @@ import { AuthService } from '../../services/auth.service';
     MatBadgeModule,
     MatMenuModule,
     MatDividerModule,
+    MatTooltipModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
   ],
@@ -58,10 +63,9 @@ export class PerfilComponent implements OnInit {
   selectedAvatar: string | null = null;
   avatarFile: File | null = null;
 
-  // ✅ Roles y contexto de visualización
   currentUserRole: 'student' | 'teacher' = 'student';
-  isViewingOwnProfile = true; // Si es estudiante viendo su perfil o profesor viendo otro
-  estudianteId: string | null = null; // ID del estudiante si el profesor lo está viendo
+  isViewingOwnProfile = true;
+  estudianteId: string | null = null;
 
   notificationCount = 0;
   studentPoints = 0;
@@ -79,6 +83,32 @@ export class PerfilComponent implements OnInit {
 
   perfilData: EstudianteResponse | null = null;
 
+  // ── Amigos ────────────────────────────────────────────────────────────────
+  companeros: Companero[] = [];
+  loadingCompaneros = false;
+  loadingAmigo = false;
+  busquedaAmigo = '';
+  solicitudesRecibidas: { id: string; nombre: string }[] = [];
+
+  private miEstudianteId = '';
+  private miNombreCompleto = '';
+
+  get companerosFiltrados(): Companero[] {
+    if (!this.busquedaAmigo.trim()) return this.companeros;
+    const q = this.busquedaAmigo.toLowerCase();
+    return this.companeros.filter(
+      (c) =>
+        c.nombres.toLowerCase().includes(q) ||
+        c.apellidos.toLowerCase().includes(q)
+    );
+  }
+
+  get amigosConfirmados(): Companero[] {
+    const ids = this.amigoService.getAmigos(this.miEstudianteId);
+    return this.companeros.filter((c) => ids.includes(c.id));
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -87,6 +117,7 @@ export class PerfilComponent implements OnInit {
     private studentService: StudentService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
+    private amigoService: AmigoService,   // ← inyectado correctamente
   ) {}
 
   ngOnInit(): void {
@@ -105,23 +136,14 @@ export class PerfilComponent implements OnInit {
   }
 
   checkRouteParams(): void {
-    // ✅ Verificar si hay un estudianteId en los parámetros de la URL
     this.route.queryParams.subscribe((params) => {
       this.estudianteId = params['estudianteId'] || null;
 
-      console.log('🔍 Parámetros de ruta:', params);
-      console.log('🆔 Estudiante ID:', this.estudianteId);
-      console.log('👤 Rol actual:', this.currentUserRole);
-
       if (this.estudianteId && this.currentUserRole === 'teacher') {
-        // 👨‍🏫 Profesor viendo perfil de un estudiante
         this.isViewingOwnProfile = false;
-        console.log('👨‍🏫 MODO: Profesor viendo perfil de estudiante');
         this.loadEstudianteDataForTeacher(this.estudianteId);
       } else {
-        // 👨‍🎓 Estudiante viendo su propio perfil
         this.isViewingOwnProfile = true;
-        console.log('👨‍🎓 MODO: Estudiante viendo su propio perfil');
         this.loadPerfilData();
       }
     });
@@ -131,26 +153,22 @@ export class PerfilComponent implements OnInit {
     this.router.navigate(['/dashboards']);
   }
 
-  loadEstudianteDataForTeacher(estudianteId: string): void {
-    console.log('👨‍🏫 Profesor cargando perfil de estudiante:', estudianteId);
-    this.loading = true;
+  // ── Carga de datos ────────────────────────────────────────────────────────
 
+  loadEstudianteDataForTeacher(estudianteId: string): void {
+    this.loading = true;
     this.studentService.getById(estudianteId).subscribe({
       next: (response) => {
-        console.log('✅ Datos del estudiante obtenidos:', response);
         if (response.success && response.data) {
           this.perfilData = response.data;
           this.studentPoints = response.data.puntosAcumulados || 0;
-
           this.stats = {
             juegosCompletados: response.data.juegosCompletados || 0,
             puntosGanados: this.studentPoints,
             canjesRealizados: 0,
             diasActivo: this.calcularDiasActivo(response.data.fechaRegistro),
           };
-
           this.populateForm(response.data);
-
           if (response.data.avatarUrl) {
             this.selectedAvatar = response.data.avatarUrl;
           }
@@ -167,56 +185,48 @@ export class PerfilComponent implements OnInit {
   }
 
   loadPerfilData(): void {
-    console.log('📡 Cargando perfil del estudiante...');
-    console.log(
-      '🎟️ Token:',
-      localStorage.getItem('authToken') ? '✓ EXISTE' : '✗ NO EXISTE',
-    );
-
     this.loading = true;
     this.perfilService.getMiPerfil().subscribe({
       next: (response) => {
-        console.log('✅ Perfil recibido:', response);
         if (response.success && response.data) {
           this.perfilData = response.data;
           this.studentPoints = response.data.puntosAcumulados || 0;
-
           this.stats = {
             juegosCompletados: response.data.juegosCompletados || 0,
             puntosGanados: this.studentPoints,
             canjesRealizados: 0,
             diasActivo: this.calcularDiasActivo(response.data.fechaRegistro),
           };
-
           this.populateForm(response.data);
           this.loadEstadisticas();
+
+          // ── Amigos: capturar id y nombre del estudiante autenticado ───────
+          if (response.data.id) {
+            this.miEstudianteId = response.data.id.toString();
+            this.miNombreCompleto =
+              `${response.data.nombres} ${response.data.apellidos}`;
+          }
+          // Procesar notificaciones de amistad y cargar compañeros
+          this.loadNotificacionesAmistad();
+          this.loadCompaneros();
+          // ─────────────────────────────────────────────────────────────────
 
           if (response.data.avatarUrl) {
             this.selectedAvatar = response.data.avatarUrl;
           } else {
             const savedAvatar = sessionStorage.getItem('userAvatar');
-            if (savedAvatar) {
-              this.selectedAvatar = savedAvatar;
-            }
+            if (savedAvatar) this.selectedAvatar = savedAvatar;
           }
         }
         this.loading = false;
       },
       error: (error) => {
         console.error('❌ Error cargando perfil:', error);
-        console.error('Status:', error.status);
-        console.error('URL:', error.url);
-
         if (error.status === 401) {
-          this.showMessage(
-            'Sesión expirada. Inicia sesión nuevamente.',
-            'error',
-          );
+          this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
           setTimeout(() => {
             this.authService.logout();
-            this.router.navigate(['/login'], {
-              queryParams: { role: 'student' },
-            });
+            this.router.navigate(['/login'], { queryParams: { role: 'student' } });
           }, 2000);
         } else {
           this.showMessage('Error al cargar el perfil', 'error');
@@ -227,13 +237,10 @@ export class PerfilComponent implements OnInit {
   }
 
   loadEstadisticas(): void {
-    // ✅ Solo cargar estadísticas si es el propio perfil
     if (!this.isViewingOwnProfile) return;
-
     this.loadingStats = true;
     this.perfilService.getMisEstadisticas().subscribe({
       next: (response) => {
-        console.log('✅ Estadísticas recibidas:', response);
         if (response.success && response.data) {
           this.stats = {
             juegosCompletados: response.data.juegosCompletados || 0,
@@ -253,28 +260,125 @@ export class PerfilComponent implements OnInit {
     });
   }
 
+  // ── Métodos de Amigos ─────────────────────────────────────────────────────
+
+  /**
+   * Carga las notificaciones del back y procesa las de tipo amistad
+   * para actualizar el localStorage y las solicitudes recibidas.
+   */
+  loadNotificacionesAmistad(): void {
+    this.studentService.getMisNotificaciones().subscribe({
+      next: (response: any) => {
+        // getMisNotificaciones devuelve ApiResponse<Notificacion[]> — extraer .data
+        const notifs = Array.isArray(response) ? response : (response?.data ?? []);
+        this.amigoService.procesarNotificacionesAmistad(this.miEstudianteId, notifs);
+        this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(this.miEstudianteId);
+      },
+      error: (err: any) => console.error('Error cargando notificaciones:', err),
+    });
+  }
+
+  loadCompaneros(): void {
+    this.loadingCompaneros = true;
+    this.amigoService.getCompaneros().subscribe({
+      next: (lista) => {
+        this.companeros = lista;
+        this.loadingCompaneros = false;
+      },
+      error: (err) => {
+        console.error('Error cargando compañeros:', err);
+        this.loadingCompaneros = false;
+      },
+    });
+  }
+
+  getEstadoAmigo(otroId: string): string {
+    return this.amigoService.getEstado(this.miEstudianteId, otroId);
+  }
+
+  enviarSolicitud(companero: Companero): void {
+    if (!this.miEstudianteId) return;
+    this.loadingAmigo = true;
+    this.amigoService
+      .enviarSolicitud(this.miEstudianteId, this.miNombreCompleto, companero)
+      .subscribe({
+        next: () => {
+          this.showMessage(`Solicitud enviada a ${companero.nombres}`, 'success');
+          this.loadingAmigo = false;
+        },
+        error: (err) => {
+          console.error('Error enviando solicitud:', err);
+          this.showMessage(err.error?.message || 'Error al enviar solicitud', 'error');
+          // Revertir estado local si el back falló
+          const store = this.amigoService.getStore(this.miEstudianteId);
+          store.enviadas = store.enviadas.filter((e: string) => e !== companero.id);
+          this.amigoService.saveStore(this.miEstudianteId, store);
+          this.loadingAmigo = false;
+        },
+      });
+  }
+
+  aceptarSolicitud(remitenteId: string, remitenteNombre: string): void {
+    if (!this.miEstudianteId) return;
+    this.loadingAmigo = true;
+    this.amigoService
+      .aceptarSolicitud(this.miEstudianteId, this.miNombreCompleto, remitenteId, remitenteNombre)
+      .subscribe({
+        next: () => {
+          this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(this.miEstudianteId);
+          this.showMessage(`¡Ahora eres amigo de ${remitenteNombre}!`, 'success');
+          this.loadingAmigo = false;
+        },
+        error: (err) => {
+          console.error('Error aceptando solicitud:', err);
+          this.showMessage('Error al aceptar solicitud', 'error');
+          this.loadingAmigo = false;
+        },
+      });
+  }
+
+  rechazarSolicitud(remitenteId: string): void {
+    if (!this.miEstudianteId) return;
+    this.loadingAmigo = true;
+    this.amigoService
+      .rechazarSolicitud(this.miEstudianteId, this.miNombreCompleto, remitenteId)
+      .subscribe({
+        next: () => {
+          this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(this.miEstudianteId);
+          this.showMessage('Solicitud rechazada', 'success');
+          this.loadingAmigo = false;
+        },
+        error: (err) => {
+          console.error('Error rechazando solicitud:', err);
+          this.loadingAmigo = false;
+        },
+      });
+  }
+
+  eliminarAmigo(amigoId: string): void {
+    this.amigoService.eliminarAmigo(this.miEstudianteId, amigoId);
+    this.showMessage('Amigo eliminado', 'success');
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+
   calcularDiasActivo(fechaRegistro?: string): number {
     if (!fechaRegistro) return 0;
     const fecha = new Date(fechaRegistro);
     const hoy = new Date();
-    const diff = hoy.getTime() - fecha.getTime();
-    return Math.floor(diff / (1000 * 60 * 60 * 24));
+    return Math.floor((hoy.getTime() - fecha.getTime()) / (1000 * 60 * 60 * 24));
   }
 
   calcularDiasDesdeRegistro(): number {
     if (this.perfilData) {
-      const fechaRegistro = new Date(
-        this.perfilData.fechaRegistro || Date.now(),
-      );
+      const fechaRegistro = new Date(this.perfilData.fechaRegistro || Date.now());
       const hoy = new Date();
-      const diff = hoy.getTime() - fechaRegistro.getTime();
-      return Math.floor(diff / (1000 * 60 * 60 * 24));
+      return Math.floor((hoy.getTime() - fechaRegistro.getTime()) / (1000 * 60 * 60 * 24));
     }
     return 0;
   }
 
   populateForm(data: EstudianteResponse): void {
-    // Normalizar sección: si la BD guardó "Sección A" extraer solo "A"
     const seccionNorm = data.seccion
       ? data.seccion.replace('Sección ', '').trim()
       : 'A';
@@ -285,7 +389,6 @@ export class PerfilComponent implements OnInit {
       telefono: data.telefono || '',
       edad: data.edad || '',
       peso: data.peso || '',
-      // FIX: talla en metros tal cual del backend
       talla: data.talla || '',
       grado: data.grado || '5to',
       seccion: seccionNorm,
@@ -311,7 +414,7 @@ export class PerfilComponent implements OnInit {
         newPassword: ['', [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', Validators.required],
       },
-      { validators: this.passwordMatchValidator },
+      { validators: this.passwordMatchValidator }
     );
   }
 
@@ -328,14 +431,11 @@ export class PerfilComponent implements OnInit {
         this.showMessage('La imagen no debe superar 5MB', 'error');
         return;
       }
-
       if (!file.type.startsWith('image/')) {
         this.showMessage('Solo se permiten archivos de imagen', 'error');
         return;
       }
-
       this.avatarFile = file;
-
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.selectedAvatar = e.target.result;
@@ -354,27 +454,13 @@ export class PerfilComponent implements OnInit {
 
   guardarPerfil(): void {
     if (!this.perfilForm.valid) {
-      this.showMessage(
-        'Por favor completa todos los campos requeridos',
-        'error',
-      );
+      this.showMessage('Por favor completa todos los campos requeridos', 'error');
       return;
     }
 
     const token =
       localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-    console.log('🔐 Verificando autenticación...');
-    console.log(
-      '🎟️ Token en localStorage:',
-      localStorage.getItem('authToken') ? '✓' : '✗',
-    );
-    console.log(
-      '🎟️ Token en sessionStorage:',
-      sessionStorage.getItem('authToken') ? '✓' : '✗',
-    );
-    console.log('🎟️ Token disponible:', token ? '✓ SÍ' : '✗ NO');
     if (!token) {
-      console.error('❌ NO HAY TOKEN - Redirigiendo a login');
       this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
       setTimeout(() => {
         this.authService.logout();
@@ -387,14 +473,11 @@ export class PerfilComponent implements OnInit {
 
     this.loading = true;
 
+    const seccionRaw = this.perfilForm.value.seccion as string;
+    const seccionNormalizada = seccionRaw?.replace('Sección ', '').trim() ?? seccionRaw;
     const pesoValue = this.perfilForm.value.peso;
     const tallaValue = this.perfilForm.value.talla;
     const edadValue = this.perfilForm.value.edad;
-
-    // Normalizar sección: si viene "Sección A" extraer solo "A"
-    const seccionRaw = this.perfilForm.value.seccion as string;
-    const seccionNormalizada =
-      seccionRaw?.replace('Sección ', '').trim() ?? seccionRaw;
 
     const updateData: UpdateProfileRequest = {
       nombres: this.perfilForm.value.firstName,
@@ -405,111 +488,59 @@ export class PerfilComponent implements OnInit {
       seccion: seccionNormalizada,
       edad: edadValue ? parseInt(edadValue) : undefined,
       peso: pesoValue ? parseFloat(pesoValue) : undefined,
-      // ✅ FIX: talla ya está en metros (1.57), NO multiplicar por 100
-      talla: tallaValue
-        ? parseFloat(parseFloat(tallaValue).toFixed(2))
-        : undefined,
+      talla: tallaValue ? parseFloat(parseFloat(tallaValue).toFixed(2)) : undefined,
     };
 
-    console.log('📦 Datos a enviar:', updateData);
-    console.log(
-      '👤 Modo:',
-      this.isViewingOwnProfile ? 'Propio perfil' : 'Perfil de estudiante',
-    );
-
     if (!this.isViewingOwnProfile && this.estudianteId) {
-      console.log(
-        '👨‍🏫 Profesor actualizando perfil del estudiante:',
-        this.estudianteId,
-      );
-
-      this.studentService
-        .updateEstudiante(this.estudianteId, updateData)
-        .subscribe({
-          next: (response) => {
-            console.log('✅ Estudiante actualizado por profesor:', response);
+      this.studentService.updateEstudiante(this.estudianteId, updateData).subscribe({
+        next: (response) => {
+          this.showMessage('Perfil del estudiante actualizado exitosamente', 'success');
+          this.loading = false;
+          this.loadEstudianteDataForTeacher(this.estudianteId!);
+        },
+        error: (error) => {
+          console.error('❌ Error actualizando estudiante:', error);
+          if (error.status === 401) {
+            this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
+            setTimeout(() => {
+              this.authService.logout();
+              this.router.navigate(['/login'], { queryParams: { role: 'teacher' } });
+            }, 2000);
+          } else {
             this.showMessage(
-              'Perfil del estudiante actualizado exitosamente',
-              'success',
+              error.error?.message || 'Error al actualizar el perfil del estudiante',
+              'error'
             );
-            this.loading = false;
-            this.loadEstudianteDataForTeacher(this.estudianteId!);
-          },
-          error: (error) => {
-            console.error('❌ Error actualizando estudiante:', error);
-            console.error('Status:', error.status);
-            console.error('Message:', error.error?.message);
-
-            if (error.status === 401) {
-              this.showMessage(
-                'Sesión expirada. Inicia sesión nuevamente.',
-                'error',
-              );
-              setTimeout(() => {
-                this.authService.logout();
-                this.router.navigate(['/login'], {
-                  queryParams: { role: 'teacher' },
-                });
-              }, 2000);
-            } else {
-              this.showMessage(
-                error.error?.message ||
-                  'Error al actualizar el perfil del estudiante',
-                'error',
-              );
-            }
-            this.loading = false;
-          },
-        });
+          }
+          this.loading = false;
+        },
+      });
     } else {
-      console.log('👨‍🎓 Estudiante actualizando su propio perfil');
-
       this.perfilService.updateMiPerfil(updateData).subscribe({
         next: (response) => {
-          console.log('✅ Perfil actualizado:', response);
           if (response.success) {
             this.showMessage('Perfil actualizado exitosamente', 'success');
-
             const currentUser = this.authService.getCurrentUser();
             if (currentUser) {
               currentUser.name = `${updateData.nombres} ${updateData.apellidos}`;
               this.authService.saveUser(currentUser);
             }
-
             this.loadPerfilData();
           }
           this.loading = false;
         },
         error: (error) => {
           console.error('❌ Error actualizando perfil:', error);
-          console.error('Status del error:', error.status);
-          console.error('Mensaje de error:', error.error?.message);
-          console.error('URL de la petición:', error.url);
-          console.error('Error completo:', error);
-
           if (error.status === 401) {
-            console.error('❌ ERROR 401: Token inválido o expirado');
-            this.showMessage(
-              'Sesión expirada. Inicia sesión nuevamente.',
-              'error',
-            );
+            this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
             setTimeout(() => {
               this.authService.logout();
-              this.router.navigate(['/login'], {
-                queryParams: { role: 'student' },
-              });
+              this.router.navigate(['/login'], { queryParams: { role: 'student' } });
             }, 2000);
           } else if (error.status === 0) {
-            console.error('❌ ERROR 0: No se pudo conectar con el servidor');
-            this.showMessage(
-              'No se pudo conectar con el servidor. Verifica tu conexión.',
-              'error',
-            );
+            this.showMessage('No se pudo conectar con el servidor.', 'error');
           } else {
-            this.showMessage(
-              error.error?.message || 'Error al actualizar el perfil',
-              'error',
-            );
+            this.showMessage(error.error?.message || 'Error al actualizar el perfil', 'error');
           }
           this.loading = false;
         },
@@ -519,20 +550,15 @@ export class PerfilComponent implements OnInit {
 
   cambiarContrasena(): void {
     if (!this.seguridadForm.valid) {
-      this.showMessage(
-        'Por favor completa todos los campos correctamente',
-        'error',
-      );
+      this.showMessage('Por favor completa todos los campos correctamente', 'error');
       return;
     }
-
     if (this.seguridadForm.errors?.['passwordMismatch']) {
       this.showMessage('Las contraseñas no coinciden', 'error');
       return;
     }
 
     this.loading = true;
-
     const passwordData = {
       oldPassword: this.seguridadForm.value.currentPassword,
       newPassword: this.seguridadForm.value.newPassword,
@@ -541,7 +567,6 @@ export class PerfilComponent implements OnInit {
 
     this.authService.cambiarContrasena(passwordData).subscribe({
       next: (response) => {
-        console.log('✅ Contraseña cambiada:', response);
         if (response.success) {
           this.showMessage('Contraseña actualizada exitosamente', 'success');
           this.seguridadForm.reset();
@@ -553,10 +578,7 @@ export class PerfilComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Error cambiando contraseña:', error);
-        this.showMessage(
-          error.error?.message || 'Error al cambiar la contraseña.',
-          'error',
-        );
+        this.showMessage(error.error?.message || 'Error al cambiar la contraseña.', 'error');
         this.loading = false;
       },
     });

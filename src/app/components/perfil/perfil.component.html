@@ -484,6 +484,249 @@
               </form>
             </div>
           </mat-tab>
+          <!-- Tab Amigos (solo estudiantes) -->
+          <mat-tab
+            label="Amigos"
+            *ngIf="isViewingOwnProfile && currentUserRole === 'student'"
+          >
+            <div class="tab-content">
+              <!-- Solicitudes pendientes recibidas -->
+              <div
+                *ngIf="solicitudesRecibidas.length > 0"
+                class="solicitudes-section"
+              >
+                <div class="section-title">
+                  <mat-icon>person_add</mat-icon>
+                  <h3>
+                    Solicitudes recibidas ({{ solicitudesRecibidas.length }})
+                  </h3>
+                </div>
+
+                <div
+                  class="solicitud-card"
+                  *ngFor="let s of solicitudesRecibidas"
+                >
+                  <div class="solicitud-info">
+                    <div class="solicitud-avatar">
+                      <mat-icon>account_circle</mat-icon>
+                    </div>
+                    <span class="solicitud-nombre">{{ s.nombre }}</span>
+                  </div>
+                  <div class="solicitud-actions">
+                    <button
+                      mat-raised-button
+                      color="primary"
+                      class="aceptar-btn"
+                      (click)="aceptarSolicitud(s.id, s.nombre)"
+                      [disabled]="loadingAmigo"
+                    >
+                      <mat-icon>check</mat-icon>
+                      Aceptar
+                    </button>
+                    <button
+                      mat-stroked-button
+                      class="rechazar-btn"
+                      (click)="rechazarSolicitud(s.id)"
+                      [disabled]="loadingAmigo"
+                    >
+                      <mat-icon>close</mat-icon>
+                      Rechazar
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Buscador de compañeros -->
+              <div class="section-title" style="margin-top: 1.5rem">
+                <mat-icon>group</mat-icon>
+                <h3>Mis compañeros de clase</h3>
+              </div>
+
+              <mat-form-field
+                appearance="outline"
+                class="full-width buscar-field"
+              >
+                <mat-label>Buscar compañero</mat-label>
+                <input
+                  matInput
+                  [(ngModel)]="busquedaAmigo"
+                  placeholder="Nombre..."
+                />
+                <mat-icon matPrefix>search</mat-icon>
+              </mat-form-field>
+
+              <!-- Loading compañeros -->
+              <div class="stats-loading" *ngIf="loadingCompaneros">
+                <mat-spinner diameter="40"></mat-spinner>
+              </div>
+
+              <!-- Sin compañeros -->
+              <div
+                class="empty-amigos"
+                *ngIf="
+                  !loadingCompaneros &&
+                  companerosFiltrados.length === 0 &&
+                  !busquedaAmigo
+                "
+              >
+                <mat-icon>group_off</mat-icon>
+                <p>No hay compañeros registrados en tu grado y sección aún.</p>
+              </div>
+
+              <!-- Sin resultados de búsqueda -->
+              <div
+                class="empty-amigos"
+                *ngIf="
+                  !loadingCompaneros &&
+                  companerosFiltrados.length === 0 &&
+                  busquedaAmigo
+                "
+              >
+                <mat-icon>search_off</mat-icon>
+                <p>No se encontraron compañeros con ese nombre.</p>
+              </div>
+
+              <!-- Lista de compañeros -->
+              <div
+                class="companeros-grid"
+                *ngIf="!loadingCompaneros && companerosFiltrados.length > 0"
+              >
+                <div
+                  class="companero-card"
+                  *ngFor="let c of companerosFiltrados"
+                >
+                  <!-- Avatar -->
+                  <div class="comp-avatar">
+                    <img
+                      *ngIf="c.avatarUrl"
+                      [src]="c.avatarUrl"
+                      [alt]="c.nombres"
+                    />
+                    <mat-icon *ngIf="!c.avatarUrl">account_circle</mat-icon>
+                  </div>
+
+                  <!-- Info -->
+                  <div class="comp-info">
+                    <span class="comp-nombre"
+                      >{{ c.nombres }} {{ c.apellidos }}</span
+                    >
+                    <span class="comp-grado"
+                      >{{ c.grado }} – Sección {{ c.seccion }}</span
+                    >
+                    <div class="comp-stats">
+                      <span class="comp-stat">
+                        <mat-icon>stars</mat-icon>{{ c.puntosAcumulados }}
+                      </span>
+                      <span class="comp-stat">
+                        <mat-icon>sports_esports</mat-icon
+                        >{{ c.juegosCompletados }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Acción según estado -->
+                  <div class="comp-action">
+                    <!-- Sin relación: botón enviar solicitud -->
+                    <button
+                      mat-raised-button
+                      color="primary"
+                      *ngIf="getEstadoAmigo(c.id) === 'ninguno'"
+                      (click)="enviarSolicitud(c)"
+                      [disabled]="loadingAmigo"
+                      class="accion-btn"
+                    >
+                      <mat-icon>person_add</mat-icon>
+                      Agregar
+                    </button>
+
+                    <!-- Solicitud enviada -->
+                    <button
+                      mat-stroked-button
+                      *ngIf="getEstadoAmigo(c.id) === 'pendiente_enviada'"
+                      disabled
+                      class="accion-btn pendiente-btn"
+                    >
+                      <mat-icon>hourglass_empty</mat-icon>
+                      Pendiente
+                    </button>
+
+                    <!-- Solicitud recibida (desde esta tarjeta también) -->
+                    <div
+                      class="recibida-actions"
+                      *ngIf="getEstadoAmigo(c.id) === 'pendiente_recibida'"
+                    >
+                      <button
+                        mat-raised-button
+                        color="primary"
+                        (click)="
+                          aceptarSolicitud(c.id, c.nombres + ' ' + c.apellidos)
+                        "
+                        [disabled]="loadingAmigo"
+                        class="accion-btn"
+                      >
+                        <mat-icon>check</mat-icon>
+                        Aceptar
+                      </button>
+                      <button
+                        mat-icon-button
+                        color="warn"
+                        (click)="rechazarSolicitud(c.id)"
+                        [disabled]="loadingAmigo"
+                      >
+                        <mat-icon>close</mat-icon>
+                      </button>
+                    </div>
+
+                    <!-- Ya son amigos -->
+                    <div
+                      class="amigo-badge"
+                      *ngIf="getEstadoAmigo(c.id) === 'amigos'"
+                    >
+                      <mat-icon>favorite</mat-icon>
+                      <span>Amigos</span>
+                      <button
+                        mat-icon-button
+                        class="eliminar-btn"
+                        (click)="eliminarAmigo(c.id)"
+                        matTooltip="Eliminar amigo"
+                      >
+                        <mat-icon>person_remove</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Sección mis amigos confirmados -->
+              <ng-container *ngIf="amigosConfirmados.length > 0">
+                <mat-divider style="margin: 2rem 0"></mat-divider>
+                <div class="section-title">
+                  <mat-icon>favorite</mat-icon>
+                  <h3>Mis amigos ({{ amigosConfirmados.length }})</h3>
+                </div>
+                <div class="amigos-chips">
+                  <div class="amigo-chip" *ngFor="let a of amigosConfirmados">
+                    <div class="chip-avatar">
+                      <img
+                        *ngIf="a.avatarUrl"
+                        [src]="a.avatarUrl"
+                        [alt]="a.nombres"
+                      />
+                      <mat-icon *ngIf="!a.avatarUrl">account_circle</mat-icon>
+                    </div>
+                    <div class="chip-info">
+                      <span class="chip-nombre"
+                        >{{ a.nombres }} {{ a.apellidos }}</span
+                      >
+                      <span class="chip-puntos">
+                        <mat-icon>stars</mat-icon>{{ a.puntosAcumulados }} pts
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+          </mat-tab>
         </mat-tab-group>
       </mat-card>
     </div>
