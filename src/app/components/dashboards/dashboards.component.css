@@ -2563,3 +2563,24 @@
   margin-bottom: 1.5rem;
   border-radius: 12px !important;
 }
+
+/* ── Badge offline ──────────────────────────────────────────────────────── */
+.offline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #fff8e1;
+  border: 1px solid #ffe082;
+  color: #f57f17;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.offline-badge mat-icon {
+  font-size: 13px;
+  width: 13px;
+  height: 13px;
+}

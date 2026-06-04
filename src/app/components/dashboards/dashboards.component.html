@@ -664,6 +664,9 @@
           <mat-icon>today</mat-icon>
           <h2>Análisis Nutricional del Día</h2>
           <span class="analisis-fecha">{{ analisis.fecha | date:'EEEE d MMMM':'':'es' }}</span>
+          <span class="offline-badge" *ngIf="analisis.guardadoOffline" title="Datos guardados localmente">
+            <mat-icon>offline_bolt</mat-icon> Guardado local
+          </span>
         </div>
 
         <!-- ── CP019 / CP023 : Métricas del día + barras vs meta ─────────── -->
@@ -948,7 +951,7 @@
       <!-- ════════════ FIN ANÁLISIS NUTRICIONAL DEL DÍA ════════════ -->
 
       <!-- ========== SECCIÓN DE SALUD COMPLETA ========== -->
-      <ng-container *ngIf="dashboardData.salud as salud">
+      <ng-container *ngIf="dashboardData?.salud as salud">
         <!-- Estado de Salud Actual -->
         <mat-card class="health-summary-card" *ngIf="salud.medicionActual">
           <mat-card-header>
@@ -1401,7 +1404,7 @@
       <!-- Empty state para salud -->
       <mat-card
         class="health-empty-card"
-        *ngIf="!dashboardData.salud.medicionActual"
+        *ngIf="!dashboardData?.salud?.medicionActual"
       >
         <mat-card-content>
           <div class="empty-state">

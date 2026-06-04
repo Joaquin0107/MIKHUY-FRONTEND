@@ -493,18 +493,31 @@ export class GamePlayDialog implements OnInit, OnDestroy {
   }
 
   // ── localStorage helpers ─────────────────────────────────────────────────
-  /** Clave única por usuario + día del reto */
-  private retoStorageKey(dia: number): string {
-    const uid =
-      this.gameData?.estudianteId ||
-      this.gameData?.alumnoId ||
-      this.gameData?.userId ||
-      JSON.parse(localStorage.getItem('currentUser') || '{}')?.id ||
-      'unknown';
-    return `mikhuy_reto7_${uid}_dia${dia}`;
+  /** Extrae el userId probando todos los campos posibles del currentUser */
+  private getUserId(): string {
+    const cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    return (
+      cu?.id       ||
+      cu?._id      ||
+      cu?.userId   ||
+      cu?.alumnoId ||
+      cu?.email    ||   // último recurso: email es único por usuario
+      'unknown'
+    );
   }
 
-  /** Guarda el registro del día en localStorage y retorna el objeto guardado */
+  /** Clave principal: mikhuy_reto7_{userId}_dia{N} */
+  private retoStorageKey(dia: number): string {
+    return `mikhuy_reto7_${this.getUserId()}_dia${dia}`;
+  }
+
+  /** Clave secundaria por fecha: mikhuy_reto7_hoy_{YYYY-MM-DD} — no depende del userId */
+  private retoStorageKeyFecha(): string {
+    const hoy = new Date().toISOString().split('T')[0];
+    return `mikhuy_reto7_hoy_${hoy}`;
+  }
+
+  /** Guarda el registro del día en localStorage (clave principal + clave fecha) */
   private guardarRetoEnLocalStorage(): any {
     const dia = this.nivelKey(7);
     const registro = {
@@ -523,7 +536,10 @@ export class GamePlayDialog implements OnInit, OnDestroy {
       timestamp:              Date.now(),
     };
     try {
+      // Guardar con clave de usuario
       localStorage.setItem(this.retoStorageKey(dia), JSON.stringify(registro));
+      // Guardar con clave de fecha como red de seguridad (sin depender del userId)
+      localStorage.setItem(this.retoStorageKeyFecha(), JSON.stringify(registro));
     } catch (e) {
       console.warn('localStorage no disponible:', e);
     }
@@ -604,7 +620,13 @@ export class GamePlayDialog implements OnInit, OnDestroy {
 
   // ── Finalizar ─────────────────────────────────────────────────────────────
   finalizarJuego(completado: boolean): void {
-    if (!this.sesionId) return;
+    if (!this.sesionId) {
+      // Sin sesionId: pasar directo a pantalla de resumen
+      if (this.intervalo) clearInterval(this.intervalo);
+      if (completado) this.puntosGanadosEnSesion += this.gameData.juego.puntosPorNivel;
+      this.gameEnded = true;
+      return;
+    }
     if (this.intervalo) clearInterval(this.intervalo);
     this.loading = true;
     this.loadingMessage = 'Guardando progreso...';
@@ -621,7 +643,9 @@ export class GamePlayDialog implements OnInit, OnDestroy {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error finalizando sesión:', err);
+        // Backend con error: igualmente mostramos el resumen al alumno
+        console.warn('Error finalizando sesión (backend), mostrando resumen offline:', err);
+        this.gameEnded = true;
         this.loading = false;
       },
     });

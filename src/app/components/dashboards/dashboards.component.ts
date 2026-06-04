@@ -2226,36 +2226,56 @@ export class DashboardsComponent implements OnInit {
    * Busca primero el registro del día actual; si no existe, usa el más reciente.
    */
   private leerAnalisisDesdLocalStorage(userId?: string): any {
-    const uid =
-      userId ||
-      JSON.parse(localStorage.getItem('currentUser') || '{}')?.id ||
-      'unknown';
-
+    const cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    // Probar todos los campos posibles del currentUser
+    const uid = userId || cu?.id || cu?._id || cu?.userId || cu?.alumnoId || cu?.email || 'unknown';
     const hoy = new Date().toISOString().split('T')[0];
+
     let registroTarget: any = null;
     let registroMasReciente: any = null;
 
-    // Buscar entre todos los días (1-7)
-    for (let dia = 1; dia <= 7; dia++) {
-      const key = `mikhuy_reto7_${uid}_dia${dia}`;
-      try {
-        const raw = localStorage.getItem(key);
-        if (!raw) continue;
-        const reg = JSON.parse(raw);
-        // Prioridad 1: coincide con hoy
-        if (reg.fecha === hoy) { registroTarget = reg; break; }
-        // Prioridad 2: el más reciente disponible
-        if (!registroMasReciente || reg.timestamp > registroMasReciente.timestamp) {
-          registroMasReciente = reg;
-        }
-      } catch { /* ignorar claves corruptas */ }
+    // 1️⃣ Primero: clave por fecha (la más fiable, no depende del userId)
+    try {
+      const raw = localStorage.getItem(`mikhuy_reto7_hoy_${hoy}`);
+      if (raw) registroTarget = JSON.parse(raw);
+    } catch { /* ignorar */ }
+
+    // 2️⃣ Segundo: claves por userId + día (1-7)
+    if (!registroTarget) {
+      for (let dia = 1; dia <= 7; dia++) {
+        const key = `mikhuy_reto7_${uid}_dia${dia}`;
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) continue;
+          const reg = JSON.parse(raw);
+          if (reg.fecha === hoy) { registroTarget = reg; break; }
+          if (!registroMasReciente || reg.timestamp > registroMasReciente.timestamp) {
+            registroMasReciente = reg;
+          }
+        } catch { /* ignorar */ }
+      }
+    }
+
+    // 3️⃣ Fallback: cualquier clave mikhuy_reto7_* en localStorage
+    if (!registroTarget && !registroMasReciente) {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!key?.startsWith('mikhuy_reto7_')) continue;
+        try {
+          const reg = JSON.parse(localStorage.getItem(key) || '');
+          if (!reg?.timestamp) continue;
+          if (reg.fecha === hoy) { registroTarget = reg; break; }
+          if (!registroMasReciente || reg.timestamp > registroMasReciente.timestamp) {
+            registroMasReciente = reg;
+          }
+        } catch { /* ignorar */ }
+      }
     }
 
     const reg = registroTarget ?? registroMasReciente;
     if (!reg) return null;
 
     // ── Cálculo de macros desde porciones ──────────────────────────────────
-    // Factores nutricionales estimados por porción (valores medios de referencia)
     const cal  = (reg.alimentosFrutas        ?? 0) * 60
                + (reg.alimentosVerduras       ?? 0) * 25
                + (reg.alimentosProteinas      ?? 0) * 120
@@ -2276,49 +2296,21 @@ export class DashboardsComponent implements OnInit {
                 + (reg.alimentosLacteos       ?? 0) * 5
                 + (reg.alimentosProteinas     ?? 0) * 5;
 
-    // ── Meta calórica por defecto (se sobreescribe si el backend la provee) ─
     const metaCal  = (this.dashboardData as any)?.salud?.metaCalorica ?? 2000;
-    const metaProt = Math.round(metaCal * 0.15 / 4);   // 15 % → g
-    const metaCarb = Math.round(metaCal * 0.55 / 4);   // 55 %
-    const metaGras = Math.round(metaCal * 0.30 / 9);   // 30 %
+    const metaProt = Math.round(metaCal * 0.15 / 4);
+    const metaCarb = Math.round(metaCal * 0.55 / 4);
+    const metaGras = Math.round(metaCal * 0.30 / 9);
 
-    // ── Porcentajes reales ───────────────────────────────────────────────────
     const totalMacrosCal = protG * 4 + carbG * 4 + grasG * 9 || 1;
     const protPct  = Math.round((protG * 4 / totalMacrosCal) * 100);
     const carbPct  = Math.round((carbG * 4 / totalMacrosCal) * 100);
     const grasPct  = 100 - protPct - carbPct;
 
-    // ── Desglose simulado por tipo de comida (CP025) ─────────────────────────
-    // Distribuimos las calorías totales en proporciones típicas por horario
     const desglosePorComida = [
-      {
-        tipo: 'Desayuno',
-        calorias:        Math.round(cal * 0.25),
-        proteinasG:      Math.round(protG * 0.25 * 10) / 10,
-        carbohidratosG:  Math.round(carbG * 0.25 * 10) / 10,
-        grasasG:         Math.round(grasG * 0.25 * 10) / 10,
-      },
-      {
-        tipo: 'Almuerzo',
-        calorias:        Math.round(cal * 0.40),
-        proteinasG:      Math.round(protG * 0.40 * 10) / 10,
-        carbohidratosG:  Math.round(carbG * 0.40 * 10) / 10,
-        grasasG:         Math.round(grasG * 0.40 * 10) / 10,
-      },
-      {
-        tipo: 'Cena',
-        calorias:        Math.round(cal * 0.25),
-        proteinasG:      Math.round(protG * 0.25 * 10) / 10,
-        carbohidratosG:  Math.round(carbG * 0.25 * 10) / 10,
-        grasasG:         Math.round(grasG * 0.25 * 10) / 10,
-      },
-      {
-        tipo: 'Merienda',
-        calorias:        Math.round(cal * 0.10),
-        proteinasG:      Math.round(protG * 0.10 * 10) / 10,
-        carbohidratosG:  Math.round(carbG * 0.10 * 10) / 10,
-        grasasG:         Math.round(grasG * 0.10 * 10) / 10,
-      },
+      { tipo: 'Desayuno',  calorias: Math.round(cal * 0.25), proteinasG: Math.round(protG * 0.25 * 10) / 10, carbohidratosG: Math.round(carbG * 0.25 * 10) / 10, grasasG: Math.round(grasG * 0.25 * 10) / 10 },
+      { tipo: 'Almuerzo',  calorias: Math.round(cal * 0.40), proteinasG: Math.round(protG * 0.40 * 10) / 10, carbohidratosG: Math.round(carbG * 0.40 * 10) / 10, grasasG: Math.round(grasG * 0.40 * 10) / 10 },
+      { tipo: 'Cena',      calorias: Math.round(cal * 0.25), proteinasG: Math.round(protG * 0.25 * 10) / 10, carbohidratosG: Math.round(carbG * 0.25 * 10) / 10, grasasG: Math.round(grasG * 0.25 * 10) / 10 },
+      { tipo: 'Merienda',  calorias: Math.round(cal * 0.10), proteinasG: Math.round(protG * 0.10 * 10) / 10, carbohidratosG: Math.round(carbG * 0.10 * 10) / 10, grasasG: Math.round(grasG * 0.10 * 10) / 10 },
     ];
 
     return {
@@ -2335,7 +2327,7 @@ export class DashboardsComponent implements OnInit {
       carbohidratosPorcentaje: carbPct,
       grasasPorcentaje:        grasPct,
       desglosePorComida,
-      guardadoOffline:         true,           // bandera útil para debug
+      guardadoOffline:         true,
       diaReto:                 reg.dia,
       emocion:                 reg.emocion,
       notas:                   reg.notas,
