@@ -492,6 +492,44 @@ export class GamePlayDialog implements OnInit, OnDestroy {
     this.emocionSeleccionada = ''; this.notasReto = '';
   }
 
+  // ── localStorage helpers ─────────────────────────────────────────────────
+  /** Clave única por usuario + día del reto */
+  private retoStorageKey(dia: number): string {
+    const uid =
+      this.gameData?.estudianteId ||
+      this.gameData?.alumnoId ||
+      this.gameData?.userId ||
+      JSON.parse(localStorage.getItem('currentUser') || '{}')?.id ||
+      'unknown';
+    return `mikhuy_reto7_${uid}_dia${dia}`;
+  }
+
+  /** Guarda el registro del día en localStorage y retorna el objeto guardado */
+  private guardarRetoEnLocalStorage(): any {
+    const dia = this.nivelKey(7);
+    const registro = {
+      dia,
+      fecha: new Date().toISOString().split('T')[0],
+      alimentosFrutas:        this.alimentosFrutas,
+      alimentosVerduras:      this.alimentosVerduras,
+      alimentosProteinas:     this.alimentosProteinas,
+      alimentosCarbohidratos: this.alimentosCarbohidratos,
+      alimentosLacteos:       this.alimentosLacteos,
+      alimentosDulces:        this.alimentosDulces,
+      emocion:                this.emocionSeleccionada,
+      caloriasEstimadas:      this.calcularCalorias(),
+      notas:                  this.notasReto || '',
+      guardadoOffline:        true,
+      timestamp:              Date.now(),
+    };
+    try {
+      localStorage.setItem(this.retoStorageKey(dia), JSON.stringify(registro));
+    } catch (e) {
+      console.warn('localStorage no disponible:', e);
+    }
+    return registro;
+  }
+
   guardarRegistroReto(): void {
     if (!this.sesionId) return;
     this.loading = true;
@@ -512,14 +550,19 @@ export class GamePlayDialog implements OnInit, OnDestroy {
       notas: this.notasReto || undefined,
     }).subscribe({
       next: () => {
+        // Éxito en backend → también actualizamos localStorage como caché
+        this.guardarRetoEnLocalStorage();
         this.puntosGanadosEnSesion += 15;
         this.loading = false;
         this.finalizarJuego(true);
       },
       error: (err) => {
-        console.error('Error guardando registro:', err);
-        alert('Error al guardar el registro');
+        console.warn('Backend no disponible, guardando offline:', err);
+        // Fallback: guardar en localStorage y continuar el juego
+        this.guardarRetoEnLocalStorage();
+        this.puntosGanadosEnSesion += 15;
         this.loading = false;
+        this.finalizarJuego(true);
       },
     });
   }

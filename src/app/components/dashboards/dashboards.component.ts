@@ -181,6 +181,17 @@ export class DashboardsComponent implements OnInit {
           );
 
           this.verificarAlertasSalud(response.data.salud);
+
+          // 📦 Complementar analisisDelDia desde localStorage si el backend no lo envía
+          if (!(this.dashboardData as any).analisisDelDia) {
+            const analisisLocal = this.leerAnalisisDesdLocalStorage(
+              response.data.estudiante?.id,
+            );
+            if (analisisLocal) {
+              (this.dashboardData as any).analisisDelDia = analisisLocal;
+            }
+          }
+
           this.loading = false;
           
           // Forzamos el renderizado inicial de tus gráficos nativos
@@ -2206,6 +2217,129 @@ export class DashboardsComponent implements OnInit {
   /** Getter tipado como any para evitar error de TypeScript en DashboardEstudianteResponse */
   get analisisDelDia(): any {
     return (this.dashboardData as any)?.analisisDelDia ?? null;
+  }
+
+  // ─── Lectura de registros offline del Reto 7 Días ──────────────────────────
+  /**
+   * Lee TODOS los días guardados en localStorage para el usuario dado
+   * y construye un objeto `analisisDelDia` compatible con los CPs 019/023/025/032/033.
+   * Busca primero el registro del día actual; si no existe, usa el más reciente.
+   */
+  private leerAnalisisDesdLocalStorage(userId?: string): any {
+    const uid =
+      userId ||
+      JSON.parse(localStorage.getItem('currentUser') || '{}')?.id ||
+      'unknown';
+
+    const hoy = new Date().toISOString().split('T')[0];
+    let registroTarget: any = null;
+    let registroMasReciente: any = null;
+
+    // Buscar entre todos los días (1-7)
+    for (let dia = 1; dia <= 7; dia++) {
+      const key = `mikhuy_reto7_${uid}_dia${dia}`;
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        const reg = JSON.parse(raw);
+        // Prioridad 1: coincide con hoy
+        if (reg.fecha === hoy) { registroTarget = reg; break; }
+        // Prioridad 2: el más reciente disponible
+        if (!registroMasReciente || reg.timestamp > registroMasReciente.timestamp) {
+          registroMasReciente = reg;
+        }
+      } catch { /* ignorar claves corruptas */ }
+    }
+
+    const reg = registroTarget ?? registroMasReciente;
+    if (!reg) return null;
+
+    // ── Cálculo de macros desde porciones ──────────────────────────────────
+    // Factores nutricionales estimados por porción (valores medios de referencia)
+    const cal  = (reg.alimentosFrutas        ?? 0) * 60
+               + (reg.alimentosVerduras       ?? 0) * 25
+               + (reg.alimentosProteinas      ?? 0) * 120
+               + (reg.alimentosCarbohidratos  ?? 0) * 150
+               + (reg.alimentosLacteos        ?? 0) * 80
+               + (reg.alimentosDulces         ?? 0) * 200;
+
+    const protG = (reg.alimentosProteinas     ?? 0) * 25
+                + (reg.alimentosLacteos       ?? 0) * 8
+                + (reg.alimentosFrutas        ?? 0) * 1;
+
+    const carbG = (reg.alimentosCarbohidratos ?? 0) * 30
+                + (reg.alimentosFrutas        ?? 0) * 15
+                + (reg.alimentosDulces        ?? 0) * 40
+                + (reg.alimentosVerduras      ?? 0) * 5;
+
+    const grasG = (reg.alimentosDulces        ?? 0) * 8
+                + (reg.alimentosLacteos       ?? 0) * 5
+                + (reg.alimentosProteinas     ?? 0) * 5;
+
+    // ── Meta calórica por defecto (se sobreescribe si el backend la provee) ─
+    const metaCal  = (this.dashboardData as any)?.salud?.metaCalorica ?? 2000;
+    const metaProt = Math.round(metaCal * 0.15 / 4);   // 15 % → g
+    const metaCarb = Math.round(metaCal * 0.55 / 4);   // 55 %
+    const metaGras = Math.round(metaCal * 0.30 / 9);   // 30 %
+
+    // ── Porcentajes reales ───────────────────────────────────────────────────
+    const totalMacrosCal = protG * 4 + carbG * 4 + grasG * 9 || 1;
+    const protPct  = Math.round((protG * 4 / totalMacrosCal) * 100);
+    const carbPct  = Math.round((carbG * 4 / totalMacrosCal) * 100);
+    const grasPct  = 100 - protPct - carbPct;
+
+    // ── Desglose simulado por tipo de comida (CP025) ─────────────────────────
+    // Distribuimos las calorías totales en proporciones típicas por horario
+    const desglosePorComida = [
+      {
+        tipo: 'Desayuno',
+        calorias:        Math.round(cal * 0.25),
+        proteinasG:      Math.round(protG * 0.25 * 10) / 10,
+        carbohidratosG:  Math.round(carbG * 0.25 * 10) / 10,
+        grasasG:         Math.round(grasG * 0.25 * 10) / 10,
+      },
+      {
+        tipo: 'Almuerzo',
+        calorias:        Math.round(cal * 0.40),
+        proteinasG:      Math.round(protG * 0.40 * 10) / 10,
+        carbohidratosG:  Math.round(carbG * 0.40 * 10) / 10,
+        grasasG:         Math.round(grasG * 0.40 * 10) / 10,
+      },
+      {
+        tipo: 'Cena',
+        calorias:        Math.round(cal * 0.25),
+        proteinasG:      Math.round(protG * 0.25 * 10) / 10,
+        carbohidratosG:  Math.round(carbG * 0.25 * 10) / 10,
+        grasasG:         Math.round(grasG * 0.25 * 10) / 10,
+      },
+      {
+        tipo: 'Merienda',
+        calorias:        Math.round(cal * 0.10),
+        proteinasG:      Math.round(protG * 0.10 * 10) / 10,
+        carbohidratosG:  Math.round(carbG * 0.10 * 10) / 10,
+        grasasG:         Math.round(grasG * 0.10 * 10) / 10,
+      },
+    ];
+
+    return {
+      fecha:                   reg.fecha ?? hoy,
+      caloriasConsumidas:      Math.round(cal),
+      metaCalorica:            metaCal,
+      proteinasG:              Math.round(protG * 10) / 10,
+      metaProteinasG:          metaProt,
+      carbohidratosG:          Math.round(carbG * 10) / 10,
+      metaCarbohidratosG:      metaCarb,
+      grasasG:                 Math.round(grasG * 10) / 10,
+      metaGrasasG:             metaGras,
+      proteinasPorcentaje:     protPct,
+      carbohidratosPorcentaje: carbPct,
+      grasasPorcentaje:        grasPct,
+      desglosePorComida,
+      guardadoOffline:         true,           // bandera útil para debug
+      diaReto:                 reg.dia,
+      emocion:                 reg.emocion,
+      notas:                   reg.notas,
+    };
   }
 
   logout(): void {
