@@ -34,7 +34,7 @@ interface AmigoStorage {
 export class AmigoService {
 
   // Usa la misma base URL que tus otros servicios
-  private readonly BASE = 'https://mikhuy-back.onrender.com/api/estudiantes';
+  private readonly BASE = 'https://mikhuy-backend.onrender.com/api/estudiantes';
 
   constructor(private http: HttpClient) {}
 
