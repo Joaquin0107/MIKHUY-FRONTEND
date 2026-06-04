@@ -480,7 +480,7 @@
                 <div
                   class="stage-circle"
                   [class.active]="
-                    dashboardData.ultimoAnalisis.etapaCambio ===
+                    dashboardData.ultimoAnalisis?.etapaCambio ===
                     'Pre-contemplación'
                   "
                 >
@@ -550,11 +550,11 @@
                 <div>
                   <strong
                     >Etapa Actual:
-                    {{ dashboardData.ultimoAnalisis.etapaCambio }}</strong
+                    {{ dashboardData.ultimoAnalisis?.etapaCambio }}</strong
                   >
-                  <p *ngIf="dashboardData.ultimoAnalisis.porcentajeAciertos">
+                  <p *ngIf="dashboardData.ultimoAnalisis?.porcentajeAciertos">
                     Conocimiento:
-                    {{ dashboardData.ultimoAnalisis.porcentajeAciertos }}% de
+                    {{ dashboardData.ultimoAnalisis?.porcentajeAciertos }}% de
                     aciertos
                   </p>
                 </div>
