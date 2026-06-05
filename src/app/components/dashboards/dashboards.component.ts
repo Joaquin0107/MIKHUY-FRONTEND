@@ -2423,6 +2423,13 @@ export class DashboardsComponent implements OnInit {
   getEvolucionPoints2(): { x: number; y: number; pos: number; esMejor: boolean }[] {
     return this.evCoords();
   }
+  getEvolucionAreaStr(): string {
+    const pts = this.evCoords();
+    if (!pts.length) return '';
+    const bottom = 132;
+    return `${pts[0].x},${bottom} ${pts.map(p => `${p.x},${p.y}`).join(' ')} ${pts[pts.length - 1].x},${bottom}`;
+  }
+
   getEvolucionLineStr(): string {
     return this.evCoords().map(p => `${p.x},${p.y}`).join(' ');
   }
@@ -2431,11 +2438,7 @@ export class DashboardsComponent implements OnInit {
     if (data.length < 2) return false;
     return data[0].posicion > data[data.length - 1].posicion;
   }
-    const pts = this.evCoords();
-    if (!pts.length) return '';
-    const bottom = 132;
-    return `${pts[0].x},${bottom} ${pts.map(p => `${p.x},${p.y}`).join(' ')} ${pts[pts.length - 1].x},${bottom}`;
-  }
+
   getMacroPct(consumido: number, meta: number): number {
     if (!meta || meta <= 0) return 0;
     return Math.min(100, Math.round((consumido / meta) * 100));
