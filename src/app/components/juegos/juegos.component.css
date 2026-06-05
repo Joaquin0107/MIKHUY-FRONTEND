@@ -390,6 +390,7 @@ mat-card-actions button mat-icon {
   }
 }
 
+/* ── Botón Amigos ────────────────────────────────────────────────────────── */
 .amigos-btn {
   height: 48px !important;
   padding: 0 1.5rem !important;
@@ -403,55 +404,12 @@ mat-card-actions button mat-icon {
   background: linear-gradient(135deg, #7BC67E 0%, #5FB83D 100%) !important;
   color: white !important;
 }
- 
+
 .amigos-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(123, 198, 126, 0.35) !important;
 }
- 
+
 .amigos-btn mat-icon {
   margin-right: 0.4rem;
-}
- 
-:host ::ng-deep .mat-mdc-dialog-content {
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-  padding-right: 0 !important; 
-}
-
-mat-dialog-content {
-  padding: 1rem 0 1rem 1.5rem !important;
-  max-height: 55vh;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  border: none !important;
-  outline: none !important;
-}
-
-.solicitud-row, 
-.buscar-wrap, 
-.section-label, 
-.companero-row, 
-.amigo-chip {
-  margin-right: 1.5rem !important; 
-}
-
-.buscar-wrap {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 0.4rem 0.75rem;
-  margin-bottom: 0.5rem;
-  background-color: white;
-}
-
-.buscar-field mat-icon[matSuffix] {
-  color: #757575; /* O el color principal de tu paleta */
-  margin-right: 4px; /* Le da un pequeño aire antes del borde del input */
-  cursor: pointer;
 }
