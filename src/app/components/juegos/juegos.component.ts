@@ -385,11 +385,11 @@ export class InstruccionesJuegoDialog {
               (click)="aceptar(c.id, c.nombres + ' ' + c.apellidos)"
               [disabled]="loadingId === c.id"
             >
-              <mat-icon>check</mat-icon>
+              <mat-icon>check</mat-icon> Aceptar
             </button>
             <button
-              mat-icon-button
-              color="warn"
+              mat-stroked-button
+              class="comp-btn sol-btn rechazar"
               (click)="rechazar(c.id)"
               [disabled]="loadingId === c.id"
             >
@@ -457,11 +457,9 @@ export class InstruccionesJuegoDialog {
         color: white !important;
       }
 
-      /* ── Scroll sin línea blanca: anular padding-right de Material ── */
-      :host {
-        display: block;
-        overflow: hidden;
-      }
+      /* ── Fix borde/línea lateral — overflow del host ── */
+      :host { display: block; overflow: hidden; }
+
       mat-dialog-content {
         padding: 0.75rem 1.25rem !important;
         margin: 0 !important;
@@ -472,7 +470,6 @@ export class InstruccionesJuegoDialog {
         flex-direction: column;
         gap: 0;
         box-sizing: border-box;
-        /* Scrollbar delgada sin espacio extra */
         scrollbar-width: thin;
         scrollbar-color: #d4d4d4 transparent;
       }
@@ -480,46 +477,48 @@ export class InstruccionesJuegoDialog {
       mat-dialog-content::-webkit-scrollbar-track { background: transparent; }
       mat-dialog-content::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 4px; }
 
-      /* ── Section label ── */
       .section-label {
         display: flex;
         align-items: center;
         gap: 6px;
-        font-size: 0.78rem;
-        font-weight: 700;
+        font-size: 0.85rem;
+        font-weight: 600;
         color: #48a3f3;
-        text-transform: uppercase;
-        letter-spacing: 0.4px;
-        margin: 0.9rem 0 0.45rem;
-        padding-bottom: 0.35rem;
-        border-bottom: 2px solid #e8f4ff;
+        margin: 0.75rem 0 0.5rem;
+        border-bottom: 1px solid #e0e0e0;
+        padding-bottom: 0.4rem;
       }
-      .section-label:first-child { margin-top: 0.2rem; }
-      .section-label mat-icon { font-size: 15px; width: 15px; height: 15px; }
+      .section-label mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
 
-      /* ── Solicitudes recibidas ── */
+      /* Solicitudes */
       .solicitud-row {
         display: flex;
         align-items: center;
         gap: 0.6rem;
-        padding: 0.55rem 0.7rem;
-        margin-bottom: 0.4rem;
-        background: #fff8e1;
-        border: 1px solid #ffe082;
-        border-radius: 10px;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f5f5f5;
       }
-      .sol-avatar { font-size: 32px; width: 32px; height: 32px; color: #ff9800; flex-shrink: 0; }
-      .sol-nombre { flex: 1; font-size: 0.87rem; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .sol-avatar {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+        color: #ff9800;
+      }
+      .sol-nombre {
+        flex: 1;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #333;
+      }
       .sol-btn {
-        font-size: 0.78rem !important;
-        height: 28px !important;
-        padding: 0 0.65rem !important;
-        border-radius: 14px !important;
-        min-width: 0 !important;
-        flex-shrink: 0;
-        line-height: 28px !important;
+        font-size: 0.8rem !important;
+        height: 32px !important;
+        padding: 0 0.6rem !important;
       }
-      /* Rechazar — visible con fondo rojo claro */
       .sol-btn.rechazar {
         background: #ffebee !important;
         color: #c62828 !important;
@@ -529,79 +528,182 @@ export class InstruccionesJuegoDialog {
       .sol-btn.rechazar:hover { background: #ffcdd2 !important; border-color: #c62828 !important; }
       .sol-btn.rechazar mat-icon { font-size: 15px; width: 15px; height: 15px; }
 
-      /* ── Amigos confirmados ── */
+      /* Amigos confirmados */
       .amigo-chip {
-        display: flex; align-items: center; gap: 0.6rem;
-        padding: 0.45rem 0.7rem;
-        background: linear-gradient(135deg, #f1f8e9, #e8f5e9);
-        border: 1px solid #c8e6c9; border-radius: 10px; margin-bottom: 0.4rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.5rem 0.75rem;
+        background: #f1f8e9;
+        border-radius: 8px;
+        margin-bottom: 0.4rem;
       }
-      .chip-avatar-icon { font-size: 32px; width: 32px; height: 32px; color: #4caf50; flex-shrink: 0; }
-      .chip-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-      .chip-nombre { font-size: 0.86rem; font-weight: 600; color: #2e7d32; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .chip-pts { display: flex; align-items: center; gap: 3px; font-size: 0.73rem; color: #888; }
-      .chip-pts mat-icon { font-size: 12px; width: 12px; height: 12px; color: #ffd700; }
-      .eliminar-btn mat-icon { color: #ccc; font-size: 17px; width: 17px; height: 17px; transition: color 0.2s; }
-      .eliminar-btn:hover mat-icon { color: #e53935; }
+      .chip-avatar-icon {
+        font-size: 36px;
+        width: 36px;
+        height: 36px;
+        color: #4caf50;
+      }
+      .chip-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .chip-nombre {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #333;
+      }
+      .chip-pts {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 0.75rem;
+        color: #888;
+      }
+      .chip-pts mat-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        color: #ffd700;
+      }
+      .eliminar-btn mat-icon {
+        color: #bdbdbd;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+      .eliminar-btn:hover mat-icon {
+        color: #f44336;
+      }
 
-      /* ── Buscador ── */
+      /* Buscador */
       .buscar-wrap {
-        display: flex; align-items: center; gap: 8px;
-        border: 1.5px solid #e0e0e0; border-radius: 10px;
-        padding: 0.4rem 0.8rem; margin-bottom: 0.4rem;
-        background: #fafafa; transition: border-color 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0.4rem 0.75rem;
+        margin-bottom: 0.5rem;
       }
-      .buscar-wrap:focus-within { border-color: #48a3f3; background: white; }
-      .buscar-icon { color: #bbb; font-size: 17px; width: 17px; height: 17px; flex-shrink: 0; }
+      .buscar-icon {
+        color: #aaa;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
       .buscar-input {
-        border: none; outline: none; flex: 1;
-        font-family: 'Poppins', sans-serif; font-size: 0.87rem;
-        background: transparent; color: #333;
+        border: none;
+        outline: none;
+        flex: 1;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        background: transparent;
       }
-      .buscar-input::placeholder { color: #ccc; }
 
-      /* ── Estados ── */
-      .spinner-wrap { display: flex; justify-content: center; padding: 1.5rem; }
-      .empty-wrap { display: flex; flex-direction: column; align-items: center; padding: 1.5rem; gap: 0.4rem; text-align: center; }
-      .empty-wrap mat-icon { font-size: 40px; width: 40px; height: 40px; color: #ddd; }
-      .empty-wrap p { margin: 0; font-size: 0.85rem; color: #bbb; }
+      .spinner-wrap {
+        display: flex;
+        justify-content: center;
+        padding: 1.5rem;
+      }
+      .empty-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem;
+        gap: 0.5rem;
+        color: #bbb;
+      }
+      .empty-wrap mat-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+      }
+      .empty-wrap p {
+        margin: 0;
+        font-size: 0.9rem;
+      }
 
-      /* ── Filas de compañeros ── */
+      /* Compañeros */
       .companero-row {
-        display: flex; align-items: center; gap: 0.7rem;
-        padding: 0.5rem 0.4rem;
-        border-bottom: 1px solid #f0f0f0;
-        border-radius: 6px; transition: background 0.15s;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #f5f5f5;
       }
-      .companero-row:hover { background: #f5f9ff; }
-      .companero-row:last-child { border-bottom: none; }
-      .comp-avatar-icon { font-size: 34px; width: 34px; height: 34px; color: #90caf9; flex-shrink: 0; }
-      .comp-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-      .comp-nombre { font-size: 0.87rem; font-weight: 600; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      .comp-sub { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; color: #aaa; margin-top: 1px; }
-      .comp-sub mat-icon { font-size: 12px; width: 12px; height: 12px; color: #ffd700; }
+      .comp-avatar-icon {
+        font-size: 38px;
+        width: 38px;
+        height: 38px;
+        color: #48a3f3;
+        flex-shrink: 0;
+      }
+      .comp-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+      .comp-nombre {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #222;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .comp-sub {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.75rem;
+        color: #888;
+      }
+      .comp-sub mat-icon {
+        font-size: 13px;
+        width: 13px;
+        height: 13px;
+        color: #ffd700;
+      }
       .comp-btn {
-        font-size: 0.78rem !important; height: 28px !important;
-        padding: 0 0.65rem !important; border-radius: 14px !important;
-        white-space: nowrap; flex-shrink: 0; min-width: 0 !important; line-height: 28px !important;
+        font-size: 0.8rem !important;
+        height: 34px !important;
+        padding: 0 0.75rem !important;
+        white-space: nowrap;
       }
-      .comp-btn.pendiente { background: #f5f5f5 !important; border-color: #e0e0e0 !important; color: #bbb !important; }
-      .recibida-row { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+      .comp-btn.pendiente {
+        border-color: #bdbdbd !important;
+        color: #9e9e9e !important;
+      }
+      .recibida-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
       .amigo-tag {
-        display: flex; align-items: center; gap: 3px;
-        font-size: 0.76rem; font-weight: 700; color: #4caf50;
-        background: #f1f8e9; padding: 0.18rem 0.55rem;
-        border-radius: 12px; border: 1px solid #c8e6c9; flex-shrink: 0; white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #4caf50;
+        white-space: nowrap;
       }
-      .amigo-tag mat-icon { font-size: 13px; width: 13px; height: 13px; color: #e53935; }
+      .amigo-tag mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        color: #e53935;
+      }
 
-      /* ── Footer ── */
       mat-dialog-actions {
-        padding: 0.6rem 1.25rem !important;
+        padding: 0.75rem 1.5rem !important;
         margin: 0 !important;
-        border-top: 1px solid #f0f0f0;
-        display: flex; justify-content: flex-end;
-        min-height: auto !important;
+        border-top: 1px solid #eee;
+        display: flex;
+        justify-content: flex-end;
       }
     `,
   ],
