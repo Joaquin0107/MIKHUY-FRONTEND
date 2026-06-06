@@ -214,7 +214,14 @@
                     {{ getEstadoLabel(m.porcentaje) }}
                   </span>
                 </div>
-                <span class="micro-porcentaje">{{ m.porcentaje !== null ? m.porcentaje + '% DDR' : 'Sin datos' }}</span>
+                <!-- Porcentaje + check en línea, sin solapamiento -->
+                <div class="micro-derecha">
+                  <span class="micro-porcentaje">{{ m.porcentaje !== null ? m.porcentaje + '% DDR' : 'Sin datos' }}</span>
+                  <div class="micro-check" *ngIf="!micronutrientesEnviado">
+                    <mat-icon *ngIf="esMicroSeleccionado(m.nombre)">check_circle</mat-icon>
+                    <mat-icon *ngIf="!esMicroSeleccionado(m.nombre)" style="color:#ddd">radio_button_unchecked</mat-icon>
+                  </div>
+                </div>
               </div>
               <div class="micro-barra-bg">
                 <div class="micro-barra-fill"
@@ -226,10 +233,7 @@
                 ⚠️ La información detallada de micronutrientes no está disponible para los alimentos registrados hoy.
               </p>
               <p class="micro-descripcion" *ngIf="micronutrientesEnviado">{{ m.descripcion }}</p>
-              <div class="micro-check" *ngIf="!micronutrientesEnviado">
-                <mat-icon *ngIf="esMicroSeleccionado(m.nombre)">check_circle</mat-icon>
-                <mat-icon *ngIf="!esMicroSeleccionado(m.nombre)">radio_button_unchecked</mat-icon>
-              </div>
+
             </div>
           </div>
           <div class="micro-feedback" *ngIf="micronutrientesEnviado"

@@ -514,13 +514,11 @@
   align-self: center;
   min-width: 180px;
 }
-/* ── MICRONUTRIENTES ───────────────────────────────────────────────────────── */
+/* ── MICRONUTRIENTES — CSS CORREGIDO ──────────────────────────────────────── */
 .micro-card { max-width: 800px; margin: 0 auto; }
-
 .micro-lista { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
 
 .micro-item {
-  position: relative;
   padding: 14px 16px;
   border: 2px solid #e0e0e0;
   border-radius: 12px;
@@ -535,20 +533,72 @@
 .micro-seleccionado { border-color: #1976d2 !important; background: #e3f2fd !important; }
 .micro-disabled { cursor: default; }
 
-.micro-header { display: flex; justify-content: space-between; align-items: center; }
-.micro-nombre-row { display: flex; align-items: center; gap: 10px; }
-.micro-nombre { font-size: 15px; font-weight: 600; color: #333; }
-.micro-estado-badge {
-  font-size: 11px; font-weight: 700; color: white;
-  padding: 2px 10px; border-radius: 12px; text-transform: uppercase;
+/* Header en una sola línea: nombre+badge izq, porcentaje+check der */
+.micro-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.micro-porcentaje { font-size: 14px; font-weight: 700; color: #555; }
+.micro-nombre-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.micro-nombre {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+}
+.micro-estado-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+/* Derecha: porcentaje + check JUNTOS en flex, sin position:absolute */
+.micro-derecha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.micro-porcentaje {
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+  white-space: nowrap;
+  min-width: 68px;
+  text-align: right;
+}
+.micro-check {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.micro-check mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: #1976d2;
+}
 
 .micro-barra-bg {
-  height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;
+  height: 10px;
+  background: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
 }
 .micro-barra-fill {
-  height: 100%; border-radius: 5px; transition: width 0.6s ease;
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.6s ease;
 }
 
 .micro-sin-datos {
@@ -558,123 +608,9 @@
   font-size: 13px; color: #555; font-style: italic; margin: 0;
   border-top: 1px dashed #e0e0e0; padding-top: 6px;
 }
-
-.micro-check {
-  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-}
-.micro-check mat-icon { color: #1976d2; font-size: 22px; width: 22px; height: 22px; }
-
 .micro-feedback {
   margin-top: 16px; padding: 14px 16px; border-radius: 10px;
   display: flex; flex-direction: column; gap: 6px;
 }
 .feedback-bien { background: #e8f5e9; border: 2px solid #4caf50; }
 .feedback-mal  { background: #ffebee; border: 2px solid #f44336; }
-
-/* ── CLASIFICA TUS ALIMENTOS ───────────────────────────────────────────────── */
-.clasifica-card { max-width: 800px; margin: 0 auto; }
-
-.grupo-objetivo-badge {
-  display: inline-block;
-  background: linear-gradient(135deg, #1976d2, #42a5f5);
-  color: white; font-size: 14px; font-weight: 700;
-  padding: 4px 16px; border-radius: 20px; letter-spacing: 0.5px;
-}
-
-/* Timer (CP079/080) */
-.clasifica-timer {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 16px; background: #f5f5f5; border-bottom: 1px solid #e0e0e0;
-  transition: background 0.3s;
-}
-.clasifica-timer mat-icon { font-size: 20px; width: 20px; height: 20px; color: #1976d2; }
-.clasifica-timer span { font-size: 15px; font-weight: 700; color: #333; min-width: 28px; }
-.timer-urgente { background: #fff3e0; }
-.timer-urgente mat-icon { color: #f57c00; }
-.timer-urgente span { color: #d84315; }
-
-.timer-barra-bg {
-  flex: 1; height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;
-}
-.timer-barra-fill {
-  height: 100%; background: #1976d2; border-radius: 3px;
-  transition: width 1s linear, background 0.3s;
-}
-.timer-barra-urgente { background: #f44336 !important; }
-
-.clasifica-instruccion {
-  font-size: 16px; font-weight: 600; color: #333;
-  margin: 16px 0 12px; text-align: center;
-}
-
-/* Grid de alimentos */
-.alimentos-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 12px;
-  margin: 12px 0;
-}
-
-.alimento-btn {
-  position: relative;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 4px; padding: 16px 8px;
-  border: 2px solid #e0e0e0; border-radius: 12px;
-  cursor: pointer; transition: all 0.2s;
-  background: white; text-align: center;
-  min-height: 80px;
-}
-.alimento-btn:hover:not(.alimento-disabled) {
-  border-color: #1976d2; background: #f0f7ff; transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(25,118,210,0.15);
-}
-.alimento-disabled { cursor: default; }
-
-.alimento-nombre { font-size: 14px; font-weight: 500; color: #333; }
-
-/* Estados después de enviar */
-.alimento-seleccionado { border-color: #1976d2 !important; background: #e3f2fd !important; }
-.alimento-correcto { border-color: #4caf50 !important; background: #e8f5e9 !important; }
-.alimento-incorrecto { border-color: #f44336 !important; background: #ffebee !important; }
-.alimento-perdido { border-color: #ff9800 !important; background: #fff3e0 !important; opacity: 0.8; }
-
-.alimento-check { font-size: 18px; width: 18px; height: 18px; color: #1976d2; }
-.alimento-icon-resultado { font-size: 20px; width: 20px; height: 20px; }
-.alimento-icon-resultado.correcto { color: #4caf50; }
-.alimento-icon-resultado.incorrecto { color: #f44336; }
-.alimento-icon-resultado.perdido { color: #ff9800; }
-
-/* Banner tiempo agotado (CP079) */
-.tiempo-agotado-banner {
-  display: flex; align-items: center; gap: 8px;
-  margin: 12px 0; padding: 10px 14px;
-  background: #fff3e0; border: 1.5px solid #ffcc80;
-  border-radius: 8px; font-size: 14px; font-weight: 500; color: #e65100;
-}
-.tiempo-agotado-banner mat-icon { font-size: 20px; width: 20px; height: 20px; }
-
-.clasifica-feedback {
-  margin-top: 12px; padding: 14px 16px; border-radius: 10px;
-  display: flex; flex-direction: column; gap: 6px;
-}
-
-/* Pop-up de bienvenida de juegos nuevos */
-.nuevos-juegos-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 9999;
-}
-.nuevos-juegos-modal {
-  background: white; border-radius: 16px; padding: 2rem;
-  max-width: 420px; width: 90%; text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  animation: fadeInUp 0.4s ease;
-}
-.nuevos-juegos-modal h2 { color: #1976d2; margin: 0 0 0.75rem; font-size: 1.4rem; }
-.nuevos-juegos-modal p { color: #555; margin: 0 0 1rem; line-height: 1.6; }
-.nuevos-juegos-modal ul { text-align: left; padding-left: 1.25rem; margin: 0 0 1.5rem; }
-.nuevos-juegos-modal ul li { margin-bottom: 0.5rem; color: #333; }
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
