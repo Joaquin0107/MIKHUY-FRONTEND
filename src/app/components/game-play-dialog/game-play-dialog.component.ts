@@ -219,6 +219,37 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BANCO — MICRONUTRIENTES (5 niveles × CP034/035/036)
+// ─────────────────────────────────────────────────────────────────────────────
+const BANCO_MICRONUTRIENTES: Record<number, any> = {
+  1: { pregunta: 'Revisa tu consumo de hoy. ¿Qué micronutrientes están por debajo del 50% de la DDR?', micronutrientes: [{ nombre: 'Hierro (Fe)', porcentaje: 35, estado: 'deficiente', descripcion: 'El hierro transporta oxígeno en la sangre. Come carnes magras, legumbres y espinacas.' }, { nombre: 'Calcio (Ca)', porcentaje: 72, estado: 'normal', descripcion: 'Calcio suficiente. Sigue consumiendo lácteos y vegetales de hoja verde.' }, { nombre: 'Vitamina A', porcentaje: 45, estado: 'deficiente', descripcion: 'Vitamina A baja. Come zanahoria, mango y huevos.' }, { nombre: 'Vitamina C', porcentaje: 88, estado: 'normal', descripcion: 'Vitamina C en buen nivel.' }], deficientesCorrectos: ['Hierro (Fe)', 'Vitamina A'], explicacion: 'El Hierro y la Vitamina A están por debajo del 50% de la DDR. Aumenta legumbres y zanahoria.' },
+  2: { pregunta: '¿Cuáles micronutrientes muestran deficiencia crítica (menos del 40% DDR)?', micronutrientes: [{ nombre: 'Vitamina D', porcentaje: 22, estado: 'critico', descripcion: 'Vitamina D muy baja. Exponte al sol y consume pescados grasos.' }, { nombre: 'Zinc (Zn)', porcentaje: 65, estado: 'normal', descripcion: 'Zinc en rango aceptable.' }, { nombre: 'Vitamina B12', porcentaje: 38, estado: 'critico', descripcion: 'B12 deficiente. Consume carnes, huevos y lácteos.' }, { nombre: 'Magnesio', porcentaje: 55, estado: 'normal', descripcion: 'Magnesio en niveles aceptables.' }], deficientesCorrectos: ['Vitamina D', 'Vitamina B12'], explicacion: 'La Vitamina D y la B12 están en estado crítico. Son cruciales para el sistema nervioso.' },
+  3: { pregunta: 'Identifica qué micronutrientes necesitas reforzar hoy (debajo del 60% DDR):', micronutrientes: [{ nombre: 'Potasio (K)', porcentaje: 48, estado: 'deficiente', descripcion: 'Potasio bajo. Come plátano, aguacate y frijoles.' }, { nombre: 'Hierro (Fe)', porcentaje: 90, estado: 'normal', descripcion: 'Excelente nivel de hierro.' }, { nombre: 'Folato', porcentaje: 55, estado: 'deficiente', descripcion: 'Folato por mejorar. Aumenta vegetales de hoja verde.' }, { nombre: 'Vitamina C', porcentaje: 95, estado: 'normal', descripcion: '¡Vitamina C excelente!' }], deficientesCorrectos: ['Potasio (K)', 'Folato'], explicacion: 'El Potasio y el Folato están por debajo del 60% DDR.' },
+  4: { pregunta: 'Sin datos de algunos micronutrientes. ¿Cuáles están deficientes con datos disponibles?', micronutrientes: [{ nombre: 'Calcio (Ca)', porcentaje: null, estado: 'sin-datos', descripcion: 'La información detallada de micronutrientes no está disponible para los alimentos registrados hoy.' }, { nombre: 'Vitamina A', porcentaje: 68, estado: 'normal', descripcion: 'Vitamina A en buen nivel.' }, { nombre: 'Hierro (Fe)', porcentaje: null, estado: 'sin-datos', descripcion: 'La información detallada de micronutrientes no está disponible para los alimentos registrados hoy.' }, { nombre: 'Vitamina C', porcentaje: 42, estado: 'deficiente', descripcion: 'Vitamina C baja. Añade cítricos o kiwi.' }], deficientesCorrectos: ['Vitamina C'], explicacion: 'El Calcio y el Hierro no tienen datos hoy. La Vitamina C está deficiente.' },
+  5: { pregunta: 'Análisis completo. ¿Qué micronutrientes están en estado crítico (menos del 30% DDR)?', micronutrientes: [{ nombre: 'Yodo (I)', porcentaje: 25, estado: 'critico', descripcion: 'Yodo muy bajo. Consume sal yodada y mariscos.' }, { nombre: 'Vitamina E', porcentaje: 78, estado: 'normal', descripcion: 'Vitamina E adecuada.' }, { nombre: 'Selenio', porcentaje: 20, estado: 'critico', descripcion: 'Selenio muy deficiente. Come nueces de Brasil y atún.' }, { nombre: 'Vitamina K', porcentaje: 85, estado: 'normal', descripcion: 'Vitamina K en excelente nivel.' }], deficientesCorrectos: ['Yodo (I)', 'Selenio'], explicacion: 'El Yodo y el Selenio están en estado crítico.' },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BANCO — CLASIFICA TUS ALIMENTOS (10 niveles × CP085/086/087/088)
+// Timer de 15s por ronda (CP079/080)
+// ─────────────────────────────────────────────────────────────────────────────
+const BANCO_CLASIFICA: Record<number, any> = {
+  1:  { grupoObjetivo: 'Proteínas',         instruccion: 'Selecciona todos los alimentos del grupo PROTEÍNAS', alimentos: [{ nombre: 'Pollo 🍗', esDelGrupo: true }, { nombre: 'Huevo 🥚', esDelGrupo: true }, { nombre: 'Atún 🐟', esDelGrupo: true }, { nombre: 'Arroz 🍚', esDelGrupo: false }, { nombre: 'Manzana 🍎', esDelGrupo: false }, { nombre: 'Leche 🥛', esDelGrupo: false }], explicacion: 'El pollo, huevo y atún son proteínas de alto valor biológico.' },
+  2:  { grupoObjetivo: 'Frutas',            instruccion: 'Selecciona todos los alimentos que son FRUTAS', alimentos: [{ nombre: 'Mango 🥭', esDelGrupo: true }, { nombre: 'Plátano 🍌', esDelGrupo: true }, { nombre: 'Kiwi 🥝', esDelGrupo: true }, { nombre: 'Zanahoria 🥕', esDelGrupo: false }, { nombre: 'Queso 🧀', esDelGrupo: false }, { nombre: 'Pan 🍞', esDelGrupo: false }], explicacion: 'Mango, plátano y kiwi son frutas. La zanahoria es verdura, el queso un lácteo.' },
+  3:  { grupoObjetivo: 'Carbohidratos',     instruccion: 'Selecciona todos los CARBOHIDRATOS', alimentos: [{ nombre: 'Arroz 🍚', esDelGrupo: true }, { nombre: 'Papa 🥔', esDelGrupo: true }, { nombre: 'Avena 🌾', esDelGrupo: true }, { nombre: 'Salmón 🐠', esDelGrupo: false }, { nombre: 'Espinaca 🥬', esDelGrupo: false }, { nombre: 'Aceite 🫒', esDelGrupo: false }], explicacion: 'Arroz, papa y avena son carbohidratos, fuente principal de energía.' },
+  4:  { grupoObjetivo: 'Verduras',          instruccion: 'Selecciona todos los alimentos que son VERDURAS', alimentos: [{ nombre: 'Brócoli 🥦', esDelGrupo: true }, { nombre: 'Tomate 🍅', esDelGrupo: true }, { nombre: 'Pepino 🥒', esDelGrupo: true }, { nombre: 'Naranja 🍊', esDelGrupo: false }, { nombre: 'Frijoles 🫘', esDelGrupo: false }, { nombre: 'Yogur 🥛', esDelGrupo: false }], explicacion: 'Brócoli, tomate y pepino son verduras, ricas en fibra y vitaminas.' },
+  5:  { grupoObjetivo: 'Lácteos',           instruccion: 'Selecciona todos los alimentos del grupo LÁCTEOS', alimentos: [{ nombre: 'Leche 🥛', esDelGrupo: true }, { nombre: 'Queso 🧀', esDelGrupo: true }, { nombre: 'Yogur 🍶', esDelGrupo: true }, { nombre: 'Pollo 🍗', esDelGrupo: false }, { nombre: 'Avena 🌾', esDelGrupo: false }, { nombre: 'Pera 🍐', esDelGrupo: false }], explicacion: 'Leche, queso y yogur son lácteos. Principal fuente de calcio.' },
+  6:  { grupoObjetivo: 'Grasas saludables', instruccion: 'Selecciona los alimentos con GRASAS SALUDABLES', alimentos: [{ nombre: 'Aguacate 🥑', esDelGrupo: true }, { nombre: 'Nueces 🌰', esDelGrupo: true }, { nombre: 'Salmón 🐠', esDelGrupo: true }, { nombre: 'Papas fritas 🍟', esDelGrupo: false }, { nombre: 'Mantequilla 🧈', esDelGrupo: false }, { nombre: 'Arroz 🍚', esDelGrupo: false }], explicacion: 'Aguacate, nueces y salmón tienen grasas saludables (omega-3).' },
+  7:  { grupoObjetivo: 'Proteínas',         instruccion: 'Nivel avanzado: identifica PROTEÍNAS incluyendo vegetales', alimentos: [{ nombre: 'Lentejas 🫘', esDelGrupo: true }, { nombre: 'Tofu 🟨', esDelGrupo: true }, { nombre: 'Atún 🐟', esDelGrupo: true }, { nombre: 'Quinoa 🌿', esDelGrupo: true }, { nombre: 'Manzana 🍎', esDelGrupo: false }, { nombre: 'Pan 🍞', esDelGrupo: false }], explicacion: 'Lentejas, tofu, atún y quinoa son proteínas. La quinoa es proteína vegetal completa.' },
+  8:  { grupoObjetivo: 'Frutas',            instruccion: '¡Cuidado! ¿Cuáles son realmente FRUTAS?', alimentos: [{ nombre: 'Sandía 🍉', esDelGrupo: true }, { nombre: 'Fresa 🍓', esDelGrupo: true }, { nombre: 'Durazno 🍑', esDelGrupo: true }, { nombre: 'Maíz 🌽', esDelGrupo: false }, { nombre: 'Pepino 🥒', esDelGrupo: false }, { nombre: 'Camote 🍠', esDelGrupo: false }], explicacion: 'Sandía, fresa y durazno son frutas. El maíz y camote son carbohidratos.' },
+  9:  { grupoObjetivo: 'Verduras',          instruccion: 'Nivel experto: distingue VERDURAS de otros grupos', alimentos: [{ nombre: 'Espinaca 🥬', esDelGrupo: true }, { nombre: 'Apio 🌿', esDelGrupo: true }, { nombre: 'Betarraga 🔴', esDelGrupo: true }, { nombre: 'Frijol 🫘', esDelGrupo: false }, { nombre: 'Plátano 🍌', esDelGrupo: false }, { nombre: 'Salmón 🐠', esDelGrupo: false }], explicacion: 'Espinaca, apio y betarraga son verduras. El frijol es legumbre, el plátano fruta.' },
+  10: { grupoObjetivo: 'Grasas saludables', instruccion: '¡Nivel maestro! Identifica las GRASAS VERDADERAMENTE SALUDABLES', alimentos: [{ nombre: 'Almendras 🥜', esDelGrupo: true }, { nombre: 'Aceite oliva 🫒', esDelGrupo: true }, { nombre: 'Chía 🌱', esDelGrupo: true }, { nombre: 'Tocino 🥓', esDelGrupo: false }, { nombre: 'Crema 🍦', esDelGrupo: false }, { nombre: 'Mayonesa 🫙', esDelGrupo: false }], explicacion: 'Almendras, aceite de oliva y chía son grasas saludables.' },
+};
+
+const TIEMPO_LIMITE_CLASIFICA = 15; // segundos — CP079/CP080
+
 @Component({
   selector: 'game-play-dialog',
   standalone: true,
@@ -282,6 +313,23 @@ export class GamePlayDialog implements OnInit, OnDestroy {
   preguntaCoach: any = null;
   respuestaCoach: number | null = null;
 
+  // ── MICRONUTRIENTES ───────────────────────────────────────────────────────
+  nivelMicronutrientes: any = null;
+  micronutrientesSeleccionados: string[] = [];
+  micronutrientesEnviado: boolean = false;
+  micronutrientesCorrectos: number = 0;
+  micronutrientesFeedback: string = '';
+
+  // ── CLASIFICA TUS ALIMENTOS ───────────────────────────────────────────────
+  nivelClasifica: any = null;
+  alimentosSeleccionados: string[] = [];
+  clasificaEnviado: boolean = false;
+  clasificaCorrectos: number = 0;
+  clasificaFeedback: string = '';
+  tiempoRestanteClasifica: number = TIEMPO_LIMITE_CLASIFICA;
+  intervaloClasifica: any = null;
+  tiempoAgotado: boolean = false;
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     private dialogRef: MatDialogRef<GamePlayDialog>,
@@ -312,6 +360,13 @@ export class GamePlayDialog implements OnInit, OnDestroy {
   }
   esCoachExpres(): boolean {
     return this.gameData.juego.nombre.toLowerCase().includes('coach');
+  }
+  esMicronutrientes(): boolean {
+    return this.gameData.juego.nombre.toLowerCase().includes('micronutriente');
+  }
+  esClasifica(): boolean {
+    const n = this.gameData.juego.nombre.toLowerCase();
+    return n.includes('clasifica') || n.includes('clasificaci');
   }
   esUltimoNivel(): boolean {
     return this.nivelActual >= this.gameData.juego.maxNiveles;
@@ -350,6 +405,18 @@ export class GamePlayDialog implements OnInit, OnDestroy {
             } else if (this.esReto7Dias()) {
               this.temaReto = TEMAS_RETO_7DIAS[this.nivelKey(7)];
               this.resetearFormularioReto();
+            } else if (this.esMicronutrientes()) {
+              this.nivelMicronutrientes = BANCO_MICRONUTRIENTES[this.nivelKey(5)];
+              this.micronutrientesSeleccionados = [];
+              this.micronutrientesEnviado = false;
+              this.micronutrientesCorrectos = 0;
+            } else if (this.esClasifica()) {
+              this.nivelClasifica = BANCO_CLASIFICA[this.nivelKey(10)];
+              this.alimentosSeleccionados = [];
+              this.clasificaEnviado = false;
+              this.clasificaCorrectos = 0;
+              this.tiempoAgotado = false;
+              this.iniciarTimerClasifica();
             }
           }
           this.loading = false;
@@ -426,9 +493,36 @@ export class GamePlayDialog implements OnInit, OnDestroy {
         ],
       };
     }
+    if (this.esMicronutrientes()) {
+      return {
+        titulo: '¿Cómo funciona Micronutrientes?',
+        pasos: [
+          '🔬 Se muestran 4 micronutrientes con su % de la Dosis Diaria Recomendada (DDR).',
+          '🔴 Rojo = crítico (<30%), 🟠 naranja = deficiente (<60%), 🟢 verde = normal.',
+          '⬜ Gris = sin datos disponibles para los alimentos registrados hoy.',
+          '👆 Selecciona los micronutrientes que están por debajo del umbral indicado.',
+          '✅ Ganas 5 puntos por cada micronutriente deficiente correctamente identificado.',
+          '📖 Al finalizar verás la explicación nutricional de cada micronutriente.',
+        ],
+      };
+    }
+    if (this.esClasifica()) {
+      return {
+        titulo: '¿Cómo funciona Clasifica tus Alimentos?',
+        pasos: [
+          '🏷️ Se mostrará el grupo de alimentos que debes identificar (ej. "Proteínas").',
+          '⏱️ Tienes 15 segundos para seleccionar todos los alimentos de ese grupo.',
+          '👆 Toca los alimentos correctos. Si seleccionas uno incorrecto, pierdes 1 punto.',
+          '✅ Al confirmar o agotarse el tiempo, ves qué acertaste.',
+          '⭐ Ganas 5 puntos por cada alimento correctamente clasificado.',
+          '📖 Al finalizar verás por qué cada alimento pertenece o no al grupo.',
+        ],
+      };
+    }
     if (this.esReto7Dias()) {
       return {
-        titulo: '¿Cómo funciona el Reto 7 Días?',
+        titulo: '¿Cómo funciona el Reto 7 Días?'
+,
         pasos: [
           '📅 Cada nivel representa un día del reto (del día 1 al día 7).',
           '🍽️ Registra la cantidad de porciones de cada grupo alimenticio que consumiste hoy.',
@@ -616,6 +710,106 @@ export class GamePlayDialog implements OnInit, OnDestroy {
         this.loading = false;
       },
     });
+  }
+
+
+  // ── MICRONUTRIENTES ───────────────────────────────────────────────────────
+
+  toggleMicronutriente(nombre: string): void {
+    if (this.micronutrientesEnviado) return;
+    const idx = this.micronutrientesSeleccionados.indexOf(nombre);
+    if (idx >= 0) this.micronutrientesSeleccionados.splice(idx, 1);
+    else this.micronutrientesSeleccionados.push(nombre);
+  }
+
+  esMicroSeleccionado(nombre: string): boolean {
+    return this.micronutrientesSeleccionados.includes(nombre);
+  }
+
+  enviarMicronutrientes(): void {
+    if (!this.nivelMicronutrientes || this.micronutrientesEnviado) return;
+    this.micronutrientesEnviado = true;
+    const correctos = this.nivelMicronutrientes.deficientesCorrectos as string[];
+    let aciertos = 0;
+    for (const n of correctos) { if (this.micronutrientesSeleccionados.includes(n)) aciertos++; }
+    for (const n of this.micronutrientesSeleccionados) { if (!correctos.includes(n)) aciertos = Math.max(0, aciertos - 1); }
+    this.micronutrientesCorrectos = aciertos;
+    this.puntosGanadosEnSesion += aciertos * 5;
+    if (aciertos === correctos.length) this.micronutrientesFeedback = '¡Excelente! Identificaste todos los micronutrientes deficientes.';
+    else if (aciertos > 0) this.micronutrientesFeedback = `Bien, acertaste ${aciertos} de ${correctos.length}. Revisa la explicación.`;
+    else this.micronutrientesFeedback = 'No acertaste esta vez. Rojo = deficiente, verde = normal, gris = sin datos.';
+  }
+
+  siguienteMicronutrientes(): void { this.finalizarJuego(true); }
+
+  getColorMicronutriente(porcentaje: number | null): string {
+    if (porcentaje === null) return '#9e9e9e';
+    if (porcentaje < 30) return '#f44336';
+    if (porcentaje < 60) return '#ff9800';
+    return '#4caf50';
+  }
+
+  getEstadoLabel(porcentaje: number | null): string {
+    if (porcentaje === null) return 'Sin datos';
+    if (porcentaje < 30) return 'Crítico';
+    if (porcentaje < 60) return 'Deficiente';
+    return 'Normal';
+  }
+
+  // ── CLASIFICA TUS ALIMENTOS ───────────────────────────────────────────────
+
+  iniciarTimerClasifica(): void {
+    this.tiempoRestanteClasifica = TIEMPO_LIMITE_CLASIFICA;
+    this.tiempoAgotado = false;
+    if (this.intervaloClasifica) clearInterval(this.intervaloClasifica);
+    this.intervaloClasifica = setInterval(() => {
+      this.tiempoRestanteClasifica--;
+      if (this.tiempoRestanteClasifica <= 0) {
+        clearInterval(this.intervaloClasifica);
+        this.intervaloClasifica = null;
+        if (!this.clasificaEnviado) { this.tiempoAgotado = true; this.enviarClasifica(true); }
+      }
+    }, 1000);
+  }
+
+  toggleAlimento(nombre: string): void {
+    if (this.clasificaEnviado) return;
+    const idx = this.alimentosSeleccionados.indexOf(nombre);
+    if (idx >= 0) this.alimentosSeleccionados.splice(idx, 1);
+    else this.alimentosSeleccionados.push(nombre);
+  }
+
+  esAlimentoSeleccionado(nombre: string): boolean {
+    return this.alimentosSeleccionados.includes(nombre);
+  }
+
+  enviarClasifica(porTiempo: boolean = false): void {
+    if (!this.nivelClasifica || this.clasificaEnviado) return;
+    if (this.intervaloClasifica) { clearInterval(this.intervaloClasifica); this.intervaloClasifica = null; }
+    this.clasificaEnviado = true;
+    if (porTiempo) this.tiempoAgotado = true;
+    const alimentos = this.nivelClasifica.alimentos as any[];
+    const correctos = alimentos.filter((a: any) => a.esDelGrupo).map((a: any) => a.nombre);
+    let aciertos = 0;
+    for (const n of correctos) { if (this.alimentosSeleccionados.includes(n)) aciertos++; }
+    for (const n of this.alimentosSeleccionados) { if (!correctos.includes(n)) aciertos = Math.max(0, aciertos - 1); }
+    this.clasificaCorrectos = aciertos;
+    const pts = aciertos * 5;
+    this.puntosGanadosEnSesion += pts;
+    if (porTiempo && aciertos === 0) this.clasificaFeedback = '⏱️ ¡Tiempo agotado! No se seleccionó ningún alimento correcto.';
+    else if (aciertos === correctos.length) this.clasificaFeedback = `✅ ¡Perfecto! Clasificaste todo correctamente. +${pts} pts`;
+    else if (aciertos > 0) this.clasificaFeedback = `👍 Acertaste ${aciertos} de ${correctos.length}. +${pts} pts`;
+    else this.clasificaFeedback = '❌ Ningún alimento correcto. Revisa a qué grupo pertenece cada uno.';
+  }
+
+  siguienteClasifica(): void { this.finalizarJuego(true); }
+
+  getClaseAlimento(alimento: any): string {
+    if (!this.clasificaEnviado) return this.alimentosSeleccionados.includes(alimento.nombre) ? 'alimento-seleccionado' : '';
+    if (alimento.esDelGrupo && this.alimentosSeleccionados.includes(alimento.nombre)) return 'alimento-correcto';
+    if (!alimento.esDelGrupo && this.alimentosSeleccionados.includes(alimento.nombre)) return 'alimento-incorrecto';
+    if (alimento.esDelGrupo && !this.alimentosSeleccionados.includes(alimento.nombre)) return 'alimento-perdido';
+    return '';
   }
 
   // ── Finalizar ─────────────────────────────────────────────────────────────

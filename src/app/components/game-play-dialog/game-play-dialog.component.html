@@ -193,6 +193,118 @@
         </mat-card-actions>
       </mat-card>
     </div>
+
+    <!-- MICRONUTRIENTES ─────────────────────────────────────────────────── -->
+    <div *ngIf="esMicronutrientes()" class="micronutrientes-game">
+      <mat-card class="micro-card">
+        <mat-card-header>
+          <mat-card-title>🔬 Análisis de Micronutrientes — Nivel {{ nivelActual }}</mat-card-title>
+          <mat-card-subtitle>{{ nivelMicronutrientes?.pregunta }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="micro-lista">
+            <div class="micro-item" *ngFor="let m of nivelMicronutrientes?.micronutrientes"
+              [class.micro-seleccionado]="esMicroSeleccionado(m.nombre)"
+              [class.micro-disabled]="micronutrientesEnviado"
+              (click)="toggleMicronutriente(m.nombre)">
+              <div class="micro-header">
+                <div class="micro-nombre-row">
+                  <span class="micro-nombre">{{ m.nombre }}</span>
+                  <span class="micro-estado-badge" [style.background]="getColorMicronutriente(m.porcentaje)">
+                    {{ getEstadoLabel(m.porcentaje) }}
+                  </span>
+                </div>
+                <span class="micro-porcentaje">{{ m.porcentaje !== null ? m.porcentaje + '% DDR' : 'Sin datos' }}</span>
+              </div>
+              <div class="micro-barra-bg">
+                <div class="micro-barra-fill"
+                  [style.width.%]="m.porcentaje ?? 0"
+                  [style.background]="getColorMicronutriente(m.porcentaje)">
+                </div>
+              </div>
+              <p class="micro-sin-datos" *ngIf="m.porcentaje === null">
+                ⚠️ La información detallada de micronutrientes no está disponible para los alimentos registrados hoy.
+              </p>
+              <p class="micro-descripcion" *ngIf="micronutrientesEnviado">{{ m.descripcion }}</p>
+              <div class="micro-check" *ngIf="!micronutrientesEnviado">
+                <mat-icon *ngIf="esMicroSeleccionado(m.nombre)">check_circle</mat-icon>
+                <mat-icon *ngIf="!esMicroSeleccionado(m.nombre)">radio_button_unchecked</mat-icon>
+              </div>
+            </div>
+          </div>
+          <div class="micro-feedback" *ngIf="micronutrientesEnviado"
+            [class.feedback-bien]="micronutrientesCorrectos > 0"
+            [class.feedback-mal]="micronutrientesCorrectos === 0">
+            <p><strong>{{ micronutrientesFeedback }}</strong></p>
+            <p class="explanation">{{ nivelMicronutrientes?.explicacion }}</p>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" *ngIf="!micronutrientesEnviado" (click)="enviarMicronutrientes()">
+            Confirmar selección
+          </button>
+          <button mat-raised-button color="accent" *ngIf="micronutrientesEnviado" (click)="siguienteMicronutrientes()">
+            {{ esUltimoNivel() ? 'Finalizar' : 'Siguiente nivel' }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+
+    <!-- CLASIFICA TUS ALIMENTOS ─────────────────────────────────────────── -->
+    <div *ngIf="esClasifica()" class="clasifica-game">
+      <mat-card class="clasifica-card">
+        <mat-card-header>
+          <mat-card-title>🍽️ Clasifica tus Alimentos — Nivel {{ nivelActual }}</mat-card-title>
+          <mat-card-subtitle>
+            <span class="grupo-objetivo-badge">{{ nivelClasifica?.grupoObjetivo }}</span>
+          </mat-card-subtitle>
+        </mat-card-header>
+        <div class="clasifica-timer" [class.timer-urgente]="tiempoRestanteClasifica <= 5 && !clasificaEnviado">
+          <mat-icon>timer</mat-icon>
+          <span>{{ tiempoRestanteClasifica }}s</span>
+          <div class="timer-barra-bg">
+            <div class="timer-barra-fill"
+              [style.width.%]="(tiempoRestanteClasifica / 15) * 100"
+              [class.timer-barra-urgente]="tiempoRestanteClasifica <= 5">
+            </div>
+          </div>
+        </div>
+        <mat-card-content>
+          <p class="clasifica-instruccion">{{ nivelClasifica?.instruccion }}</p>
+          <div class="alimentos-grid">
+            <div class="alimento-btn" *ngFor="let alimento of nivelClasifica?.alimentos"
+              [ngClass]="getClaseAlimento(alimento)"
+              [class.alimento-disabled]="clasificaEnviado"
+              (click)="toggleAlimento(alimento.nombre)">
+              <span class="alimento-nombre">{{ alimento.nombre }}</span>
+              <mat-icon class="alimento-check" *ngIf="!clasificaEnviado && esAlimentoSeleccionado(alimento.nombre)">check_circle</mat-icon>
+              <mat-icon class="alimento-icon-resultado correcto" *ngIf="clasificaEnviado && alimento.esDelGrupo && esAlimentoSeleccionado(alimento.nombre)">check_circle</mat-icon>
+              <mat-icon class="alimento-icon-resultado incorrecto" *ngIf="clasificaEnviado && !alimento.esDelGrupo && esAlimentoSeleccionado(alimento.nombre)">cancel</mat-icon>
+              <mat-icon class="alimento-icon-resultado perdido" *ngIf="clasificaEnviado && alimento.esDelGrupo && !esAlimentoSeleccionado(alimento.nombre)">help_outline</mat-icon>
+            </div>
+          </div>
+          <div class="tiempo-agotado-banner" *ngIf="tiempoAgotado">
+            <mat-icon>alarm_off</mat-icon>
+            <span>¡Tiempo agotado! La pregunta fue marcada como incorrecta.</span>
+          </div>
+          <div class="clasifica-feedback" *ngIf="clasificaEnviado"
+            [class.feedback-bien]="clasificaCorrectos > 0"
+            [class.feedback-mal]="clasificaCorrectos === 0">
+            <p><strong>{{ clasificaFeedback }}</strong></p>
+            <p class="explanation">{{ nivelClasifica?.explicacion }}</p>
+          </div>
+        </mat-card-content>
+        <mat-card-actions>
+          <button mat-raised-button color="primary" *ngIf="!clasificaEnviado"
+            [disabled]="alimentosSeleccionados.length === 0" (click)="enviarClasifica()">
+            Confirmar selección
+          </button>
+          <button mat-raised-button color="accent" *ngIf="clasificaEnviado" (click)="siguienteClasifica()">
+            {{ esUltimoNivel() ? 'Finalizar' : 'Siguiente nivel' }}
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
   </div>
 
   <!-- ══ RESUMEN FINAL ════════════════════════════════════════════════════ -->

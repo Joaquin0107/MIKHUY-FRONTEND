@@ -385,11 +385,11 @@ export class InstruccionesJuegoDialog {
               (click)="aceptar(c.id, c.nombres + ' ' + c.apellidos)"
               [disabled]="loadingId === c.id"
             >
-              <mat-icon>check</mat-icon> Aceptar
+              <mat-icon>check</mat-icon>
             </button>
             <button
-              mat-stroked-button
-              class="comp-btn sol-btn rechazar"
+              mat-icon-button
+              color="warn"
               (click)="rechazar(c.id)"
               [disabled]="loadingId === c.id"
             >
@@ -457,25 +457,14 @@ export class InstruccionesJuegoDialog {
         color: white !important;
       }
 
-      /* ── Fix borde/línea lateral — overflow del host ── */
-      :host { display: block; overflow: hidden; }
-
       mat-dialog-content {
-        padding: 0.75rem 1.25rem !important;
-        margin: 0 !important;
-        max-height: 58vh;
+        padding: 1rem 1.5rem !important;
+        max-height: 55vh;
         overflow-y: auto;
-        overflow-x: hidden;
         display: flex;
         flex-direction: column;
-        gap: 0;
-        box-sizing: border-box;
-        scrollbar-width: thin;
-        scrollbar-color: #d4d4d4 transparent;
+        gap: 0.5rem;
       }
-      mat-dialog-content::-webkit-scrollbar { width: 4px; }
-      mat-dialog-content::-webkit-scrollbar-track { background: transparent; }
-      mat-dialog-content::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 4px; }
 
       .section-label {
         display: flex;
@@ -520,13 +509,9 @@ export class InstruccionesJuegoDialog {
         padding: 0 0.6rem !important;
       }
       .sol-btn.rechazar {
-        background: #ffebee !important;
-        color: #c62828 !important;
-        border: 1.5px solid #ef9a9a !important;
-        font-weight: 600 !important;
+        border-color: #f44336 !important;
+        color: #f44336 !important;
       }
-      .sol-btn.rechazar:hover { background: #ffcdd2 !important; border-color: #c62828 !important; }
-      .sol-btn.rechazar mat-icon { font-size: 15px; width: 15px; height: 15px; }
 
       /* Amigos confirmados */
       .amigo-chip {
@@ -925,12 +910,16 @@ export class JuegosComponent implements OnInit, OnDestroy {
   notificationCount = 0;
   loading = false;
 
+  // Pop-up "juegos nuevos"
+  mostrarPopupJuevosNuevos = false;
+  private readonly POPUP_KEY = 'mikhuy_popup_juegos_v2'; // cambiar key al agregar más juegos
+
   // Datos del estudiante autenticado (para el dialog de amigos)
   miEstudianteId = '';
   miNombre = '';
   miGrado = '';
   miSeccion = '';
-  solicitudesCount = 0; // badge en el botón de amigos
+  solicitudesCount = 0;
 
   private destroy$ = new Subject<void>();
 
@@ -958,6 +947,11 @@ export class JuegosComponent implements OnInit, OnDestroy {
 
     this.loadJuegos();
     this.loadStudentInfo();
+
+    // Mostrar popup de juegos nuevos solo si no se ha visto antes
+    if (!localStorage.getItem(this.POPUP_KEY)) {
+      setTimeout(() => { this.mostrarPopupJuevosNuevos = true; }, 800);
+    }
   }
 
   ngOnDestroy(): void {
@@ -1154,5 +1148,10 @@ export class JuegosComponent implements OnInit, OnDestroy {
   logout(): void {
     localStorage.clear();
     this.router.navigate(['/']);
+  }
+
+  cerrarPopupJuegosNuevos(): void {
+    this.mostrarPopupJuevosNuevos = false;
+    localStorage.setItem(this.POPUP_KEY, '1');
   }
 }

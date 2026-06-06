@@ -117,3 +117,39 @@
 
   <app-floating-chatbot></app-floating-chatbot>
 </div>
+
+<!-- ── Pop-up "Actualizamos los juegos" (se muestra 1 sola vez) ── -->
+<div class="popup-overlay" *ngIf="mostrarPopupJuevosNuevos" (click)="cerrarPopupJuegosNuevos()">
+  <div class="popup-modal" (click)="$event.stopPropagation()">
+
+    <div class="popup-header">
+      <span class="popup-emoji">🎮</span>
+      <div>
+        <h2>¡Actualizamos los juegos!</h2>
+        <p>Ahora tienes 2 nuevos retos disponibles</p>
+      </div>
+    </div>
+
+    <div class="popup-juegos">
+      <div class="popup-juego-item">
+        <span class="popup-juego-emoji">🔬</span>
+        <div>
+          <strong>Micronutrientes</strong>
+          <p>Analiza tus vitaminas y minerales diarios. Identifica deficiencias y aprende sobre nutrición.</p>
+        </div>
+      </div>
+      <div class="popup-juego-item">
+        <span class="popup-juego-emoji">🍽️</span>
+        <div>
+          <strong>Clasifica tus Alimentos</strong>
+          <p>Clasifica alimentos en su grupo correcto. ¡Tienes 15 segundos por ronda!</p>
+        </div>
+      </div>
+    </div>
+
+    <button mat-raised-button color="primary" class="popup-btn" (click)="cerrarPopupJuegosNuevos()">
+      <mat-icon>sports_esports</mat-icon>
+      ¡Empezar a jugar!
+    </button>
+  </div>
+</div>
