@@ -20,6 +20,23 @@
       <!-- Formulario -->
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form" autocomplete="off">
 
+        <!-- ══ BANNER: CUENTA NO VERIFICADA ══════════════════════════ -->
+        <div *ngIf="cuentaNoVerificada" class="no-verificada-banner">
+          <div class="no-verificada-icon">
+            <mat-icon>mark_email_unread</mat-icon>
+          </div>
+          <div class="no-verificada-body">
+            <strong>Tu cuenta aún no está activada</strong>
+            <p>Debes verificar tu cuenta antes de ingresar a la plataforma.</p>
+            <button mat-raised-button type="button" class="btn-verificar"
+              (click)="irAVerificar()">
+              <mat-icon>verified_user</mat-icon>
+              Activar mi cuenta
+            </button>
+          </div>
+        </div>
+        <!-- ══════════════════════════════════════════════════════════ -->
+
         <!-- Campo de Usuario/Email -->
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Correo electrónico</mat-label>

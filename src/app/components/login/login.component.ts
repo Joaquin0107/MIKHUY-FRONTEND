@@ -48,6 +48,10 @@ export class LoginComponent implements OnInit {
   showWakingMessage = false;
   private readonly BACKEND_URL = 'https://mikhuy-backend.onrender.com';
 
+  // ── Estado de cuenta no verificada ─────────────────
+  cuentaNoVerificada = false;
+  tokenVerificacion  = '';
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -107,7 +111,17 @@ export class LoginComponent implements OnInit {
     this.hidePassword = !this.hidePassword;
   }
 
+  // ── Ir a la página de verificación ─────────────────
+  irAVerificar(): void {
+    this.router.navigate(['/verify'], {
+      queryParams: { token: this.tokenVerificacion },
+    });
+  }
+
   onSubmit(): void {
+    // Resetear estado de cuenta no verificada al intentar de nuevo
+    this.cuentaNoVerificada = false;
+
     if (this.loginForm.invalid) {
       alert('Por favor completa los campos correctamente.');
       return;
@@ -133,7 +147,24 @@ export class LoginComponent implements OnInit {
       next: (res) => {
         console.log('📦 Respuesta del servidor:', res);
 
-        if (res?.success && res.data?.token) {
+        if (!res?.success) {
+          console.error('❌ Respuesta sin success:', res);
+          alert(res.message || 'Credenciales inválidas. Inténtalo nuevamente.');
+          this.loading = false;
+          return;
+        }
+
+        // ── Cuenta NO verificada ────────────────────────────────────────
+        if (res.data?.user?.verificado === false) {
+          console.warn('⚠️ Cuenta no verificada:', res.data.user.email);
+          this.cuentaNoVerificada = true;
+          this.tokenVerificacion  = res.data.user.tokenVerificacion || '';
+          this.loading = false;
+          return;
+        }
+
+        // ── Login normal ────────────────────────────────────────────────
+        if (res.data?.token) {
           const rol = res.data.user?.rol;
 
           console.log('✅ Login exitoso');
@@ -180,7 +211,7 @@ export class LoginComponent implements OnInit {
             this.router.navigate(['/dashboards']);
           }
         } else {
-          console.error('❌ Respuesta sin token o sin success:', res);
+          console.error('❌ Respuesta sin token:', res);
           alert(res.message || 'Credenciales inválidas. Inténtalo nuevamente.');
           this.loading = false;
         }
