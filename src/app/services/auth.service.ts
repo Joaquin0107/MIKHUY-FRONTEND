@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.prod';
 
 export interface ChangePasswordRequest {
-  oldPassword: string;      
+  oldPassword: string;
   newPassword: string;
   confirmPassword: string;
 }
@@ -28,21 +28,32 @@ export class AuthService {
   }
 
   cambiarContrasena(data: ChangePasswordRequest): Observable<ApiResponse<any>> {
-    console.log('🔐 Enviando cambio de contraseña:', {
-      oldPassword: '***',
-      newPassword: '***',
-      confirmPassword: '***'
-    });
+    return this.http.put<ApiResponse<any>>(`${this.baseUrl}/change-password`, data);
+  }
 
-    return this.http.put<ApiResponse<any>>(
-      `${this.baseUrl}/change-password`,
-      data
+  // ── CP010: Activar cuenta con token ──────────────────────────────────────
+  activarCuenta(token: string): Observable<ApiResponse<void>> {
+    return this.http.get<ApiResponse<void>>(
+      `${this.baseUrl}/activate?token=${token}`
+    );
+  }
+
+  // ── CP011: Reenviar enlace de activación ──────────────────────────────────
+  reenviarActivacion(tokenAntiguo: string): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(
+      `${this.baseUrl}/resend?token=${tokenAntiguo}`, {}
+    );
+  }
+
+  // ── Panel admin: obtener URL de activación ────────────────────────────────
+  getActivationUrl(email: string): Observable<ApiResponse<string>> {
+    return this.http.get<ApiResponse<string>>(
+      `${this.baseUrl}/activation-url?email=${encodeURIComponent(email)}`
     );
   }
 
   saveToken(token: string): void {
     localStorage.setItem(this.tokenKey, token);
-    console.log('✅ Token guardado');
   }
 
   getToken(): string | null {
@@ -51,7 +62,6 @@ export class AuthService {
 
   saveUser(user: any): void {
     localStorage.setItem(this.userKey, JSON.stringify(user));
-    console.log('✅ Usuario guardado:', user);
   }
 
   getCurrentUser(): any | null {
@@ -63,13 +73,10 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
     localStorage.removeItem('studentPoints');
-    console.log('✅ Sesión cerrada');
   }
 
   isLoggedIn(): boolean {
-    const hasToken = !!this.getToken();
-    console.log('🔍 Usuario autenticado:', hasToken);
-    return hasToken;
+    return !!this.getToken();
   }
 
   isAuthenticated(): boolean {

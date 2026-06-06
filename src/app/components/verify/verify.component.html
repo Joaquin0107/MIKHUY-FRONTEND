@@ -1,0 +1,90 @@
+<div class="verify-container">
+
+  <div class="verify-card">
+
+    <!-- Logo -->
+    <img src="assets/images/MIKHUY.png" alt="MIKHUY" class="verify-logo" />
+
+    <!-- ── CARGANDO ──────────────────────────────────────────────────────── -->
+    <div *ngIf="estado === 'cargando'" class="verify-state">
+      <div class="spinner-ring"></div>
+      <h2>Verificando tu cuenta...</h2>
+      <p>Por favor espera un momento.</p>
+    </div>
+
+    <!-- ── CP010: ÉXITO ──────────────────────────────────────────────────── -->
+    <div *ngIf="estado === 'exito'" class="verify-state exito">
+      <div class="icon-circle exito-circle">
+        <mat-icon>check_circle</mat-icon>
+      </div>
+      <h2>¡Verificación exitosa!</h2>
+      <p>Tu cuenta ha sido <strong>activada correctamente</strong>.<br>
+         Ya puedes iniciar sesión en la plataforma.</p>
+      <button mat-raised-button color="primary" class="verify-btn"
+        (click)="irAlLogin()">
+        <mat-icon>login</mat-icon>
+        Ir al inicio de sesión
+      </button>
+    </div>
+
+    <!-- ── CP010: YA VERIFICADO ─────────────────────────────────────────── -->
+    <div *ngIf="estado === 'invalido'" class="verify-state invalido">
+      <div class="icon-circle invalido-circle">
+        <mat-icon>error_outline</mat-icon>
+      </div>
+      <h2>Enlace no válido</h2>
+      <p>El enlace de verificación no existe o ya fue utilizado.<br>
+         Si ya activaste tu cuenta, puedes iniciar sesión normalmente.</p>
+      <button mat-raised-button color="primary" class="verify-btn"
+        (click)="irAlLogin()">
+        <mat-icon>login</mat-icon>
+        Ir al inicio de sesión
+      </button>
+    </div>
+
+    <!-- ── CP011: EXPIRADO ───────────────────────────────────────────────── -->
+    <div *ngIf="estado === 'expirado'" class="verify-state expirado">
+      <div class="icon-circle expirado-circle">
+        <mat-icon>timer_off</mat-icon>
+      </div>
+      <h2>El enlace de verificación ha expirado</h2>
+      <p>Este enlace ya no es válido porque superó su tiempo de vigencia (72 horas).<br>
+         Genera un nuevo enlace para activar tu cuenta.</p>
+      <button mat-raised-button color="warn" class="verify-btn"
+        (click)="reenviar()">
+        <mat-icon>refresh</mat-icon>
+        Reenviar correo de verificación
+      </button>
+    </div>
+
+    <!-- ── REENVIANDO ────────────────────────────────────────────────────── -->
+    <div *ngIf="estado === 'reenviando'" class="verify-state">
+      <div class="spinner-ring"></div>
+      <h2>Generando nuevo enlace...</h2>
+    </div>
+
+    <!-- ── REENVIADO ─────────────────────────────────────────────────────── -->
+    <div *ngIf="estado === 'reenviado'" class="verify-state reenviado">
+      <div class="icon-circle reenviado-circle">
+        <mat-icon>mark_email_read</mat-icon>
+      </div>
+      <h2>Nuevo enlace generado</h2>
+      <p>Se generó un nuevo enlace de activación válido por <strong>72 horas</strong>.<br>
+         Copia la URL y úsala para activar tu cuenta.</p>
+
+      <div class="url-box">
+        <span class="url-text">{{ nuevaUrl }}</span>
+        <button mat-icon-button (click)="copiarUrl()" title="Copiar URL">
+          <mat-icon>content_copy</mat-icon>
+        </button>
+      </div>
+
+      <button mat-raised-button color="primary" class="verify-btn"
+        (click)="irAlLogin()">
+        <mat-icon>login</mat-icon>
+        Ir al inicio de sesión
+      </button>
+    </div>
+
+  </div>
+</div>
