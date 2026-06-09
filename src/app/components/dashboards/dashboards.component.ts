@@ -91,6 +91,8 @@ export class DashboardsComponent implements OnInit {
   filteredStudents: Student[] = [];
 
   dashboardData: DashboardEstudianteResponse | null = null;
+  metricasMicronutrientes: any = null;
+  metricasClasifica: any = null;
   loading = true;
   error: string | null = null;
 
@@ -128,6 +130,45 @@ export class DashboardsComponent implements OnInit {
     private snackBar: MatSnackBar,
     private mailService: MailService,
   ) {}
+
+
+  cargarMetricasJuegosNuevos(): void {
+    const cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const uid = cu?.id || cu?.email || 'unknown';
+
+    const nivelesM: any[] = [];
+    for (let i = 1; i <= 5; i++) {
+      const raw = localStorage.getItem(`mikhuy_micro_${uid}_nivel${i}`);
+      if (raw) try { nivelesM.push(JSON.parse(raw)); } catch {}
+    }
+    if (nivelesM.length > 0) {
+      const totalAciertos = nivelesM.reduce((s, n) => s + (n.aciertos || 0), 0);
+      const totalPosibles = nivelesM.reduce((s, n) => s + (n.deficientesCorrectos?.length || 2), 0);
+      const puntosTotal = nivelesM.reduce((s, n) => s + (n.puntosObtenidos || 0), 0);
+      this.metricasMicronutrientes = {
+        nivelesJugados: nivelesM.length,
+        totalAciertos, totalPosibles,
+        precision: totalPosibles > 0 ? Math.round((totalAciertos / totalPosibles) * 100) : 0,
+        puntosTotal, historial: nivelesM,
+      };
+    }
+
+    const nivelesC: any[] = [];
+    for (let i = 1; i <= 10; i++) {
+      const raw = localStorage.getItem(`mikhuy_clasifica_${uid}_nivel${i}`);
+      if (raw) try { nivelesC.push(JSON.parse(raw)); } catch {}
+    }
+    if (nivelesC.length > 0) {
+      const totalAciertos = nivelesC.reduce((s, n) => s + (n.aciertos || 0), 0);
+      const tiempoAgotados = nivelesC.filter(n => n.tiempoAgotado).length;
+      const puntosTotal = nivelesC.reduce((s, n) => s + (n.puntosObtenidos || 0), 0);
+      const tiempoPromedioSeg = Math.round(nivelesC.reduce((s, n) => s + (n.tiempoUsado || 0), 0) / nivelesC.length);
+      const gruposMap: Record<string, number> = {};
+      nivelesC.forEach(n => { if (n.grupoObjetivo) gruposMap[n.grupoObjetivo] = (gruposMap[n.grupoObjetivo] || 0) + 1; });
+      const grupoMasFrecuente = Object.entries(gruposMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+      this.metricasClasifica = { nivelesJugados: nivelesC.length, totalAciertos, puntosTotal, tiempoAgotados, tiempoPromedioSeg, grupoMasFrecuente, historial: nivelesC };
+    }
+  }
 
   ngOnInit(): void {
     this.loadExternalScripts();
@@ -183,6 +224,7 @@ export class DashboardsComponent implements OnInit {
           this.verificarAlertasSalud(response.data.salud);
 
           // 📦 Complementar analisisDelDia desde localStorage si el backend no lo envía
+          this.cargarMetricasJuegosNuevos();
           if (!(this.dashboardData as any).analisisDelDia) {
             const analisisLocal = this.leerAnalisisDesdLocalStorage(
               response.data.estudiante?.id,
@@ -377,7 +419,7 @@ export class DashboardsComponent implements OnInit {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const PW = pdf.internal.pageSize.getWidth(); // 210 mm
       const PH = pdf.internal.pageSize.getHeight(); // 297 mm
-      const TOTAL_PAGES = 5;
+      const TOTAL_PAGES = 6;
 
       // ── Paleta ──────────────────────────────────────────────
       const BLUE = [48, 130, 220] as [number, number, number];
@@ -1099,7 +1141,7 @@ export class DashboardsComponent implements OnInit {
         pdf,
         'RECOMENDACIONES Y CONCLUSIONES',
         'Plataforma MIKHUY',
-        '5 de 5',
+        '5 de 6',
         PW,
         BLUE,
         BLUE_DARK,
@@ -1181,6 +1223,112 @@ export class DashboardsComponent implements OnInit {
         y4 + 13,
         { align: 'center' },
       );
+
+
+      // ═══════════════════════════════════════════════
+      // PÁGINA 6 — Métricas Juegos Nuevos
+      // ═══════════════════════════════════════════════
+      pdf.addPage();
+      this.pdfHeader(pdf,'METRICAS: JUEGOS EDUCATIVOS NUEVOS','Plataforma MIKHUY','6 de 6',PW,BLUE,BLUE_DARK,WHITE);
+      let y6 = 48;
+
+      // — Micronutrientes —
+      rr(15, y6, PW - 30, 10, BLUE, 4);
+      st(WHITE); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+      pdf.text('MICRONUTRIENTES', 20, y6 + 7); y6 += 14;
+
+      const metM6 = this.metricasMicronutrientes;
+      if (!metM6) {
+        st(TEXT_GRAY); pdf.setFontSize(9); pdf.setFont('helvetica','italic');
+        pdf.text('El estudiante aun no ha jugado Micronutrientes.', 20, y6 + 8); y6 += 20;
+      } else {
+        const mCols6 = [
+          {v:`${metM6.nivelesJugados}/5`,l:'Niveles jugados'},
+          {v:`${metM6.precision}%`,l:'Precision'},
+          {v:`${metM6.totalAciertos}/${metM6.totalPosibles}`,l:'Aciertos'},
+          {v:`${metM6.puntosTotal} pts`,l:'Puntos'},
+        ];
+        const mcW6 = (PW - 40) / mCols6.length;
+        mCols6.forEach((col, ci) => {
+          const cx = 15 + ci * mcW6;
+          rr(cx+1,y6,mcW6-4,26,GRAY_BG,4);
+          st(BLUE); pdf.setFontSize(13); pdf.setFont('helvetica','bold');
+          pdf.text(col.v, cx+4, y6+14);
+          st(TEXT_GRAY); pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+          pdf.text(col.l, cx+4, y6+22);
+        });
+        y6 += 32;
+        // barra precision
+        st(TEXT_DARK); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
+        pdf.text('Precision en identificar micronutrientes deficientes:', 15, y6); y6 += 6;
+        rr(15,y6,PW-30,8,GRAY_LINE,3);
+        const mPct6 = metM6.precision;
+        const mCol6: [number,number,number] = mPct6>=70 ? GREEN : mPct6>=40 ? [255,152,0] : RED;
+        if(mPct6>0) rr(15,y6,Math.max(4,((PW-30)*mPct6)/100),8,mCol6,3);
+        st(mCol6); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+        pdf.text(`${mPct6}%`, PW-10, y6+6); y6 += 14;
+        // historial
+        if(metM6.historial?.length>0){
+          st(TEXT_GRAY); pdf.setFontSize(7.5); pdf.setFont('helvetica','bold');
+          pdf.text('Detalle por nivel:', 15, y6); y6+=5;
+          metM6.historial.forEach((n: any) => {
+            const nc: [number,number,number] = n.aciertos===(n.deficientesCorrectos?.length||2) ? GREEN : n.aciertos>0 ? [255,152,0] : RED;
+            rect(15,y6,3,8,nc);
+            st(TEXT_DARK); pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+            pdf.text(`Nivel ${n.nivelNumero}: ${n.aciertos||0}/${n.deficientesCorrectos?.length||2} aciertos - ${n.puntosObtenidos||0} pts`, 21, y6+6);
+            y6+=10;
+          });
+        }
+      }
+
+      y6 += 6; st(GRAY_LINE); pdf.line(15,y6,PW-15,y6); y6+=10;
+
+      // — Clasifica —
+      rr(15,y6,PW-30,10,GREEN,4);
+      st(WHITE); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
+      pdf.text('CLASIFICA TUS ALIMENTOS', 20, y6+7); y6+=14;
+
+      const metC6 = this.metricasClasifica;
+      if (!metC6) {
+        st(TEXT_GRAY); pdf.setFontSize(9); pdf.setFont('helvetica','italic');
+        pdf.text('El estudiante aun no ha jugado Clasifica tus Alimentos.', 20, y6+8); y6+=20;
+      } else {
+        const cCols6 = [
+          {v:`${metC6.nivelesJugados}/10`,l:'Niveles'},
+          {v:`${metC6.totalAciertos}`,l:'Aciertos'},
+          {v:`${metC6.tiempoAgotados}x`,l:'Tiempo agotado'},
+          {v:`${metC6.tiempoPromedioSeg}s`,l:'Tpo. promedio'},
+          {v:`${metC6.puntosTotal} pts`,l:'Puntos'},
+        ];
+        const ccW6 = (PW-40)/cCols6.length;
+        cCols6.forEach((col,ci)=>{
+          const cx=15+ci*ccW6;
+          rr(cx+1,y6,ccW6-4,26,GREEN_LIGHT,4);
+          st(GREEN); pdf.setFontSize(12); pdf.setFont('helvetica','bold');
+          pdf.text(col.v, cx+4, y6+14);
+          st(TEXT_GRAY); pdf.setFontSize(6.5); pdf.setFont('helvetica','normal');
+          pdf.text(col.l, cx+4, y6+22);
+        });
+        y6+=32;
+        st(TEXT_DARK); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+        pdf.text('Grupo mas practicado: ', 15, y6);
+        st(GREEN); pdf.setFont('helvetica','bold');
+        pdf.text(metC6.grupoMasFrecuente, 60, y6); y6+=12;
+        if(metC6.historial?.length>0){
+          st(TEXT_GRAY); pdf.setFontSize(7.5); pdf.setFont('helvetica','bold');
+          pdf.text('Detalle por nivel:', 15, y6); y6+=5;
+          metC6.historial.slice(0,6).forEach((n: any)=>{
+            const nc: [number,number,number] = n.tiempoAgotado ? RED : n.aciertos>0 ? GREEN : [255,152,0];
+            rect(15,y6,3,8,nc);
+            st(TEXT_DARK); pdf.setFontSize(7); pdf.setFont('helvetica','normal');
+            const ts = n.tiempoAgotado ? 'Agotado' : `${n.tiempoUsado||0}s`;
+            pdf.text(`Nivel ${n.nivelNumero} (${n.grupoObjetivo}): ${n.aciertos||0} aciertos - ${ts} - ${n.puntosObtenidos||0} pts`, 21, y6+6);
+            y6+=10;
+          });
+        }
+      }
+
+      this.pdfFooter(pdf, 6, TOTAL_PAGES, PW, PH, BLUE, WHITE);
 
       this.pdfFooter(pdf, 5, TOTAL_PAGES, PW, PH, BLUE, WHITE);
 

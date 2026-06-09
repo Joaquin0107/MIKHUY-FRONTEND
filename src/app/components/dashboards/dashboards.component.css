@@ -2740,3 +2740,242 @@
   color: #43a047;
   font-weight: 600;
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MÉTRICAS JUEGOS NUEVOS — Micronutrientes + Clasifica tus Alimentos
+══════════════════════════════════════════════════════════════════════════ */
+
+.juegos-nuevos-section {
+  margin: 2rem 0;
+}
+
+.juegos-nuevos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+/* ── Card base ──────────────────────────────────────────────────────────── */
+.juego-nuevo-card {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.juego-nuevo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12) !important;
+}
+
+/* ── Icono header ───────────────────────────────────────────────────────── */
+.jn-header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+.jn-header-icon mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: white;
+}
+.micro-icon-header  { background: linear-gradient(135deg, #1976d2, #42a5f5); }
+.clasifica-icon-header { background: linear-gradient(135deg, #388e3c, #66bb6a); }
+
+/* ── Stats row ──────────────────────────────────────────────────────────── */
+.jn-stats-row {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+.jn-stat {
+  flex: 1;
+  min-width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 0.6rem 0.4rem;
+  text-align: center;
+}
+.jn-stat-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.2;
+}
+.jn-stat-label {
+  font-size: 0.7rem;
+  color: #888;
+  margin-top: 2px;
+  text-align: center;
+}
+
+/* Colores de precisión */
+.precision-alta  { color: #388e3c !important; }
+.precision-media { color: #f57c00 !important; }
+.precision-baja  { color: #d32f2f !important; }
+.pts-value       { color: #f9a825 !important; }
+
+/* Alerta tiempo agotado */
+.alerta-tiempo .jn-stat-value { color: #d32f2f !important; }
+
+/* ── Barra de precisión ─────────────────────────────────────────────────── */
+.jn-barra-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0.5rem 0 1rem;
+}
+.jn-barra-label {
+  font-size: 0.75rem;
+  color: #888;
+  white-space: nowrap;
+  min-width: 55px;
+}
+.jn-barra-track {
+  flex: 1;
+  height: 10px;
+  background: #e0e0e0;
+  border-radius: 5px;
+  overflow: hidden;
+}
+.jn-barra-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.6s ease;
+}
+.fill-alta   { background: #43a047; }
+.fill-media  { background: #fb8c00; }
+.fill-baja   { background: #e53935; }
+.jn-barra-pct {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #555;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ── Grupo badge ────────────────────────────────────────────────────────── */
+.jn-grupo-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  margin: 0.5rem 0 1rem;
+  font-size: 0.85rem;
+  color: #2e7d32;
+}
+.jn-grupo-badge mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #388e3c;
+}
+
+/* ── Historial por nivel ────────────────────────────────────────────────── */
+.jn-historial {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+}
+.jn-historial::-webkit-scrollbar { width: 3px; }
+.jn-historial::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+
+.jn-historial-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  background: #fafafa;
+  border: 1px solid #f0f0f0;
+}
+.jn-historial-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-verde   { background: #43a047; }
+.dot-naranja { background: #fb8c00; }
+.dot-rojo    { background: #e53935; }
+
+.jn-historial-texto {
+  font-size: 0.8rem;
+  color: #444;
+  flex: 1;
+}
+.jn-historial-pts {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f9a825;
+  margin-left: 6px;
+}
+.jn-timer-tag {
+  font-size: 0.7rem;
+  background: #ffebee;
+  color: #c62828;
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 4px;
+}
+.jn-timer-tag.ok {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+/* ── Card vacía ─────────────────────────────────────────────────────────── */
+.juego-nuevo-empty mat-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem !important;
+  text-align: center;
+  gap: 0.5rem;
+}
+.juego-nuevo-empty mat-icon {
+  font-size: 48px;
+  width: 48px;
+  height: 48px;
+  color: #ccc;
+}
+.juego-nuevo-empty p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #666;
+}
+.juego-nuevo-empty span {
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .juegos-nuevos-grid {
+    grid-template-columns: 1fr;
+  }
+  .jn-stats-row {
+    gap: 0.35rem;
+  }
+  .jn-stat-value {
+    font-size: 1.15rem;
+  }
+}

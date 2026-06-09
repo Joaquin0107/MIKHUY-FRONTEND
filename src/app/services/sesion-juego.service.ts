@@ -66,53 +66,75 @@ export interface SesionJuegoResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SesionJuegoService {
   private apiUrl = `${environment.apiUrl}/sesiones`;
 
   constructor(private http: HttpClient) {}
 
-  
-
-iniciarSesion(request: IniciarSesionRequest): Observable<ApiResponse<SesionJuegoResponse>> {
-  return this.http.post<ApiResponse<SesionJuegoResponse>>(
-    `${this.apiUrl}/iniciar`,
-    request
+  iniciarSesion(
+    request: IniciarSesionRequest,
+  ): Observable<ApiResponse<SesionJuegoResponse>> {
+    return this.http.post<ApiResponse<SesionJuegoResponse>>(
+      `${this.apiUrl}/iniciar`,
+      request,
     );
   }
 
-finalizarSesion(request: FinalizarSesionRequest): Observable<ApiResponse<SesionJuegoResponse>> {
-  return this.http.put<ApiResponse<SesionJuegoResponse>>(
-    `${this.apiUrl}/finalizar`,
-    request
+  finalizarSesion(
+    request: FinalizarSesionRequest,
+  ): Observable<ApiResponse<SesionJuegoResponse>> {
+    return this.http.put<ApiResponse<SesionJuegoResponse>>(
+      `${this.apiUrl}/finalizar`,
+      request,
     );
   }
 
-  guardarRespuestaNutrimental(request: GuardarNutrimentalRespuestaRequest): Observable<ApiResponse<void>> {
+  guardarRespuestaNutrimental(
+    request: GuardarNutrimentalRespuestaRequest,
+  ): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.apiUrl}/nutrimental/respuesta`,
-      request
+      request,
     );
   }
 
-  guardarRegistroReto7Dias(request: GuardarReto7DiasRegistroRequest): Observable<ApiResponse<void>> {
+  guardarRegistroReto7Dias(
+    request: GuardarReto7DiasRegistroRequest,
+  ): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.apiUrl}/reto7dias/registro`,
-      request
+      request,
     );
   }
 
-  guardarRespuestaCoach(request: GuardarCoachRespuestaRequest): Observable<ApiResponse<void>> {
+  guardarRespuestaCoach(
+    request: GuardarCoachRespuestaRequest,
+  ): Observable<ApiResponse<void>> {
     return this.http.post<ApiResponse<void>>(
       `${this.apiUrl}/coach/respuesta`,
-      request
+      request,
     );
   }
 
   getMisSesiones(): Observable<ApiResponse<SesionJuegoResponse[]>> {
     return this.http.get<ApiResponse<SesionJuegoResponse[]>>(
       `${this.apiUrl}/mis-sesiones`,
+    );
+  }
+
+  guardarResultadoMicronutrientes(payload: any): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${this.apiUrl}/micronutrientes/resultado`,
+      payload,
+    );
+  }
+
+  guardarResultadoClasifica(payload: any): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${this.apiUrl}/clasifica/resultado`,
+      payload,
     );
   }
 }

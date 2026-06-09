@@ -734,10 +734,42 @@ export class GamePlayDialog implements OnInit, OnDestroy {
     for (const n of correctos) { if (this.micronutrientesSeleccionados.includes(n)) aciertos++; }
     for (const n of this.micronutrientesSeleccionados) { if (!correctos.includes(n)) aciertos = Math.max(0, aciertos - 1); }
     this.micronutrientesCorrectos = aciertos;
-    this.puntosGanadosEnSesion += aciertos * 5;
+    const pts = aciertos * 5;
+    this.puntosGanadosEnSesion += pts;
     if (aciertos === correctos.length) this.micronutrientesFeedback = '¡Excelente! Identificaste todos los micronutrientes deficientes.';
     else if (aciertos > 0) this.micronutrientesFeedback = `Bien, acertaste ${aciertos} de ${correctos.length}. Revisa la explicación.`;
     else this.micronutrientesFeedback = 'No acertaste esta vez. Rojo = deficiente, verde = normal, gris = sin datos.';
+
+    // Guardar en back si hay sesionId, con fallback a localStorage
+    const payload = {
+      sesionId: this.sesionId,
+      nivelNumero: this.nivelActual,
+      pregunta: this.nivelMicronutrientes.pregunta,
+      deficientesCorrectos: correctos,
+      deficientesSeleccionados: this.micronutrientesSeleccionados,
+      aciertos,
+      puntosObtenidos: pts,
+      tiempoAgotado: false,
+    };
+    if (this.sesionId) {
+      this.sesionService.guardarResultadoMicronutrientes(payload).subscribe({
+        error: (err: any) => {
+          console.warn('Micronutrientes: back no disponible, guardando local:', err);
+          this.guardarMicronutrientesLocal(payload);
+        },
+      });
+    } else {
+      this.guardarMicronutrientesLocal(payload);
+    }
+  }
+
+  private guardarMicronutrientesLocal(data: any): void {
+    try {
+      const cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const uid = cu?.id || cu?.email || 'unknown';
+      const key = `mikhuy_micro_${uid}_nivel${data.nivelNumero}`;
+      localStorage.setItem(key, JSON.stringify({ ...data, fecha: new Date().toISOString() }));
+    } catch (e) { console.warn('localStorage no disponible'); }
   }
 
   siguienteMicronutrientes(): void { this.finalizarJuego(true); }
@@ -800,6 +832,39 @@ export class GamePlayDialog implements OnInit, OnDestroy {
     else if (aciertos === correctos.length) this.clasificaFeedback = `✅ ¡Perfecto! Clasificaste todo correctamente. +${pts} pts`;
     else if (aciertos > 0) this.clasificaFeedback = `👍 Acertaste ${aciertos} de ${correctos.length}. +${pts} pts`;
     else this.clasificaFeedback = '❌ Ningún alimento correcto. Revisa a qué grupo pertenece cada uno.';
+
+    // Guardar en back si hay sesionId, con fallback a localStorage
+    const tiempoUsado = TIEMPO_LIMITE_CLASIFICA - this.tiempoRestanteClasifica;
+    const payload = {
+      sesionId: this.sesionId,
+      nivelNumero: this.nivelActual,
+      grupoObjetivo: this.nivelClasifica.grupoObjetivo,
+      alimentosCorrectos: correctos,
+      alimentosSeleccionados: [...this.alimentosSeleccionados],
+      aciertos,
+      puntosObtenidos: pts,
+      tiempoAgotado: this.tiempoAgotado,
+      tiempoUsado,
+    };
+    if (this.sesionId) {
+      this.sesionService.guardarResultadoClasifica(payload).subscribe({
+        error: (err: any) => {
+          console.warn('Clasifica: back no disponible, guardando local:', err);
+          this.guardarClasificaLocal(payload);
+        },
+      });
+    } else {
+      this.guardarClasificaLocal(payload);
+    }
+  }
+
+  private guardarClasificaLocal(data: any): void {
+    try {
+      const cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      const uid = cu?.id || cu?.email || 'unknown';
+      const key = `mikhuy_clasifica_${uid}_nivel${data.nivelNumero}`;
+      localStorage.setItem(key, JSON.stringify({ ...data, fecha: new Date().toISOString() }));
+    } catch (e) { console.warn('localStorage no disponible'); }
   }
 
   siguienteClasifica(): void { this.finalizarJuego(true); }
