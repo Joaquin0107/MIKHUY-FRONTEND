@@ -40,6 +40,9 @@ import { StudentService } from '../../services/student.service';
 import { AuthService } from '../../services/auth.service';
 import { MailService } from '../../services/mail.service';
 
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -111,8 +114,8 @@ export class DashboardsComponent implements OnInit {
 
   // ---- historial por fecha ----
   showCalendar: boolean = false;
-  selectedDate: string = '';          // 'YYYY-MM-DD'
-  selectedDateLabel: string = '';     // texto legible en el botón
+  selectedDate: string = ''; // 'YYYY-MM-DD'
+  selectedDateLabel: string = ''; // texto legible en el botón
   todayStr: string = new Date().toISOString().split('T')[0];
 
   // ── CP019/CP023/CP025/CP032/CP033: Análisis nutricional del día ──────────
@@ -129,44 +132,184 @@ export class DashboardsComponent implements OnInit {
     private authService: AuthService,
     private snackBar: MatSnackBar,
     private mailService: MailService,
+    private http: HttpClient,
   ) {}
 
-
   cargarMetricasJuegosNuevos(): void {
+    if (!this.selectedStudent?.id) return;
+
+    const headers = { Authorization: `Bearer ${this.authService.getToken()}` };
+    const base = environment.apiUrl;
+
+    // Micronutrientes desde backend
+    this.http
+      .get<any>(
+        `${base}/sesiones/micronutrientes/estudiante/${this.selectedStudent.id}`,
+        { headers },
+      )
+      .subscribe({
+        next: (res) => {
+          const niveles: any[] = res.data || [];
+          if (niveles.length > 0) {
+            const totalAciertos = niveles.reduce(
+              (s: number, n: any) => s + (n.aciertos || 0),
+              0,
+            );
+            const totalPosibles = niveles.reduce(
+              (s: number, n: any) => s + (n.deficientesCorrectos?.length || 2),
+              0,
+            );
+            const puntosTotal = niveles.reduce(
+              (s: number, n: any) => s + (n.puntosObtenidos || 0),
+              0,
+            );
+            this.metricasMicronutrientes = {
+              nivelesJugados: niveles.length,
+              totalAciertos,
+              totalPosibles,
+              precision:
+                totalPosibles > 0
+                  ? Math.round((totalAciertos / totalPosibles) * 100)
+                  : 0,
+              puntosTotal,
+              historial: niveles,
+            };
+          } else {
+            this.metricasMicronutrientes = null;
+          }
+        },
+        error: () => {
+          // fallback localStorage (solo funciona si es el propio alumno)
+          this.cargarMetricasJuegosNuevosLocal();
+        },
+      });
+
+    // Clasifica desde backend
+    this.http
+      .get<any>(
+        `${base}/sesiones/clasifica/estudiante/${this.selectedStudent.id}`,
+        { headers },
+      )
+      .subscribe({
+        next: (res) => {
+          const niveles: any[] = res.data || [];
+          if (niveles.length > 0) {
+            const totalAciertos = niveles.reduce(
+              (s: number, n: any) => s + (n.aciertos || 0),
+              0,
+            );
+            const tiempoAgotados = niveles.filter(
+              (n: any) => n.tiempoAgotado,
+            ).length;
+            const puntosTotal = niveles.reduce(
+              (s: number, n: any) => s + (n.puntosObtenidos || 0),
+              0,
+            );
+            const tiempoPromedioSeg = Math.round(
+              niveles.reduce(
+                (s: number, n: any) => s + (n.tiempoUsado || 0),
+                0,
+              ) / niveles.length,
+            );
+            const gruposMap: Record<string, number> = {};
+            niveles.forEach((n: any) => {
+              if (n.grupoObjetivo)
+                gruposMap[n.grupoObjetivo] =
+                  (gruposMap[n.grupoObjetivo] || 0) + 1;
+            });
+            const grupoMasFrecuente =
+              Object.entries(gruposMap).sort((a, b) => b[1] - a[1])[0]?.[0] ||
+              '—';
+            this.metricasClasifica = {
+              nivelesJugados: niveles.length,
+              totalAciertos,
+              puntosTotal,
+              tiempoAgotados,
+              tiempoPromedioSeg,
+              grupoMasFrecuente,
+              historial: niveles,
+            };
+          } else {
+            this.metricasClasifica = null;
+          }
+        },
+        error: () => {
+          this.cargarMetricasJuegosNuevosLocal();
+        },
+      });
+  }
+
+  // Fallback para cuando el alumno ve su propio dashboard
+  private cargarMetricasJuegosNuevosLocal(): void {
     const cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const uid = cu?.id || cu?.email || 'unknown';
 
     const nivelesM: any[] = [];
     for (let i = 1; i <= 5; i++) {
       const raw = localStorage.getItem(`mikhuy_micro_${uid}_nivel${i}`);
-      if (raw) try { nivelesM.push(JSON.parse(raw)); } catch {}
+      if (raw)
+        try {
+          nivelesM.push(JSON.parse(raw));
+        } catch {}
     }
     if (nivelesM.length > 0) {
       const totalAciertos = nivelesM.reduce((s, n) => s + (n.aciertos || 0), 0);
-      const totalPosibles = nivelesM.reduce((s, n) => s + (n.deficientesCorrectos?.length || 2), 0);
-      const puntosTotal = nivelesM.reduce((s, n) => s + (n.puntosObtenidos || 0), 0);
+      const totalPosibles = nivelesM.reduce(
+        (s, n) => s + (n.deficientesCorrectos?.length || 2),
+        0,
+      );
+      const puntosTotal = nivelesM.reduce(
+        (s, n) => s + (n.puntosObtenidos || 0),
+        0,
+      );
       this.metricasMicronutrientes = {
         nivelesJugados: nivelesM.length,
-        totalAciertos, totalPosibles,
-        precision: totalPosibles > 0 ? Math.round((totalAciertos / totalPosibles) * 100) : 0,
-        puntosTotal, historial: nivelesM,
+        totalAciertos,
+        totalPosibles,
+        precision:
+          totalPosibles > 0
+            ? Math.round((totalAciertos / totalPosibles) * 100)
+            : 0,
+        puntosTotal,
+        historial: nivelesM,
       };
     }
 
     const nivelesC: any[] = [];
     for (let i = 1; i <= 10; i++) {
       const raw = localStorage.getItem(`mikhuy_clasifica_${uid}_nivel${i}`);
-      if (raw) try { nivelesC.push(JSON.parse(raw)); } catch {}
+      if (raw)
+        try {
+          nivelesC.push(JSON.parse(raw));
+        } catch {}
     }
     if (nivelesC.length > 0) {
       const totalAciertos = nivelesC.reduce((s, n) => s + (n.aciertos || 0), 0);
-      const tiempoAgotados = nivelesC.filter(n => n.tiempoAgotado).length;
-      const puntosTotal = nivelesC.reduce((s, n) => s + (n.puntosObtenidos || 0), 0);
-      const tiempoPromedioSeg = Math.round(nivelesC.reduce((s, n) => s + (n.tiempoUsado || 0), 0) / nivelesC.length);
+      const tiempoAgotados = nivelesC.filter((n) => n.tiempoAgotado).length;
+      const puntosTotal = nivelesC.reduce(
+        (s, n) => s + (n.puntosObtenidos || 0),
+        0,
+      );
+      const tiempoPromedioSeg = Math.round(
+        nivelesC.reduce((s, n) => s + (n.tiempoUsado || 0), 0) /
+          nivelesC.length,
+      );
       const gruposMap: Record<string, number> = {};
-      nivelesC.forEach(n => { if (n.grupoObjetivo) gruposMap[n.grupoObjetivo] = (gruposMap[n.grupoObjetivo] || 0) + 1; });
-      const grupoMasFrecuente = Object.entries(gruposMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
-      this.metricasClasifica = { nivelesJugados: nivelesC.length, totalAciertos, puntosTotal, tiempoAgotados, tiempoPromedioSeg, grupoMasFrecuente, historial: nivelesC };
+      nivelesC.forEach((n) => {
+        if (n.grupoObjetivo)
+          gruposMap[n.grupoObjetivo] = (gruposMap[n.grupoObjetivo] || 0) + 1;
+      });
+      const grupoMasFrecuente =
+        Object.entries(gruposMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
+      this.metricasClasifica = {
+        nivelesJugados: nivelesC.length,
+        totalAciertos,
+        puntosTotal,
+        tiempoAgotados,
+        tiempoPromedioSeg,
+        grupoMasFrecuente,
+        historial: nivelesC,
+      };
     }
   }
 
@@ -215,7 +358,8 @@ export class DashboardsComponent implements OnInit {
 
           // 🔴 CLAVE: Guardamos el respaldo de los datos reales del backend
           this.originalJuegos = response.data.juegos || [];
-          this.originalHistorialImc = response.data.salud?.historialMediciones || [];
+          this.originalHistorialImc =
+            response.data.salud?.historialMediciones || [];
 
           this.selectedStudent = this.mapEstudianteToStudent(
             response.data.estudiante,
@@ -235,7 +379,7 @@ export class DashboardsComponent implements OnInit {
           }
 
           this.loading = false;
-          
+
           // Forzamos el renderizado inicial de tus gráficos nativos
           this.recalcularEstadisticas();
         } else {
@@ -305,7 +449,8 @@ export class DashboardsComponent implements OnInit {
 
           // 🔴 CLAVE: Respaldamos los datos del estudiante seleccionado
           this.originalJuegos = response.data.juegos || [];
-          this.originalHistorialImc = response.data.salud?.historialMediciones || [];
+          this.originalHistorialImc =
+            response.data.salud?.historialMediciones || [];
           this.selectedRange = 'all'; // Reseteamos el selector
           // Resetear filtro de calendario
           this.selectedDate = '';
@@ -996,16 +1141,49 @@ export class DashboardsComponent implements OnInit {
         y4n += 13;
 
         // Fila de totales
-        const macroData: { label: string; real: number; meta: number; unit: string; color: [number,number,number] }[] = [
-          { label: 'Calorias Totales', real: analDia.caloriasConsumidas ?? 0, meta: analDia.metaCalorica ?? 2000, unit: 'kcal', color: [255, 112, 67] },
-          { label: 'Proteinas',        real: analDia.proteinasG ?? 0,          meta: analDia.metaProteinasG ?? 60,   unit: 'g',    color: [66, 165, 245] },
-          { label: 'Carbohidratos',    real: analDia.carbohidratosG ?? 0,      meta: analDia.metaCarbohidratosG ?? 250, unit: 'g', color: [255, 202, 40] },
-          { label: 'Grasas',           real: analDia.grasasG ?? 0,             meta: analDia.metaGrasasG ?? 70,      unit: 'g',    color: [171, 71, 188] },
+        const macroData: {
+          label: string;
+          real: number;
+          meta: number;
+          unit: string;
+          color: [number, number, number];
+        }[] = [
+          {
+            label: 'Calorias Totales',
+            real: analDia.caloriasConsumidas ?? 0,
+            meta: analDia.metaCalorica ?? 2000,
+            unit: 'kcal',
+            color: [255, 112, 67],
+          },
+          {
+            label: 'Proteinas',
+            real: analDia.proteinasG ?? 0,
+            meta: analDia.metaProteinasG ?? 60,
+            unit: 'g',
+            color: [66, 165, 245],
+          },
+          {
+            label: 'Carbohidratos',
+            real: analDia.carbohidratosG ?? 0,
+            meta: analDia.metaCarbohidratosG ?? 250,
+            unit: 'g',
+            color: [255, 202, 40],
+          },
+          {
+            label: 'Grasas',
+            real: analDia.grasasG ?? 0,
+            meta: analDia.metaGrasasG ?? 70,
+            unit: 'g',
+            color: [171, 71, 188],
+          },
         ];
 
-        const barX = 15, barW = PW - 30, cellH = 18;
+        const barX = 15,
+          barW = PW - 30,
+          cellH = 18;
         macroData.forEach((m) => {
-          const pct = m.meta > 0 ? Math.min(100, Math.round((m.real / m.meta) * 100)) : 0;
+          const pct =
+            m.meta > 0 ? Math.min(100, Math.round((m.real / m.meta) * 100)) : 0;
           const fillW = ((barW - 80) * pct) / 100;
           rr(barX, y4n, barW, cellH, GRAY_BG, 3);
           // Etiqueta
@@ -1014,14 +1192,25 @@ export class DashboardsComponent implements OnInit {
           pdf.setFont('helvetica', 'bold');
           pdf.text(m.label, barX + 4, y4n + 11);
           // Barra de fondo
-          rr(barX + 68, y4n + 5, barW - 80, 8, [224, 224, 224] as [number,number,number], 3);
+          rr(
+            barX + 68,
+            y4n + 5,
+            barW - 80,
+            8,
+            [224, 224, 224] as [number, number, number],
+            3,
+          );
           // Barra relleno
           if (fillW > 0) rr(barX + 68, y4n + 5, fillW, 8, m.color, 3);
           // Valores
           st(TEXT_GRAY);
           pdf.setFontSize(8);
           pdf.setFont('helvetica', 'normal');
-          pdf.text(`${m.real} / ${m.meta} ${m.unit} (${pct}%)`, barX + 69 + (barW - 80) + 2, y4n + 11);
+          pdf.text(
+            `${m.real} / ${m.meta} ${m.unit} (${pct}%)`,
+            barX + 69 + (barW - 80) + 2,
+            y4n + 11,
+          );
           y4n += cellH + 3;
         });
 
@@ -1042,11 +1231,11 @@ export class DashboardsComponent implements OnInit {
           st(BLUE_DARK);
           pdf.setFontSize(8);
           pdf.setFont('helvetica', 'bold');
-          pdf.text('Comida',        cols.tipo + 2, y4n + 7);
-          pdf.text('Calorias',      cols.cal,      y4n + 7);
-          pdf.text('Proteinas (g)', cols.prot,     y4n + 7);
-          pdf.text('Carbos (g)',    cols.carb,      y4n + 7);
-          pdf.text('Grasas (g)',    cols.gras,      y4n + 7);
+          pdf.text('Comida', cols.tipo + 2, y4n + 7);
+          pdf.text('Calorias', cols.cal, y4n + 7);
+          pdf.text('Proteinas (g)', cols.prot, y4n + 7);
+          pdf.text('Carbos (g)', cols.carb, y4n + 7);
+          pdf.text('Grasas (g)', cols.gras, y4n + 7);
           y4n += 11;
 
           analDia.desglosePorComida.forEach((c: any, idx: number) => {
@@ -1055,11 +1244,19 @@ export class DashboardsComponent implements OnInit {
             st(TEXT_DARK);
             pdf.setFontSize(8);
             pdf.setFont('helvetica', idx === 0 ? 'bold' : 'normal');
-            pdf.text(c.tipo ?? '-',                            cols.tipo + 2, y4n + 6.5);
-            pdf.text(String(c.calorias ?? 0),                  cols.cal,      y4n + 6.5);
-            pdf.text(String((c.proteinasG ?? 0).toFixed(1)),   cols.prot,     y4n + 6.5);
-            pdf.text(String((c.carbohidratosG ?? 0).toFixed(1)), cols.carb,   y4n + 6.5);
-            pdf.text(String((c.grasasG ?? 0).toFixed(1)),      cols.gras,     y4n + 6.5);
+            pdf.text(c.tipo ?? '-', cols.tipo + 2, y4n + 6.5);
+            pdf.text(String(c.calorias ?? 0), cols.cal, y4n + 6.5);
+            pdf.text(
+              String((c.proteinasG ?? 0).toFixed(1)),
+              cols.prot,
+              y4n + 6.5,
+            );
+            pdf.text(
+              String((c.carbohidratosG ?? 0).toFixed(1)),
+              cols.carb,
+              y4n + 6.5,
+            );
+            pdf.text(String((c.grasasG ?? 0).toFixed(1)), cols.gras, y4n + 6.5);
             y4n += 10;
           });
           y4n += 6;
@@ -1073,11 +1270,30 @@ export class DashboardsComponent implements OnInit {
         pdf.text('DISTRIBUCION DE MACRONUTRIENTES', 21, y4n + 6.5);
         y4n += 13;
 
-        const ideal = analDia.distribucionIdeal ?? { proteinasPct: 15, carbohidratosPct: 55, grasasPct: 30 };
+        const ideal = analDia.distribucionIdeal ?? {
+          proteinasPct: 15,
+          carbohidratosPct: 55,
+          grasasPct: 30,
+        };
         const macrosPct = [
-          { nombre: 'Proteinas',     real: analDia.proteinasPorcentaje ?? 0,     ideal: ideal.proteinasPct,     color: [66, 165, 245] as [number,number,number] },
-          { nombre: 'Carbohidratos', real: analDia.carbohidratosPorcentaje ?? 0, ideal: ideal.carbohidratosPct, color: [255, 202, 40] as [number,number,number] },
-          { nombre: 'Grasas',        real: analDia.grasasPorcentaje ?? 0,        ideal: ideal.grasasPct,        color: [171, 71, 188] as [number,number,number] },
+          {
+            nombre: 'Proteinas',
+            real: analDia.proteinasPorcentaje ?? 0,
+            ideal: ideal.proteinasPct,
+            color: [66, 165, 245] as [number, number, number],
+          },
+          {
+            nombre: 'Carbohidratos',
+            real: analDia.carbohidratosPorcentaje ?? 0,
+            ideal: ideal.carbohidratosPct,
+            color: [255, 202, 40] as [number, number, number],
+          },
+          {
+            nombre: 'Grasas',
+            real: analDia.grasasPorcentaje ?? 0,
+            ideal: ideal.grasasPct,
+            color: [171, 71, 188] as [number, number, number],
+          },
         ];
 
         // Cabecera de comparativa
@@ -1086,16 +1302,18 @@ export class DashboardsComponent implements OnInit {
         pdf.setFontSize(8);
         pdf.setFont('helvetica', 'bold');
         pdf.text('Macronutriente', 17, y4n + 7);
-        pdf.text('Real (%)',        70, y4n + 7);
-        pdf.text('Ideal (%)',      100, y4n + 7);
-        pdf.text('Diferencia',    130, y4n + 7);
-        pdf.text('Estado',        165, y4n + 7);
+        pdf.text('Real (%)', 70, y4n + 7);
+        pdf.text('Ideal (%)', 100, y4n + 7);
+        pdf.text('Diferencia', 130, y4n + 7);
+        pdf.text('Estado', 165, y4n + 7);
         y4n += 11;
 
         macrosPct.forEach((m, idx) => {
           const diff = m.real - m.ideal;
-          const estado = diff > 5 ? 'Superavit' : diff < -5 ? 'Deficit' : 'Optimo';
-          const estadoColor: [number,number,number] = diff > 5 ? ORANGE : diff < -5 ? RED : GREEN;
+          const estado =
+            diff > 5 ? 'Superavit' : diff < -5 ? 'Deficit' : 'Optimo';
+          const estadoColor: [number, number, number] =
+            diff > 5 ? ORANGE : diff < -5 ? RED : GREEN;
           const bg = idx % 2 === 0 ? WHITE : GRAY_BG;
           rr(15, y4n, PW - 30, 10, bg, 0);
           // Dot de color
@@ -1104,15 +1322,15 @@ export class DashboardsComponent implements OnInit {
           st(TEXT_DARK);
           pdf.setFontSize(8.5);
           pdf.setFont('helvetica', 'bold');
-          pdf.text(m.nombre,         22,  y4n + 7);
+          pdf.text(m.nombre, 22, y4n + 7);
           pdf.setFont('helvetica', 'normal');
-          pdf.text(`${m.real}%`,      72,  y4n + 7);
-          pdf.text(`${m.ideal}%`,    102,  y4n + 7);
+          pdf.text(`${m.real}%`, 72, y4n + 7);
+          pdf.text(`${m.ideal}%`, 102, y4n + 7);
           const diffStr = (diff >= 0 ? '+' : '') + diff + '%';
-          pdf.text(diffStr,          132,  y4n + 7);
+          pdf.text(diffStr, 132, y4n + 7);
           st(estadoColor);
           pdf.setFont('helvetica', 'bold');
-          pdf.text(estado,           167,  y4n + 7);
+          pdf.text(estado, 167, y4n + 7);
           y4n += 11;
         });
 
@@ -1125,7 +1343,8 @@ export class DashboardsComponent implements OnInit {
         pdf.setFont('helvetica', 'italic');
         pdf.text(
           'Distribucion ideal basada en el IMC y objetivo de salud del alumno (referencia OMS).',
-          PW / 2, y4n + 9,
+          PW / 2,
+          y4n + 9,
           { align: 'center' },
         );
         y4n += 18;
@@ -1224,106 +1443,184 @@ export class DashboardsComponent implements OnInit {
         { align: 'center' },
       );
 
-
       // ═══════════════════════════════════════════════
       // PÁGINA 6 — Métricas Juegos Nuevos
       // ═══════════════════════════════════════════════
       pdf.addPage();
-      this.pdfHeader(pdf,'METRICAS: JUEGOS EDUCATIVOS NUEVOS','Plataforma MIKHUY','6 de 6',PW,BLUE,BLUE_DARK,WHITE);
+      this.pdfHeader(
+        pdf,
+        'METRICAS: JUEGOS EDUCATIVOS NUEVOS',
+        'Plataforma MIKHUY',
+        '6 de 6',
+        PW,
+        BLUE,
+        BLUE_DARK,
+        WHITE,
+      );
       let y6 = 48;
 
       // — Micronutrientes —
       rr(15, y6, PW - 30, 10, BLUE, 4);
-      st(WHITE); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
-      pdf.text('MICRONUTRIENTES', 20, y6 + 7); y6 += 14;
+      st(WHITE);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('MICRONUTRIENTES', 20, y6 + 7);
+      y6 += 14;
 
       const metM6 = this.metricasMicronutrientes;
       if (!metM6) {
-        st(TEXT_GRAY); pdf.setFontSize(9); pdf.setFont('helvetica','italic');
-        pdf.text('El estudiante aun no ha jugado Micronutrientes.', 20, y6 + 8); y6 += 20;
+        st(TEXT_GRAY);
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'italic');
+        pdf.text('El estudiante aun no ha jugado Micronutrientes.', 20, y6 + 8);
+        y6 += 20;
       } else {
         const mCols6 = [
-          {v:`${metM6.nivelesJugados}/5`,l:'Niveles jugados'},
-          {v:`${metM6.precision}%`,l:'Precision'},
-          {v:`${metM6.totalAciertos}/${metM6.totalPosibles}`,l:'Aciertos'},
-          {v:`${metM6.puntosTotal} pts`,l:'Puntos'},
+          { v: `${metM6.nivelesJugados}/5`, l: 'Niveles jugados' },
+          { v: `${metM6.precision}%`, l: 'Precision' },
+          { v: `${metM6.totalAciertos}/${metM6.totalPosibles}`, l: 'Aciertos' },
+          { v: `${metM6.puntosTotal} pts`, l: 'Puntos' },
         ];
         const mcW6 = (PW - 40) / mCols6.length;
         mCols6.forEach((col, ci) => {
           const cx = 15 + ci * mcW6;
-          rr(cx+1,y6,mcW6-4,26,GRAY_BG,4);
-          st(BLUE); pdf.setFontSize(13); pdf.setFont('helvetica','bold');
-          pdf.text(col.v, cx+4, y6+14);
-          st(TEXT_GRAY); pdf.setFontSize(7); pdf.setFont('helvetica','normal');
-          pdf.text(col.l, cx+4, y6+22);
+          rr(cx + 1, y6, mcW6 - 4, 26, GRAY_BG, 4);
+          st(BLUE);
+          pdf.setFontSize(13);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(col.v, cx + 4, y6 + 14);
+          st(TEXT_GRAY);
+          pdf.setFontSize(7);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(col.l, cx + 4, y6 + 22);
         });
         y6 += 32;
         // barra precision
-        st(TEXT_DARK); pdf.setFontSize(8); pdf.setFont('helvetica','bold');
-        pdf.text('Precision en identificar micronutrientes deficientes:', 15, y6); y6 += 6;
-        rr(15,y6,PW-30,8,GRAY_LINE,3);
+        st(TEXT_DARK);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(
+          'Precision en identificar micronutrientes deficientes:',
+          15,
+          y6,
+        );
+        y6 += 6;
+        rr(15, y6, PW - 30, 8, GRAY_LINE, 3);
         const mPct6 = metM6.precision;
-        const mCol6: [number,number,number] = mPct6>=70 ? GREEN : mPct6>=40 ? [255,152,0] : RED;
-        if(mPct6>0) rr(15,y6,Math.max(4,((PW-30)*mPct6)/100),8,mCol6,3);
-        st(mCol6); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
-        pdf.text(`${mPct6}%`, PW-10, y6+6); y6 += 14;
+        const mCol6: [number, number, number] =
+          mPct6 >= 70 ? GREEN : mPct6 >= 40 ? [255, 152, 0] : RED;
+        if (mPct6 > 0)
+          rr(15, y6, Math.max(4, ((PW - 30) * mPct6) / 100), 8, mCol6, 3);
+        st(mCol6);
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${mPct6}%`, PW - 10, y6 + 6);
+        y6 += 14;
         // historial
-        if(metM6.historial?.length>0){
-          st(TEXT_GRAY); pdf.setFontSize(7.5); pdf.setFont('helvetica','bold');
-          pdf.text('Detalle por nivel:', 15, y6); y6+=5;
+        if (metM6.historial?.length > 0) {
+          st(TEXT_GRAY);
+          pdf.setFontSize(7.5);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Detalle por nivel:', 15, y6);
+          y6 += 5;
           metM6.historial.forEach((n: any) => {
-            const nc: [number,number,number] = n.aciertos===(n.deficientesCorrectos?.length||2) ? GREEN : n.aciertos>0 ? [255,152,0] : RED;
-            rect(15,y6,3,8,nc);
-            st(TEXT_DARK); pdf.setFontSize(7); pdf.setFont('helvetica','normal');
-            pdf.text(`Nivel ${n.nivelNumero}: ${n.aciertos||0}/${n.deficientesCorrectos?.length||2} aciertos - ${n.puntosObtenidos||0} pts`, 21, y6+6);
-            y6+=10;
+            const nc: [number, number, number] =
+              n.aciertos === (n.deficientesCorrectos?.length || 2)
+                ? GREEN
+                : n.aciertos > 0
+                  ? [255, 152, 0]
+                  : RED;
+            rect(15, y6, 3, 8, nc);
+            st(TEXT_DARK);
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(
+              `Nivel ${n.nivelNumero}: ${n.aciertos || 0}/${n.deficientesCorrectos?.length || 2} aciertos - ${n.puntosObtenidos || 0} pts`,
+              21,
+              y6 + 6,
+            );
+            y6 += 10;
           });
         }
       }
 
-      y6 += 6; st(GRAY_LINE); pdf.line(15,y6,PW-15,y6); y6+=10;
+      y6 += 6;
+      st(GRAY_LINE);
+      pdf.line(15, y6, PW - 15, y6);
+      y6 += 10;
 
       // — Clasifica —
-      rr(15,y6,PW-30,10,GREEN,4);
-      st(WHITE); pdf.setFontSize(9); pdf.setFont('helvetica','bold');
-      pdf.text('CLASIFICA TUS ALIMENTOS', 20, y6+7); y6+=14;
+      rr(15, y6, PW - 30, 10, GREEN, 4);
+      st(WHITE);
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('CLASIFICA TUS ALIMENTOS', 20, y6 + 7);
+      y6 += 14;
 
       const metC6 = this.metricasClasifica;
       if (!metC6) {
-        st(TEXT_GRAY); pdf.setFontSize(9); pdf.setFont('helvetica','italic');
-        pdf.text('El estudiante aun no ha jugado Clasifica tus Alimentos.', 20, y6+8); y6+=20;
+        st(TEXT_GRAY);
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'italic');
+        pdf.text(
+          'El estudiante aun no ha jugado Clasifica tus Alimentos.',
+          20,
+          y6 + 8,
+        );
+        y6 += 20;
       } else {
         const cCols6 = [
-          {v:`${metC6.nivelesJugados}/10`,l:'Niveles'},
-          {v:`${metC6.totalAciertos}`,l:'Aciertos'},
-          {v:`${metC6.tiempoAgotados}x`,l:'Tiempo agotado'},
-          {v:`${metC6.tiempoPromedioSeg}s`,l:'Tpo. promedio'},
-          {v:`${metC6.puntosTotal} pts`,l:'Puntos'},
+          { v: `${metC6.nivelesJugados}/10`, l: 'Niveles' },
+          { v: `${metC6.totalAciertos}`, l: 'Aciertos' },
+          { v: `${metC6.tiempoAgotados}x`, l: 'Tiempo agotado' },
+          { v: `${metC6.tiempoPromedioSeg}s`, l: 'Tpo. promedio' },
+          { v: `${metC6.puntosTotal} pts`, l: 'Puntos' },
         ];
-        const ccW6 = (PW-40)/cCols6.length;
-        cCols6.forEach((col,ci)=>{
-          const cx=15+ci*ccW6;
-          rr(cx+1,y6,ccW6-4,26,GREEN_LIGHT,4);
-          st(GREEN); pdf.setFontSize(12); pdf.setFont('helvetica','bold');
-          pdf.text(col.v, cx+4, y6+14);
-          st(TEXT_GRAY); pdf.setFontSize(6.5); pdf.setFont('helvetica','normal');
-          pdf.text(col.l, cx+4, y6+22);
+        const ccW6 = (PW - 40) / cCols6.length;
+        cCols6.forEach((col, ci) => {
+          const cx = 15 + ci * ccW6;
+          rr(cx + 1, y6, ccW6 - 4, 26, GREEN_LIGHT, 4);
+          st(GREEN);
+          pdf.setFontSize(12);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(col.v, cx + 4, y6 + 14);
+          st(TEXT_GRAY);
+          pdf.setFontSize(6.5);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(col.l, cx + 4, y6 + 22);
         });
-        y6+=32;
-        st(TEXT_DARK); pdf.setFontSize(8); pdf.setFont('helvetica','normal');
+        y6 += 32;
+        st(TEXT_DARK);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'normal');
         pdf.text('Grupo mas practicado: ', 15, y6);
-        st(GREEN); pdf.setFont('helvetica','bold');
-        pdf.text(metC6.grupoMasFrecuente, 60, y6); y6+=12;
-        if(metC6.historial?.length>0){
-          st(TEXT_GRAY); pdf.setFontSize(7.5); pdf.setFont('helvetica','bold');
-          pdf.text('Detalle por nivel:', 15, y6); y6+=5;
-          metC6.historial.slice(0,6).forEach((n: any)=>{
-            const nc: [number,number,number] = n.tiempoAgotado ? RED : n.aciertos>0 ? GREEN : [255,152,0];
-            rect(15,y6,3,8,nc);
-            st(TEXT_DARK); pdf.setFontSize(7); pdf.setFont('helvetica','normal');
-            const ts = n.tiempoAgotado ? 'Agotado' : `${n.tiempoUsado||0}s`;
-            pdf.text(`Nivel ${n.nivelNumero} (${n.grupoObjetivo}): ${n.aciertos||0} aciertos - ${ts} - ${n.puntosObtenidos||0} pts`, 21, y6+6);
-            y6+=10;
+        st(GREEN);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(metC6.grupoMasFrecuente, 60, y6);
+        y6 += 12;
+        if (metC6.historial?.length > 0) {
+          st(TEXT_GRAY);
+          pdf.setFontSize(7.5);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text('Detalle por nivel:', 15, y6);
+          y6 += 5;
+          metC6.historial.slice(0, 6).forEach((n: any) => {
+            const nc: [number, number, number] = n.tiempoAgotado
+              ? RED
+              : n.aciertos > 0
+                ? GREEN
+                : [255, 152, 0];
+            rect(15, y6, 3, 8, nc);
+            st(TEXT_DARK);
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            const ts = n.tiempoAgotado ? 'Agotado' : `${n.tiempoUsado || 0}s`;
+            pdf.text(
+              `Nivel ${n.nivelNumero} (${n.grupoObjetivo}): ${n.aciertos || 0} aciertos - ${ts} - ${n.puntosObtenidos || 0} pts`,
+              21,
+              y6 + 6,
+            );
+            y6 += 10;
           });
         }
       }
@@ -2220,7 +2517,7 @@ export class DashboardsComponent implements OnInit {
 
   onDateSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const dateStr = input.value;   // 'YYYY-MM-DD'
+    const dateStr = input.value; // 'YYYY-MM-DD'
     if (!dateStr) return;
 
     this.selectedDate = dateStr;
@@ -2249,7 +2546,9 @@ export class DashboardsComponent implements OnInit {
     // Restaurar data completa desde los respaldos
     this.dashboardData.juegos = [...this.originalJuegos];
     if (this.dashboardData.salud) {
-      this.dashboardData.salud.historialMediciones = [...this.originalHistorialImc];
+      this.dashboardData.salud.historialMediciones = [
+        ...this.originalHistorialImc,
+      ];
     }
     this.recalcularEstadisticas();
   }
@@ -2268,18 +2567,23 @@ export class DashboardsComponent implements OnInit {
 
     // Juegos jugados HASTA esa fecha
     this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
-      const raw = juego.fechaModificacion ?? juego.fecha ?? juego.updatedAt ?? juego.createdAt;
-      if (!raw) return true;          // sin fecha → siempre visible
+      const raw =
+        juego.fechaModificacion ??
+        juego.fecha ??
+        juego.updatedAt ??
+        juego.createdAt;
+      if (!raw) return true; // sin fecha → siempre visible
       return new Date(raw) <= endOfDay;
     });
 
     // Mediciones de salud/IMC HASTA esa fecha
     if (this.dashboardData.salud && this.originalHistorialImc) {
-      this.dashboardData.salud.historialMediciones = this.originalHistorialImc.filter((m: any) => {
-        const raw = m.fechaRegistro ?? m.fecha ?? m.createdAt;
-        if (!raw) return true;
-        return new Date(raw) <= endOfDay;
-      });
+      this.dashboardData.salud.historialMediciones =
+        this.originalHistorialImc.filter((m: any) => {
+          const raw = m.fechaRegistro ?? m.fecha ?? m.createdAt;
+          if (!raw) return true;
+          return new Date(raw) <= endOfDay;
+        });
     }
 
     this.recalcularEstadisticas();
@@ -2292,17 +2596,23 @@ export class DashboardsComponent implements OnInit {
     if (this.selectedRange === 'all') {
       this.dashboardData.juegos = [...this.originalJuegos];
       if (this.dashboardData.salud) {
-        this.dashboardData.salud.historialMediciones = [...this.originalHistorialImc];
+        this.dashboardData.salud.historialMediciones = [
+          ...this.originalHistorialImc,
+        ];
       }
       this.recalcularEstadisticas();
       return;
     }
 
     const cutoffDate = new Date();
-    if (this.selectedRange === '1w') cutoffDate.setDate(cutoffDate.getDate() - 7);
-    else if (this.selectedRange === '1m') cutoffDate.setMonth(cutoffDate.getMonth() - 1);
-    else if (this.selectedRange === '3m') cutoffDate.setMonth(cutoffDate.getMonth() - 3);
-    else if (this.selectedRange === '1y') cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
+    if (this.selectedRange === '1w')
+      cutoffDate.setDate(cutoffDate.getDate() - 7);
+    else if (this.selectedRange === '1m')
+      cutoffDate.setMonth(cutoffDate.getMonth() - 1);
+    else if (this.selectedRange === '3m')
+      cutoffDate.setMonth(cutoffDate.getMonth() - 3);
+    else if (this.selectedRange === '1y')
+      cutoffDate.setFullYear(cutoffDate.getFullYear() - 1);
 
     this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
       const juegoDate = new Date(juego.fechaModificacion || juego.fecha);
@@ -2310,10 +2620,11 @@ export class DashboardsComponent implements OnInit {
     });
 
     if (this.dashboardData.salud && this.originalHistorialImc) {
-      this.dashboardData.salud.historialMediciones = this.originalHistorialImc.filter((medicion: any) => {
-        const medicionDate = new Date(medicion.fecha);
-        return medicionDate >= cutoffDate;
-      });
+      this.dashboardData.salud.historialMediciones =
+        this.originalHistorialImc.filter((medicion: any) => {
+          const medicionDate = new Date(medicion.fecha);
+          return medicionDate >= cutoffDate;
+        });
     }
 
     this.recalcularEstadisticas();
@@ -2324,9 +2635,13 @@ export class DashboardsComponent implements OnInit {
 
     const juegos = this.dashboardData.juegos || [];
     if (juegos.length > 0) {
-      const totalPuntaje = juegos.reduce((acc: number, j: any) => acc + (j.puntaje || 0), 0);
+      const totalPuntaje = juegos.reduce(
+        (acc: number, j: any) => acc + (j.puntaje || 0),
+        0,
+      );
       if (this.dashboardData.estadisticas) {
-        (this.dashboardData.estadisticas as any).promedioPuntaje = totalPuntaje / juegos.length;
+        (this.dashboardData.estadisticas as any).promedioPuntaje =
+          totalPuntaje / juegos.length;
       }
     } else if (this.dashboardData.estadisticas) {
       (this.dashboardData.estadisticas as any).promedioPuntaje = 0;
@@ -2376,7 +2691,14 @@ export class DashboardsComponent implements OnInit {
   private leerAnalisisDesdLocalStorage(userId?: string): any {
     const cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
     // Probar todos los campos posibles del currentUser
-    const uid = userId || cu?.id || cu?._id || cu?.userId || cu?.alumnoId || cu?.email || 'unknown';
+    const uid =
+      userId ||
+      cu?.id ||
+      cu?._id ||
+      cu?.userId ||
+      cu?.alumnoId ||
+      cu?.email ||
+      'unknown';
     const hoy = new Date().toISOString().split('T')[0];
 
     let registroTarget: any = null;
@@ -2386,7 +2708,9 @@ export class DashboardsComponent implements OnInit {
     try {
       const raw = localStorage.getItem(`mikhuy_reto7_hoy_${hoy}`);
       if (raw) registroTarget = JSON.parse(raw);
-    } catch { /* ignorar */ }
+    } catch {
+      /* ignorar */
+    }
 
     // 2️⃣ Segundo: claves por userId + día (1-7)
     if (!registroTarget) {
@@ -2396,11 +2720,19 @@ export class DashboardsComponent implements OnInit {
           const raw = localStorage.getItem(key);
           if (!raw) continue;
           const reg = JSON.parse(raw);
-          if (reg.fecha === hoy) { registroTarget = reg; break; }
-          if (!registroMasReciente || reg.timestamp > registroMasReciente.timestamp) {
+          if (reg.fecha === hoy) {
+            registroTarget = reg;
+            break;
+          }
+          if (
+            !registroMasReciente ||
+            reg.timestamp > registroMasReciente.timestamp
+          ) {
             registroMasReciente = reg;
           }
-        } catch { /* ignorar */ }
+        } catch {
+          /* ignorar */
+        }
       }
     }
 
@@ -2412,11 +2744,19 @@ export class DashboardsComponent implements OnInit {
         try {
           const reg = JSON.parse(localStorage.getItem(key) || '');
           if (!reg?.timestamp) continue;
-          if (reg.fecha === hoy) { registroTarget = reg; break; }
-          if (!registroMasReciente || reg.timestamp > registroMasReciente.timestamp) {
+          if (reg.fecha === hoy) {
+            registroTarget = reg;
+            break;
+          }
+          if (
+            !registroMasReciente ||
+            reg.timestamp > registroMasReciente.timestamp
+          ) {
             registroMasReciente = reg;
           }
-        } catch { /* ignorar */ }
+        } catch {
+          /* ignorar */
+        }
       }
     }
 
@@ -2424,61 +2764,89 @@ export class DashboardsComponent implements OnInit {
     if (!reg) return null;
 
     // ── Cálculo de macros desde porciones ──────────────────────────────────
-    const cal  = (reg.alimentosFrutas        ?? 0) * 60
-               + (reg.alimentosVerduras       ?? 0) * 25
-               + (reg.alimentosProteinas      ?? 0) * 120
-               + (reg.alimentosCarbohidratos  ?? 0) * 150
-               + (reg.alimentosLacteos        ?? 0) * 80
-               + (reg.alimentosDulces         ?? 0) * 200;
+    const cal =
+      (reg.alimentosFrutas ?? 0) * 60 +
+      (reg.alimentosVerduras ?? 0) * 25 +
+      (reg.alimentosProteinas ?? 0) * 120 +
+      (reg.alimentosCarbohidratos ?? 0) * 150 +
+      (reg.alimentosLacteos ?? 0) * 80 +
+      (reg.alimentosDulces ?? 0) * 200;
 
-    const protG = (reg.alimentosProteinas     ?? 0) * 25
-                + (reg.alimentosLacteos       ?? 0) * 8
-                + (reg.alimentosFrutas        ?? 0) * 1;
+    const protG =
+      (reg.alimentosProteinas ?? 0) * 25 +
+      (reg.alimentosLacteos ?? 0) * 8 +
+      (reg.alimentosFrutas ?? 0) * 1;
 
-    const carbG = (reg.alimentosCarbohidratos ?? 0) * 30
-                + (reg.alimentosFrutas        ?? 0) * 15
-                + (reg.alimentosDulces        ?? 0) * 40
-                + (reg.alimentosVerduras      ?? 0) * 5;
+    const carbG =
+      (reg.alimentosCarbohidratos ?? 0) * 30 +
+      (reg.alimentosFrutas ?? 0) * 15 +
+      (reg.alimentosDulces ?? 0) * 40 +
+      (reg.alimentosVerduras ?? 0) * 5;
 
-    const grasG = (reg.alimentosDulces        ?? 0) * 8
-                + (reg.alimentosLacteos       ?? 0) * 5
-                + (reg.alimentosProteinas     ?? 0) * 5;
+    const grasG =
+      (reg.alimentosDulces ?? 0) * 8 +
+      (reg.alimentosLacteos ?? 0) * 5 +
+      (reg.alimentosProteinas ?? 0) * 5;
 
-    const metaCal  = (this.dashboardData as any)?.salud?.metaCalorica ?? 2000;
-    const metaProt = Math.round(metaCal * 0.15 / 4);
-    const metaCarb = Math.round(metaCal * 0.55 / 4);
-    const metaGras = Math.round(metaCal * 0.30 / 9);
+    const metaCal = (this.dashboardData as any)?.salud?.metaCalorica ?? 2000;
+    const metaProt = Math.round((metaCal * 0.15) / 4);
+    const metaCarb = Math.round((metaCal * 0.55) / 4);
+    const metaGras = Math.round((metaCal * 0.3) / 9);
 
     const totalMacrosCal = protG * 4 + carbG * 4 + grasG * 9 || 1;
-    const protPct  = Math.round((protG * 4 / totalMacrosCal) * 100);
-    const carbPct  = Math.round((carbG * 4 / totalMacrosCal) * 100);
-    const grasPct  = 100 - protPct - carbPct;
+    const protPct = Math.round(((protG * 4) / totalMacrosCal) * 100);
+    const carbPct = Math.round(((carbG * 4) / totalMacrosCal) * 100);
+    const grasPct = 100 - protPct - carbPct;
 
     const desglosePorComida = [
-      { tipo: 'Desayuno',  calorias: Math.round(cal * 0.25), proteinasG: Math.round(protG * 0.25 * 10) / 10, carbohidratosG: Math.round(carbG * 0.25 * 10) / 10, grasasG: Math.round(grasG * 0.25 * 10) / 10 },
-      { tipo: 'Almuerzo',  calorias: Math.round(cal * 0.40), proteinasG: Math.round(protG * 0.40 * 10) / 10, carbohidratosG: Math.round(carbG * 0.40 * 10) / 10, grasasG: Math.round(grasG * 0.40 * 10) / 10 },
-      { tipo: 'Cena',      calorias: Math.round(cal * 0.25), proteinasG: Math.round(protG * 0.25 * 10) / 10, carbohidratosG: Math.round(carbG * 0.25 * 10) / 10, grasasG: Math.round(grasG * 0.25 * 10) / 10 },
-      { tipo: 'Merienda',  calorias: Math.round(cal * 0.10), proteinasG: Math.round(protG * 0.10 * 10) / 10, carbohidratosG: Math.round(carbG * 0.10 * 10) / 10, grasasG: Math.round(grasG * 0.10 * 10) / 10 },
+      {
+        tipo: 'Desayuno',
+        calorias: Math.round(cal * 0.25),
+        proteinasG: Math.round(protG * 0.25 * 10) / 10,
+        carbohidratosG: Math.round(carbG * 0.25 * 10) / 10,
+        grasasG: Math.round(grasG * 0.25 * 10) / 10,
+      },
+      {
+        tipo: 'Almuerzo',
+        calorias: Math.round(cal * 0.4),
+        proteinasG: Math.round(protG * 0.4 * 10) / 10,
+        carbohidratosG: Math.round(carbG * 0.4 * 10) / 10,
+        grasasG: Math.round(grasG * 0.4 * 10) / 10,
+      },
+      {
+        tipo: 'Cena',
+        calorias: Math.round(cal * 0.25),
+        proteinasG: Math.round(protG * 0.25 * 10) / 10,
+        carbohidratosG: Math.round(carbG * 0.25 * 10) / 10,
+        grasasG: Math.round(grasG * 0.25 * 10) / 10,
+      },
+      {
+        tipo: 'Merienda',
+        calorias: Math.round(cal * 0.1),
+        proteinasG: Math.round(protG * 0.1 * 10) / 10,
+        carbohidratosG: Math.round(carbG * 0.1 * 10) / 10,
+        grasasG: Math.round(grasG * 0.1 * 10) / 10,
+      },
     ];
 
     return {
-      fecha:                   reg.fecha ?? hoy,
-      caloriasConsumidas:      Math.round(cal),
-      metaCalorica:            metaCal,
-      proteinasG:              Math.round(protG * 10) / 10,
-      metaProteinasG:          metaProt,
-      carbohidratosG:          Math.round(carbG * 10) / 10,
-      metaCarbohidratosG:      metaCarb,
-      grasasG:                 Math.round(grasG * 10) / 10,
-      metaGrasasG:             metaGras,
-      proteinasPorcentaje:     protPct,
+      fecha: reg.fecha ?? hoy,
+      caloriasConsumidas: Math.round(cal),
+      metaCalorica: metaCal,
+      proteinasG: Math.round(protG * 10) / 10,
+      metaProteinasG: metaProt,
+      carbohidratosG: Math.round(carbG * 10) / 10,
+      metaCarbohidratosG: metaCarb,
+      grasasG: Math.round(grasG * 10) / 10,
+      metaGrasasG: metaGras,
+      proteinasPorcentaje: protPct,
       carbohidratosPorcentaje: carbPct,
-      grasasPorcentaje:        grasPct,
+      grasasPorcentaje: grasPct,
       desglosePorComida,
-      guardadoOffline:         true,
-      diaReto:                 reg.dia,
-      emocion:                 reg.emocion,
-      notas:                   reg.notas,
+      guardadoOffline: true,
+      diaReto: reg.dia,
+      emocion: reg.emocion,
+      notas: reg.notas,
     };
   }
 
@@ -2498,7 +2866,7 @@ export class DashboardsComponent implements OnInit {
   getEvolucionSemanalData(): { semana: number; posicion: number }[] {
     const stats = this.dashboardData?.estadisticas;
     const posActual = stats?.posicionRanking ?? 0;
-    const totalEst  = stats?.totalEstudiantes ?? 100;
+    const totalEst = stats?.totalEstudiantes ?? 100;
     if (!posActual) return [];
 
     // Leer registros reales de localStorage
@@ -2509,7 +2877,9 @@ export class DashboardsComponent implements OnInit {
       try {
         const reg = JSON.parse(localStorage.getItem(key) || '');
         if (reg?.dia && reg?.timestamp) registros.push(reg);
-      } catch { /* ignorar */ }
+      } catch {
+        /* ignorar */
+      }
     }
 
     // Deduplicar y ordenar por timestamp
@@ -2517,7 +2887,7 @@ export class DashboardsComponent implements OnInit {
       registros.reduce((acc: any, r) => {
         if (!acc[r.dia] || r.timestamp > acc[r.dia].timestamp) acc[r.dia] = r;
         return acc;
-      }, {})
+      }, {}),
     ) as { dia: number; timestamp: number }[];
     unicos.sort((a: any, b: any) => a.timestamp - b.timestamp);
 
@@ -2533,10 +2903,13 @@ export class DashboardsComponent implements OnInit {
     // Sin suficientes datos locales: generar 5 semanas plausibles
     // La curva simula que el alumno empezó más abajo y fue subiendo hasta hoy
     const semanas = 5;
-    const posInicio = Math.min(totalEst, posActual + Math.floor(totalEst * 0.3));
+    const posInicio = Math.min(
+      totalEst,
+      posActual + Math.floor(totalEst * 0.3),
+    );
     const resultado: { semana: number; posicion: number }[] = [];
     for (let i = 0; i < semanas; i++) {
-      const t = i / (semanas - 1);                       // 0 → 1
+      const t = i / (semanas - 1); // 0 → 1
       const pos = Math.round(posInicio + (posActual - posInicio) * t);
       resultado.push({ semana: i + 1, posicion: Math.max(1, pos) });
     }
@@ -2544,14 +2917,22 @@ export class DashboardsComponent implements OnInit {
   }
 
   // Helpers de coordenadas para el SVG (viewBox 480×160, pad L=36 R=16 T=24 B=28)
-  private evCoords(): { x: number; y: number; pos: number; esMejor: boolean }[] {
+  private evCoords(): {
+    x: number;
+    y: number;
+    pos: number;
+    esMejor: boolean;
+  }[] {
     const data = this.getEvolucionSemanalData();
     const n = data.length;
     if (!n) return [];
-    const minP = Math.min(...data.map(d => d.posicion));
-    const maxP = Math.max(...data.map(d => d.posicion));
+    const minP = Math.min(...data.map((d) => d.posicion));
+    const maxP = Math.max(...data.map((d) => d.posicion));
     const range = maxP - minP || 1;
-    const chartW = 428, chartH = 108, padL = 36, padT = 24;
+    const chartW = 428,
+      chartH = 108,
+      padL = 36,
+      padT = 24;
     return data.map((d, i) => ({
       x: padL + (n <= 1 ? chartW / 2 : (i / (n - 1)) * chartW),
       y: padT + ((d.posicion - minP) / range) * chartH,
@@ -2562,24 +2943,31 @@ export class DashboardsComponent implements OnInit {
 
   getEvMinPos(): number {
     const d = this.getEvolucionSemanalData();
-    return d.length ? Math.min(...d.map(x => x.posicion)) : 1;
+    return d.length ? Math.min(...d.map((x) => x.posicion)) : 1;
   }
   getEvMaxPos(): number {
     const d = this.getEvolucionSemanalData();
-    return d.length ? Math.max(...d.map(x => x.posicion)) : 10;
+    return d.length ? Math.max(...d.map((x) => x.posicion)) : 10;
   }
-  getEvolucionPoints2(): { x: number; y: number; pos: number; esMejor: boolean }[] {
+  getEvolucionPoints2(): {
+    x: number;
+    y: number;
+    pos: number;
+    esMejor: boolean;
+  }[] {
     return this.evCoords();
   }
   getEvolucionAreaStr(): string {
     const pts = this.evCoords();
     if (!pts.length) return '';
     const bottom = 132;
-    return `${pts[0].x},${bottom} ${pts.map(p => `${p.x},${p.y}`).join(' ')} ${pts[pts.length - 1].x},${bottom}`;
+    return `${pts[0].x},${bottom} ${pts.map((p) => `${p.x},${p.y}`).join(' ')} ${pts[pts.length - 1].x},${bottom}`;
   }
 
   getEvolucionLineStr(): string {
-    return this.evCoords().map(p => `${p.x},${p.y}`).join(' ');
+    return this.evCoords()
+      .map((p) => `${p.x},${p.y}`)
+      .join(' ');
   }
   get evolucionEsAscendente(): boolean {
     const data = this.getEvolucionSemanalData();
@@ -2600,11 +2988,11 @@ export class DashboardsComponent implements OnInit {
   /** Retorna el emoji representativo de cada tipo de comida */
   getComidaEmoji(tipo: string): string {
     const map: Record<string, string> = {
-      'Desayuno': '🍳',
-      'Almuerzo': '🍽️',
-      'Cena':     '🌙',
-      'Merienda': '🍎',
-      'Snack':    '🥨',
+      Desayuno: '🍳',
+      Almuerzo: '🍽️',
+      Cena: '🌙',
+      Merienda: '🍎',
+      Snack: '🥨',
     };
     return map[tipo] || '🍴';
   }
@@ -2616,7 +3004,9 @@ export class DashboardsComponent implements OnInit {
   }
 
   // ─── CP033: Comparativa real vs ideal por macro ───────────────────────────
-  getMacrosComparativa(analisis: any): { nombre: string; real: number; ideal: number }[] {
+  getMacrosComparativa(
+    analisis: any,
+  ): { nombre: string; real: number; ideal: number }[] {
     // Distribución ideal estándar para control de sobrepeso / normal
     // Se adapta si el backend devuelve `distribucionIdeal`, si no, se usa la referencia OMS
     const ideal = analisis?.distribucionIdeal ?? {
@@ -2627,18 +3017,18 @@ export class DashboardsComponent implements OnInit {
     return [
       {
         nombre: 'Proteínas',
-        real:   analisis?.proteinasPorcentaje ?? 0,
-        ideal:  ideal.proteinasPct,
+        real: analisis?.proteinasPorcentaje ?? 0,
+        ideal: ideal.proteinasPct,
       },
       {
         nombre: 'Carbohidratos',
-        real:   analisis?.carbohidratosPorcentaje ?? 0,
-        ideal:  ideal.carbohidratosPct,
+        real: analisis?.carbohidratosPorcentaje ?? 0,
+        ideal: ideal.carbohidratosPct,
       },
       {
         nombre: 'Grasas',
-        real:   analisis?.grasasPorcentaje ?? 0,
-        ideal:  ideal.grasasPct,
+        real: analisis?.grasasPorcentaje ?? 0,
+        ideal: ideal.grasasPct,
       },
     ];
   }
