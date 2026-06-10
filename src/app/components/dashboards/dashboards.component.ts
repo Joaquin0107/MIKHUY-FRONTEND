@@ -439,29 +439,28 @@ export class DashboardsComponent implements OnInit {
   }
 
   selectStudent(student: Student): void {
-    this.selectedStudent = student;
-    this.loading = true;
+  this.selectedStudent = student;
+  this.loading = true;
+  // Resetear métricas del alumno anterior
+  this.metricasMicronutrientes = null;
+  this.metricasClasifica = null;
 
-    this.dashboardService.getDashboardEstudiante(student.id).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.dashboardData = response.data;
+  this.dashboardService.getDashboardEstudiante(student.id).subscribe({
+    next: (response) => {
+      if (response.success && response.data) {
+        this.dashboardData = response.data;
+        this.originalJuegos = response.data.juegos || [];
+        this.originalHistorialImc = response.data.salud?.historialMediciones || [];
+        this.selectedRange = 'all';
+        this.selectedDate = '';
+        this.selectedDateLabel = '';
+        this.showCalendar = false;
 
-          // 🔴 CLAVE: Respaldamos los datos del estudiante seleccionado
-          this.originalJuegos = response.data.juegos || [];
-          this.originalHistorialImc =
-            response.data.salud?.historialMediciones || [];
-          this.selectedRange = 'all'; // Reseteamos el selector
-          // Resetear filtro de calendario
-          this.selectedDate = '';
-          this.selectedDateLabel = '';
-          this.showCalendar = false;
+        this.verificarAlertasSalud(response.data.salud);
+        this.loading = false;
+        this.recalcularEstadisticas();
 
-          this.verificarAlertasSalud(response.data.salud);
-          this.loading = false;
-
-          // Forzamos el renderizado de gráficos del nuevo alumno
-          this.recalcularEstadisticas();
+        this.cargarMetricasJuegosNuevos();
         } else {
           this.error =
             response.message || 'Error al cargar datos del estudiante';
