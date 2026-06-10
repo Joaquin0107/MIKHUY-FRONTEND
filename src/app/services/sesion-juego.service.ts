@@ -69,7 +69,7 @@ export interface SesionJuegoResponse {
   providedIn: 'root',
 })
 export class SesionJuegoService {
-  private apiUrl = `${environment.apiUrl}/sesiones`;
+  private apiUrl = `${environment.apiUrl}/api/sesiones`;
 
   constructor(private http: HttpClient) {}
 
