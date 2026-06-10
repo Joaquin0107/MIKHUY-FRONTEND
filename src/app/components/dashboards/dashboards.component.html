@@ -794,248 +794,148 @@
            MÉTRICAS JUEGOS NUEVOS — Micronutrientes + Clasifica tus Alimentos
       ════════════════════════════════════════════════════════════════════════ -->
 
-      <div class="juegos-nuevos-section">
-        <div class="analisis-section-header">
-          <mat-icon>science</mat-icon>
-          <h2>Juegos Educativos Nuevos</h2>
-          <span class="data-source"
-            >Micronutrientes y Clasifica tus Alimentos</span
-          >
-          <button
-            mat-icon-button
-            (click)="cargarMetricasJuegosNuevos()"
-            matTooltip="Actualizar métricas"
-          >
-            <mat-icon>refresh</mat-icon>
-          </button>
-        </div>
-
-        <div class="juegos-nuevos-grid">
-          <!-- ── MICRONUTRIENTES ─────────────────────────────────────── -->
-          <mat-card
-            class="juego-nuevo-card micro-card-dash"
-            *ngIf="metricasMicronutrientes"
-          >
-            <mat-card-header>
-              <div class="jn-header-icon micro-icon-header">
-                <mat-icon>science</mat-icon>
+      <<!-- ── MICRONUTRIENTES ─────────────────────────────────────── -->
+      <mat-card class="chart-card" *ngIf="metricasMicronutrientes">
+        <mat-card-header>
+          <mat-card-title>Micronutrientes</mat-card-title>
+          <span class="data-source">Análisis de vitaminas y minerales</span>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div class="game-progress">
+              <div class="progress-header">
+                <mat-icon class="game-icon">science</mat-icon>
+                <div>
+                  <h3>
+                    {{ metricasMicronutrientes.nivelesJugados }} de 5 niveles
+                    completados
+                  </h3>
+                  <p>
+                    {{ metricasMicronutrientes.puntosTotal }} puntos acumulados
+                  </p>
+                </div>
               </div>
-              <mat-card-title>Micronutrientes</mat-card-title>
-              <mat-card-subtitle
-                >Análisis de vitaminas y minerales</mat-card-subtitle
-              >
-            </mat-card-header>
-            <mat-card-content>
-              <div class="jn-stats-row">
-                <div class="jn-stat">
-                  <span class="jn-stat-value"
-                    >{{ metricasMicronutrientes.nivelesJugados }}/5</span
-                  >
-                  <span class="jn-stat-label">Niveles jugados</span>
-                </div>
-                <div class="jn-stat">
+              <div class="progress-bar-container">
+                <div
+                  class="progress-bar"
+                  [style.width.%]="
+                    (metricasMicronutrientes.nivelesJugados / 5) * 100
+                  "
+                ></div>
+              </div>
+              <div class="game-stats">
+                <div class="game-stat-item">
+                  <mat-icon>check_circle</mat-icon>
                   <span
-                    class="jn-stat-value"
-                    [class.precision-alta]="
-                      metricasMicronutrientes.precision >= 70
-                    "
-                    [class.precision-media]="
-                      metricasMicronutrientes.precision >= 40 &&
-                      metricasMicronutrientes.precision < 70
-                    "
-                    [class.precision-baja]="
-                      metricasMicronutrientes.precision < 40
-                    "
+                    >Precisión: {{ metricasMicronutrientes.precision }}%</span
                   >
-                    {{ metricasMicronutrientes.precision }}%
-                  </span>
-                  <span class="jn-stat-label">Precisión</span>
                 </div>
-                <div class="jn-stat">
-                  <span class="jn-stat-value"
-                    >{{ metricasMicronutrientes.totalAciertos }}/{{
+                <div class="game-stat-item">
+                  <mat-icon>quiz</mat-icon>
+                  <span
+                    >Aciertos: {{ metricasMicronutrientes.totalAciertos }}/{{
                       metricasMicronutrientes.totalPosibles
                     }}</span
                   >
-                  <span class="jn-stat-label">Aciertos</span>
-                </div>
-                <div class="jn-stat">
-                  <span class="jn-stat-value pts-value">{{
-                    metricasMicronutrientes.puntosTotal
-                  }}</span>
-                  <span class="jn-stat-label">Puntos</span>
                 </div>
               </div>
-              <div class="jn-barra-wrap">
-                <span class="jn-barra-label">Precisión</span>
-                <div class="jn-barra-track">
-                  <div
-                    class="jn-barra-fill"
-                    [style.width.%]="metricasMicronutrientes.precision"
-                    [class.fill-alta]="metricasMicronutrientes.precision >= 70"
-                    [class.fill-media]="
-                      metricasMicronutrientes.precision >= 40 &&
-                      metricasMicronutrientes.precision < 70
-                    "
-                    [class.fill-baja]="metricasMicronutrientes.precision < 40"
-                  ></div>
-                </div>
-                <span class="jn-barra-pct"
-                  >{{ metricasMicronutrientes.precision }}%</span
-                >
-              </div>
-              <div class="jn-historial">
-                <div
-                  class="jn-historial-item"
-                  *ngFor="let n of metricasMicronutrientes.historial"
-                >
-                  <div
-                    class="jn-historial-dot"
-                    [class.dot-verde]="
-                      n.aciertos === (n.deficientesCorrectos?.length || 2)
-                    "
-                    [class.dot-naranja]="
-                      n.aciertos > 0 &&
-                      n.aciertos < (n.deficientesCorrectos?.length || 2)
-                    "
-                    [class.dot-rojo]="n.aciertos === 0"
-                  ></div>
-                  <span class="jn-historial-texto">
-                    Nivel {{ n.nivelNumero }}:
-                    <strong
-                      >{{ n.aciertos }}/{{
-                        n.deficientesCorrectos?.length || 2
-                      }}</strong
-                    >
-                    <span class="jn-historial-pts"
-                      >+{{ n.puntosObtenidos }} pts</span
-                    >
-                  </span>
-                </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-          <mat-card
-            class="juego-nuevo-card juego-nuevo-empty"
-            *ngIf="!metricasMicronutrientes"
-          >
-            <mat-card-content>
+      <mat-card class="chart-card" *ngIf="!metricasMicronutrientes">
+        <mat-card-header>
+          <mat-card-title>Micronutrientes</mat-card-title>
+          <span class="data-source">Análisis de vitaminas y minerales</span>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div class="empty-state">
               <mat-icon>science</mat-icon>
-              <p>Sin datos de <strong>Micronutrientes</strong></p>
-              <span>Completa al menos un nivel para ver métricas</span>
-            </mat-card-content>
-          </mat-card>
+              <p>El estudiante aún no ha jugado Micronutrientes.</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-          <!-- ── CLASIFICA TUS ALIMENTOS ────────────────────────────── -->
-          <mat-card
-            class="juego-nuevo-card clasifica-card-dash"
-            *ngIf="metricasClasifica"
+      <!-- ── CLASIFICA TUS ALIMENTOS ────────────────────────────── -->
+      <mat-card class="chart-card" *ngIf="metricasClasifica">
+        <mat-card-header>
+          <mat-card-title>Clasifica tus Alimentos</mat-card-title>
+          <span class="data-source"
+            >Clasificación por grupos nutricionales</span
           >
-            <mat-card-header>
-              <div class="jn-header-icon clasifica-icon-header">
-                <mat-icon>restaurant_menu</mat-icon>
-              </div>
-              <mat-card-title>Clasifica tus Alimentos</mat-card-title>
-              <mat-card-subtitle
-                >Clasificación por grupos nutricionales</mat-card-subtitle
-              >
-            </mat-card-header>
-            <mat-card-content>
-              <div class="jn-stats-row">
-                <div class="jn-stat">
-                  <span class="jn-stat-value"
-                    >{{ metricasClasifica.nivelesJugados }}/10</span
-                  >
-                  <span class="jn-stat-label">Niveles</span>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div class="game-progress">
+              <div class="progress-header">
+                <mat-icon class="game-icon">restaurant_menu</mat-icon>
+                <div>
+                  <h3>
+                    {{ metricasClasifica.nivelesJugados }} de 10 niveles
+                    completados
+                  </h3>
+                  <p>{{ metricasClasifica.puntosTotal }} puntos acumulados</p>
                 </div>
-                <div class="jn-stat">
-                  <span class="jn-stat-value">{{
-                    metricasClasifica.totalAciertos
-                  }}</span>
-                  <span class="jn-stat-label">Aciertos</span>
+              </div>
+              <div class="progress-bar-container">
+                <div
+                  class="progress-bar coach"
+                  [style.width.%]="
+                    (metricasClasifica.nivelesJugados / 10) * 100
+                  "
+                ></div>
+              </div>
+              <div class="game-stats">
+                <div class="game-stat-item">
+                  <mat-icon>emoji_food_beverage</mat-icon>
+                  <span
+                    >Grupo más practicado:
+                    {{ metricasClasifica.grupoMasFrecuente }}</span
+                  >
+                </div>
+                <div class="game-stat-item">
+                  <mat-icon>check_circle</mat-icon>
+                  <span>Aciertos: {{ metricasClasifica.totalAciertos }}</span>
                 </div>
                 <div
-                  class="jn-stat"
-                  [class.alerta-tiempo]="metricasClasifica.tiempoAgotados > 0"
+                  class="game-stat-item"
+                  *ngIf="metricasClasifica.tiempoAgotados > 0"
                 >
-                  <span class="jn-stat-value"
-                    >{{ metricasClasifica.tiempoAgotados }}x</span
+                  <mat-icon style="color: #f44336">timer_off</mat-icon>
+                  <span
+                    >Tiempo agotado:
+                    {{ metricasClasifica.tiempoAgotados }}x</span
                   >
-                  <span class="jn-stat-label">Tpo. agotado</span>
-                </div>
-                <div class="jn-stat">
-                  <span class="jn-stat-value"
-                    >{{ metricasClasifica.tiempoPromedioSeg }}s</span
-                  >
-                  <span class="jn-stat-label">Tpo. promedio</span>
-                </div>
-                <div class="jn-stat">
-                  <span class="jn-stat-value pts-value">{{
-                    metricasClasifica.puntosTotal
-                  }}</span>
-                  <span class="jn-stat-label">Puntos</span>
                 </div>
               </div>
-              <div class="jn-grupo-badge">
-                <mat-icon>emoji_food_beverage</mat-icon>
-                <span
-                  >Grupo más practicado:
-                  <strong>{{
-                    metricasClasifica.grupoMasFrecuente
-                  }}</strong></span
-                >
-              </div>
-              <div class="jn-historial">
-                <div
-                  class="jn-historial-item"
-                  *ngFor="let n of metricasClasifica.historial"
-                >
-                  <div
-                    class="jn-historial-dot"
-                    [class.dot-rojo]="n.tiempoAgotado"
-                    [class.dot-verde]="!n.tiempoAgotado && n.aciertos > 0"
-                    [class.dot-naranja]="!n.tiempoAgotado && n.aciertos === 0"
-                  ></div>
-                  <span class="jn-historial-texto">
-                    Nivel {{ n.nivelNumero }} <em>({{ n.grupoObjetivo }})</em>:
-                    <strong>{{ n.aciertos }}</strong> aciertos
-                    <span class="jn-timer-tag" *ngIf="n.tiempoAgotado"
-                      >⏱ Agotado</span
-                    >
-                    <span class="jn-timer-tag ok" *ngIf="!n.tiempoAgotado"
-                      >{{ n.tiempoUsado }}s</span
-                    >
-                    <span class="jn-historial-pts"
-                      >+{{ n.puntosObtenidos }} pts</span
-                    >
-                  </span>
-                </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
 
-          <mat-card
-            class="juego-nuevo-card juego-nuevo-empty"
-            *ngIf="!metricasClasifica"
+      <mat-card class="chart-card" *ngIf="!metricasClasifica">
+        <mat-card-header>
+          <mat-card-title>Clasifica tus Alimentos</mat-card-title>
+          <span class="data-source"
+            >Clasificación por grupos nutricionales</span
           >
-            <mat-card-content>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container">
+            <div class="empty-state">
               <mat-icon>restaurant_menu</mat-icon>
-              <p>Sin datos de <strong>Clasifica tus Alimentos</strong></p>
-              <span>Completa al menos un nivel para ver métricas</span>
-            </mat-card-content>
-          </mat-card>
-        </div>
-      </div>
+              <p>El estudiante aún no ha jugado Clasifica tus Alimentos.</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
       <!-- ════════════ FIN MÉTRICAS JUEGOS NUEVOS ════════════ -->
 
       <!-- ══════════════════════════════════════════════════════════════════════
            ANÁLISIS NUTRICIONAL DEL DÍA — Solo visible para el alumno
-           CP019: Dashboard con registros del día
-           CP023: Análisis del día disponible
-           CP025: Análisis por tipo de comida
-           CP032: Distribución de macronutrientes del día
-           CP033: Comparación con distribución ideal
       ════════════════════════════════════════════════════════════════════════ -->
       <ng-container *ngIf="analisisDelDia as analisis">
         <!-- ── Encabezado de sección ─────────────────────────────────────── -->
