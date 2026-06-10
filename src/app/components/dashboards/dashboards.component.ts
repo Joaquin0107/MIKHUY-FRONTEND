@@ -39,9 +39,10 @@ import {
 import { StudentService } from '../../services/student.service';
 import { AuthService } from '../../services/auth.service';
 import { MailService } from '../../services/mail.service';
+import { SesionJuegoService } from '../../services/sesion-juego.service';
 
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment.prod';
 
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -133,13 +134,14 @@ export class DashboardsComponent implements OnInit {
     private snackBar: MatSnackBar,
     private mailService: MailService,
     private http: HttpClient,
+    private sesionService: SesionJuegoService,
   ) {}
 
   cargarMetricasJuegosNuevos(): void {
     if (!this.selectedStudent?.id) return;
 
     const headers = { Authorization: `Bearer ${this.authService.getToken()}` };
-    const base = environment.apiUrl;
+    const base = (this.sesionService as any).apiUrl.replace('/sesiones', '');
 
     // Micronutrientes desde backend
     this.http
@@ -439,28 +441,29 @@ export class DashboardsComponent implements OnInit {
   }
 
   selectStudent(student: Student): void {
-  this.selectedStudent = student;
-  this.loading = true;
-  // Resetear métricas del alumno anterior
-  this.metricasMicronutrientes = null;
-  this.metricasClasifica = null;
+    this.selectedStudent = student;
+    this.loading = true;
+    // Resetear métricas del alumno anterior
+    this.metricasMicronutrientes = null;
+    this.metricasClasifica = null;
 
-  this.dashboardService.getDashboardEstudiante(student.id).subscribe({
-    next: (response) => {
-      if (response.success && response.data) {
-        this.dashboardData = response.data;
-        this.originalJuegos = response.data.juegos || [];
-        this.originalHistorialImc = response.data.salud?.historialMediciones || [];
-        this.selectedRange = 'all';
-        this.selectedDate = '';
-        this.selectedDateLabel = '';
-        this.showCalendar = false;
+    this.dashboardService.getDashboardEstudiante(student.id).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.dashboardData = response.data;
+          this.originalJuegos = response.data.juegos || [];
+          this.originalHistorialImc =
+            response.data.salud?.historialMediciones || [];
+          this.selectedRange = 'all';
+          this.selectedDate = '';
+          this.selectedDateLabel = '';
+          this.showCalendar = false;
 
-        this.verificarAlertasSalud(response.data.salud);
-        this.loading = false;
-        this.recalcularEstadisticas();
+          this.verificarAlertasSalud(response.data.salud);
+          this.loading = false;
+          this.recalcularEstadisticas();
 
-        this.cargarMetricasJuegosNuevos();
+          this.cargarMetricasJuegosNuevos();
         } else {
           this.error =
             response.message || 'Error al cargar datos del estudiante';
