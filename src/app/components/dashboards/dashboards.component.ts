@@ -138,31 +138,41 @@ export class DashboardsComponent implements OnInit {
   ) {}
 
   cargarMetricasJuegosNuevos(): void {
-    if (!this.selectedStudent?.id) return;
+    if (!this.selectedStudent?.id) {
+      this.cargarMetricasDesdeLocalStorage();
+      return;
+    }
 
-    const headers = { Authorization: `Bearer ${this.authService.getToken()}` };
     const base = (this.sesionService as any).apiUrl.replace('/sesiones', '');
 
-    // Micronutrientes desde backend
+    // ── Micronutrientes ──────────────────────────────────────────────────────
     this.http
       .get<any>(
         `${base}/sesiones/micronutrientes/estudiante/${this.selectedStudent.id}`,
-        { headers },
       )
       .subscribe({
-        next: (res) => {
-          const niveles: any[] = res.data || [];
+        next: (res: any) => {
+          const raw: any[] = res?.data || [];
+          // Normalizar snake_case → camelCase
+          const niveles = raw.map((n: any) => ({
+            nivelNumero: n.nivelNumero ?? n.nivel_numero ?? 0,
+            aciertos: n.aciertos ?? 0,
+            puntosObtenidos: n.puntosObtenidos ?? n.puntos_obtenidos ?? 0,
+            tiempoAgotado: n.tiempoAgotado ?? n.tiempo_agotado ?? false,
+            deficientesCorrectos:
+              n.deficientesCorrectos ?? n.deficientes_correctos ?? [],
+            deficientesSeleccionados:
+              n.deficientesSeleccionados ?? n.deficientes_seleccionados ?? [],
+            pregunta: n.pregunta ?? '',
+          }));
           if (niveles.length > 0) {
-            const totalAciertos = niveles.reduce(
-              (s: number, n: any) => s + (n.aciertos || 0),
-              0,
-            );
+            const totalAciertos = niveles.reduce((s, n) => s + n.aciertos, 0);
             const totalPosibles = niveles.reduce(
-              (s: number, n: any) => s + (n.deficientesCorrectos?.length || 2),
+              (s, n) => s + (n.deficientesCorrectos?.length || 2),
               0,
             );
             const puntosTotal = niveles.reduce(
-              (s: number, n: any) => s + (n.puntosObtenidos || 0),
+              (s, n) => s + n.puntosObtenidos,
               0,
             );
             this.metricasMicronutrientes = {
@@ -180,41 +190,43 @@ export class DashboardsComponent implements OnInit {
             this.metricasMicronutrientes = null;
           }
         },
-        error: () => {
-          // fallback localStorage (solo funciona si es el propio alumno)
-          this.cargarMetricasJuegosNuevosLocal();
-        },
+        error: () => this.cargarMetricasDesdeLocalStorage(),
       });
 
-    // Clasifica desde backend
+    // ── Clasifica ────────────────────────────────────────────────────────────
     this.http
       .get<any>(
         `${base}/sesiones/clasifica/estudiante/${this.selectedStudent.id}`,
-        { headers },
       )
       .subscribe({
-        next: (res) => {
-          const niveles: any[] = res.data || [];
+        next: (res: any) => {
+          const raw: any[] = res?.data || [];
+          const niveles = raw.map((n: any) => ({
+            nivelNumero: n.nivelNumero ?? n.nivel_numero ?? 0,
+            aciertos: n.aciertos ?? 0,
+            puntosObtenidos: n.puntosObtenidos ?? n.puntos_obtenidos ?? 0,
+            tiempoAgotado: n.tiempoAgotado ?? n.tiempo_agotado ?? false,
+            tiempoUsado: n.tiempoUsado ?? n.tiempo_usado ?? 0,
+            grupoObjetivo: n.grupoObjetivo ?? n.grupo_objetivo ?? '',
+            alimentosCorrectos:
+              n.alimentosCorrectos ?? n.alimentos_correctos ?? [],
+            alimentosSeleccionados:
+              n.alimentosSeleccionados ?? n.alimentos_seleccionados ?? [],
+          }));
           if (niveles.length > 0) {
-            const totalAciertos = niveles.reduce(
-              (s: number, n: any) => s + (n.aciertos || 0),
-              0,
-            );
+            const totalAciertos = niveles.reduce((s, n) => s + n.aciertos, 0);
             const tiempoAgotados = niveles.filter(
-              (n: any) => n.tiempoAgotado,
+              (n) => n.tiempoAgotado,
             ).length;
             const puntosTotal = niveles.reduce(
-              (s: number, n: any) => s + (n.puntosObtenidos || 0),
+              (s, n) => s + n.puntosObtenidos,
               0,
             );
             const tiempoPromedioSeg = Math.round(
-              niveles.reduce(
-                (s: number, n: any) => s + (n.tiempoUsado || 0),
-                0,
-              ) / niveles.length,
+              niveles.reduce((s, n) => s + n.tiempoUsado, 0) / niveles.length,
             );
             const gruposMap: Record<string, number> = {};
-            niveles.forEach((n: any) => {
+            niveles.forEach((n) => {
               if (n.grupoObjetivo)
                 gruposMap[n.grupoObjetivo] =
                   (gruposMap[n.grupoObjetivo] || 0) + 1;
@@ -235,14 +247,11 @@ export class DashboardsComponent implements OnInit {
             this.metricasClasifica = null;
           }
         },
-        error: () => {
-          this.cargarMetricasJuegosNuevosLocal();
-        },
+        error: () => this.cargarMetricasDesdeLocalStorage(),
       });
   }
 
-  // Fallback para cuando el alumno ve su propio dashboard
-  private cargarMetricasJuegosNuevosLocal(): void {
+  private cargarMetricasDesdeLocalStorage(): void {
     const cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const uid = cu?.id || cu?.email || 'unknown';
 
