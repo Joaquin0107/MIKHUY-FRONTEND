@@ -140,13 +140,20 @@
           </div>
         </div>
         <div class="profile-actions">
-
           <!-- ===== BOTÓN VER HISTORIAL + CALENDARIO ===== -->
           <div class="history-filter-wrapper">
-            <button mat-raised-button class="history-btn" (click)="toggleCalendar()">
+            <button
+              mat-raised-button
+              class="history-btn"
+              (click)="toggleCalendar()"
+            >
               <mat-icon>history</mat-icon>
-              <span>{{ selectedDateLabel ? selectedDateLabel : 'Ver historial' }}</span>
-              <mat-icon class="arrow-icon">{{ showCalendar ? 'expand_less' : 'expand_more' }}</mat-icon>
+              <span>{{
+                selectedDateLabel ? selectedDateLabel : "Ver historial"
+              }}</span>
+              <mat-icon class="arrow-icon">{{
+                showCalendar ? "expand_less" : "expand_more"
+              }}</mat-icon>
             </button>
 
             <div class="calendar-panel" *ngIf="showCalendar">
@@ -155,12 +162,17 @@
                   <mat-icon>calendar_today</mat-icon>
                   <span>Ver datos hasta una fecha</span>
                 </div>
-                <button mat-icon-button class="cal-close-btn" (click)="toggleCalendar()">
+                <button
+                  mat-icon-button
+                  class="cal-close-btn"
+                  (click)="toggleCalendar()"
+                >
                   <mat-icon>close</mat-icon>
                 </button>
               </div>
               <p class="calendar-hint">
-                Al seleccionar una fecha verás el historial tal como estaba <strong>hasta ese día</strong>.
+                Al seleccionar una fecha verás el historial tal como estaba
+                <strong>hasta ese día</strong>.
               </p>
               <input
                 type="date"
@@ -236,65 +248,114 @@
             <h3>#{{ dashboardData.estadisticas.posicionRanking }}</h3>
             <p>Posición Ranking</p>
           </div>
-          <button mat-stroked-button class="evolucion-btn"
+          <button
+            mat-stroked-button
+            class="evolucion-btn"
             *ngIf="!isTeacher"
             (click)="mostrandoEvolucionRanking = !mostrandoEvolucionRanking"
-            title="Ver gráfico de evolución semanal">
-            <mat-icon>{{ mostrandoEvolucionRanking ? 'expand_less' : 'show_chart' }}</mat-icon>
+            title="Ver gráfico de evolución semanal"
+          >
+            <mat-icon>{{
+              mostrandoEvolucionRanking ? "expand_less" : "show_chart"
+            }}</mat-icon>
             Mi Evolución
           </button>
         </mat-card>
       </div>
 
       <!-- ══ CP118: Gráfico de evolución de posición semanal ══════════════════ -->
-      <mat-card class="evolucion-ranking-card"
-        *ngIf="!isTeacher && mostrandoEvolucionRanking && dashboardData?.estadisticas?.posicionRanking">
+      <mat-card
+        class="evolucion-ranking-card"
+        *ngIf="
+          !isTeacher &&
+          mostrandoEvolucionRanking &&
+          dashboardData?.estadisticas?.posicionRanking
+        "
+      >
         <mat-card-header>
           <mat-icon class="analisis-icon">show_chart</mat-icon>
           <mat-card-title>Mi Evolución de Posición</mat-card-title>
-          <span class="data-source">Ranking general — {{ dashboardData.estadisticas.totalEstudiantes }} estudiantes</span>
+          <span class="data-source"
+            >Ranking general —
+            {{ dashboardData.estadisticas.totalEstudiantes }} estudiantes</span
+          >
         </mat-card-header>
         <mat-card-content>
-
           <!-- Contexto general del ranking -->
           <div class="evolucion-contexto">
             <div class="evolucion-ctx-item">
-              <mat-icon style="color:#f9a825">emoji_events</mat-icon>
-              <span>Posición actual: <strong>#{{ dashboardData.estadisticas.posicionRanking }}</strong> de {{ dashboardData.estadisticas.totalEstudiantes }}</span>
+              <mat-icon style="color: #f9a825">emoji_events</mat-icon>
+              <span
+                >Posición actual:
+                <strong
+                  >#{{ dashboardData.estadisticas.posicionRanking }}</strong
+                >
+                de {{ dashboardData.estadisticas.totalEstudiantes }}</span
+              >
             </div>
             <div class="evolucion-ctx-item">
-              <mat-icon style="color:#1976d2">stars</mat-icon>
-              <span>Puntos acumulados: <strong>{{ dashboardData.estadisticas.puntosGanados }}</strong></span>
+              <mat-icon style="color: #1976d2">stars</mat-icon>
+              <span
+                >Puntos acumulados:
+                <strong>{{
+                  dashboardData.estadisticas.puntosGanados
+                }}</strong></span
+              >
             </div>
-            <div class="evolucion-ctx-item evolucion-ctx-tendencia"
-              [class.subiendo]="evolucionEsAscendente">
-              <mat-icon>{{ evolucionEsAscendente ? 'trending_up' : 'trending_flat' }}</mat-icon>
-              <span>{{ evolucionEsAscendente ? 'Tendencia ascendente' : 'Posición estable' }}</span>
+            <div
+              class="evolucion-ctx-item evolucion-ctx-tendencia"
+              [class.subiendo]="evolucionEsAscendente"
+            >
+              <mat-icon>{{
+                evolucionEsAscendente ? "trending_up" : "trending_flat"
+              }}</mat-icon>
+              <span>{{
+                evolucionEsAscendente
+                  ? "Tendencia ascendente"
+                  : "Posición estable"
+              }}</span>
             </div>
           </div>
 
           <div class="evolucion-chart-wrap">
             <svg viewBox="0 0 480 160" class="evolucion-line-chart">
-
               <!-- Cuadrícula -->
-              <line *ngFor="let gy of [24, 51, 78, 105, 132]"
-                x1="36" [attr.y1]="gy" x2="464" [attr.y2]="gy"
-                stroke="#f0f0f0" stroke-width="1"/>
+              <line
+                *ngFor="let gy of [24, 51, 78, 105, 132]"
+                x1="36"
+                [attr.y1]="gy"
+                x2="464"
+                [attr.y2]="gy"
+                stroke="#f0f0f0"
+                stroke-width="1"
+              />
 
               <!-- Área -->
-              <polygon [attr.points]="getEvolucionAreaStr()" class="ev-area-dash"/>
+              <polygon
+                [attr.points]="getEvolucionAreaStr()"
+                class="ev-area-dash"
+              />
 
               <!-- Línea -->
-              <polyline [attr.points]="getEvolucionLineStr()" class="ev-line-dash"/>
+              <polyline
+                [attr.points]="getEvolucionLineStr()"
+                class="ev-line-dash"
+              />
 
               <!-- Puntos -->
               <g *ngFor="let pt of getEvolucionPoints2(); let i = index">
-                <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="5"
-                  [class]="pt.esMejor ? 'ev-pt-best' : 'ev-pt'"/>
-                <text [attr.x]="pt.x" [attr.y]="pt.y - 9"
-                  class="ev-lbl-pos">#{{ pt.pos }}</text>
-                <text [attr.x]="pt.x" [attr.y]="148"
-                  class="ev-lbl-week">S{{ i + 1 }}</text>
+                <circle
+                  [attr.cx]="pt.x"
+                  [attr.cy]="pt.y"
+                  r="5"
+                  [class]="pt.esMejor ? 'ev-pt-best' : 'ev-pt'"
+                />
+                <text [attr.x]="pt.x" [attr.y]="pt.y - 9" class="ev-lbl-pos">
+                  #{{ pt.pos }}
+                </text>
+                <text [attr.x]="pt.x" [attr.y]="148" class="ev-lbl-week">
+                  S{{ i + 1 }}
+                </text>
               </g>
 
               <!-- Eje Y -->
@@ -315,7 +376,6 @@
               * Evolución basada en tus registros del Reto 7 Días
             </span>
           </div>
-
         </mat-card-content>
       </mat-card>
       <!-- ════════════════════════ FIN CP118 ════════════════════════════════ -->
@@ -730,81 +790,136 @@
       </div>
       <!-- ========== FIN GRÁFICOS DE JUEGOS ========== -->
 
-
       <!-- ════════════════════════════════════════════════════════════════════
            MÉTRICAS JUEGOS NUEVOS — Micronutrientes + Clasifica tus Alimentos
       ════════════════════════════════════════════════════════════════════════ -->
 
       <div class="juegos-nuevos-section">
-
         <div class="analisis-section-header">
           <mat-icon>science</mat-icon>
           <h2>Juegos Educativos Nuevos</h2>
-          <span class="data-source">Micronutrientes y Clasifica tus Alimentos</span>
+          <span class="data-source"
+            >Micronutrientes y Clasifica tus Alimentos</span
+          >
+          <button
+            mat-icon-button
+            (click)="cargarMetricasJuegosNuevos()"
+            matTooltip="Actualizar métricas"
+          >
+            <mat-icon>refresh</mat-icon>
+          </button>
         </div>
 
         <div class="juegos-nuevos-grid">
-
           <!-- ── MICRONUTRIENTES ─────────────────────────────────────── -->
-          <mat-card class="juego-nuevo-card micro-card-dash" *ngIf="metricasMicronutrientes">
+          <mat-card
+            class="juego-nuevo-card micro-card-dash"
+            *ngIf="metricasMicronutrientes"
+          >
             <mat-card-header>
-              <div class="jn-header-icon micro-icon-header"><mat-icon>science</mat-icon></div>
+              <div class="jn-header-icon micro-icon-header">
+                <mat-icon>science</mat-icon>
+              </div>
               <mat-card-title>Micronutrientes</mat-card-title>
-              <mat-card-subtitle>Análisis de vitaminas y minerales</mat-card-subtitle>
+              <mat-card-subtitle
+                >Análisis de vitaminas y minerales</mat-card-subtitle
+              >
             </mat-card-header>
             <mat-card-content>
               <div class="jn-stats-row">
                 <div class="jn-stat">
-                  <span class="jn-stat-value">{{ metricasMicronutrientes.nivelesJugados }}/5</span>
+                  <span class="jn-stat-value"
+                    >{{ metricasMicronutrientes.nivelesJugados }}/5</span
+                  >
                   <span class="jn-stat-label">Niveles jugados</span>
                 </div>
                 <div class="jn-stat">
-                  <span class="jn-stat-value"
-                    [class.precision-alta]="metricasMicronutrientes.precision >= 70"
-                    [class.precision-media]="metricasMicronutrientes.precision >= 40 && metricasMicronutrientes.precision < 70"
-                    [class.precision-baja]="metricasMicronutrientes.precision < 40">
+                  <span
+                    class="jn-stat-value"
+                    [class.precision-alta]="
+                      metricasMicronutrientes.precision >= 70
+                    "
+                    [class.precision-media]="
+                      metricasMicronutrientes.precision >= 40 &&
+                      metricasMicronutrientes.precision < 70
+                    "
+                    [class.precision-baja]="
+                      metricasMicronutrientes.precision < 40
+                    "
+                  >
                     {{ metricasMicronutrientes.precision }}%
                   </span>
                   <span class="jn-stat-label">Precisión</span>
                 </div>
                 <div class="jn-stat">
-                  <span class="jn-stat-value">{{ metricasMicronutrientes.totalAciertos }}/{{ metricasMicronutrientes.totalPosibles }}</span>
+                  <span class="jn-stat-value"
+                    >{{ metricasMicronutrientes.totalAciertos }}/{{
+                      metricasMicronutrientes.totalPosibles
+                    }}</span
+                  >
                   <span class="jn-stat-label">Aciertos</span>
                 </div>
                 <div class="jn-stat">
-                  <span class="jn-stat-value pts-value">{{ metricasMicronutrientes.puntosTotal }}</span>
+                  <span class="jn-stat-value pts-value">{{
+                    metricasMicronutrientes.puntosTotal
+                  }}</span>
                   <span class="jn-stat-label">Puntos</span>
                 </div>
               </div>
               <div class="jn-barra-wrap">
                 <span class="jn-barra-label">Precisión</span>
                 <div class="jn-barra-track">
-                  <div class="jn-barra-fill"
+                  <div
+                    class="jn-barra-fill"
                     [style.width.%]="metricasMicronutrientes.precision"
                     [class.fill-alta]="metricasMicronutrientes.precision >= 70"
-                    [class.fill-media]="metricasMicronutrientes.precision >= 40 && metricasMicronutrientes.precision < 70"
-                    [class.fill-baja]="metricasMicronutrientes.precision < 40">
-                  </div>
+                    [class.fill-media]="
+                      metricasMicronutrientes.precision >= 40 &&
+                      metricasMicronutrientes.precision < 70
+                    "
+                    [class.fill-baja]="metricasMicronutrientes.precision < 40"
+                  ></div>
                 </div>
-                <span class="jn-barra-pct">{{ metricasMicronutrientes.precision }}%</span>
+                <span class="jn-barra-pct"
+                  >{{ metricasMicronutrientes.precision }}%</span
+                >
               </div>
               <div class="jn-historial">
-                <div class="jn-historial-item" *ngFor="let n of metricasMicronutrientes.historial">
-                  <div class="jn-historial-dot"
-                    [class.dot-verde]="n.aciertos === (n.deficientesCorrectos?.length || 2)"
-                    [class.dot-naranja]="n.aciertos > 0 && n.aciertos < (n.deficientesCorrectos?.length || 2)"
-                    [class.dot-rojo]="n.aciertos === 0">
-                  </div>
+                <div
+                  class="jn-historial-item"
+                  *ngFor="let n of metricasMicronutrientes.historial"
+                >
+                  <div
+                    class="jn-historial-dot"
+                    [class.dot-verde]="
+                      n.aciertos === (n.deficientesCorrectos?.length || 2)
+                    "
+                    [class.dot-naranja]="
+                      n.aciertos > 0 &&
+                      n.aciertos < (n.deficientesCorrectos?.length || 2)
+                    "
+                    [class.dot-rojo]="n.aciertos === 0"
+                  ></div>
                   <span class="jn-historial-texto">
-                    Nivel {{ n.nivelNumero }}: <strong>{{ n.aciertos }}/{{ n.deficientesCorrectos?.length || 2 }}</strong>
-                    <span class="jn-historial-pts">+{{ n.puntosObtenidos }} pts</span>
+                    Nivel {{ n.nivelNumero }}:
+                    <strong
+                      >{{ n.aciertos }}/{{
+                        n.deficientesCorrectos?.length || 2
+                      }}</strong
+                    >
+                    <span class="jn-historial-pts"
+                      >+{{ n.puntosObtenidos }} pts</span
+                    >
                   </span>
                 </div>
               </div>
             </mat-card-content>
           </mat-card>
 
-          <mat-card class="juego-nuevo-card juego-nuevo-empty" *ngIf="!metricasMicronutrientes">
+          <mat-card
+            class="juego-nuevo-card juego-nuevo-empty"
+            *ngIf="!metricasMicronutrientes"
+          >
             <mat-card-content>
               <mat-icon>science</mat-icon>
               <p>Sin datos de <strong>Micronutrientes</strong></p>
@@ -813,66 +928,103 @@
           </mat-card>
 
           <!-- ── CLASIFICA TUS ALIMENTOS ────────────────────────────── -->
-          <mat-card class="juego-nuevo-card clasifica-card-dash" *ngIf="metricasClasifica">
+          <mat-card
+            class="juego-nuevo-card clasifica-card-dash"
+            *ngIf="metricasClasifica"
+          >
             <mat-card-header>
-              <div class="jn-header-icon clasifica-icon-header"><mat-icon>restaurant_menu</mat-icon></div>
+              <div class="jn-header-icon clasifica-icon-header">
+                <mat-icon>restaurant_menu</mat-icon>
+              </div>
               <mat-card-title>Clasifica tus Alimentos</mat-card-title>
-              <mat-card-subtitle>Clasificación por grupos nutricionales</mat-card-subtitle>
+              <mat-card-subtitle
+                >Clasificación por grupos nutricionales</mat-card-subtitle
+              >
             </mat-card-header>
             <mat-card-content>
               <div class="jn-stats-row">
                 <div class="jn-stat">
-                  <span class="jn-stat-value">{{ metricasClasifica.nivelesJugados }}/10</span>
+                  <span class="jn-stat-value"
+                    >{{ metricasClasifica.nivelesJugados }}/10</span
+                  >
                   <span class="jn-stat-label">Niveles</span>
                 </div>
                 <div class="jn-stat">
-                  <span class="jn-stat-value">{{ metricasClasifica.totalAciertos }}</span>
+                  <span class="jn-stat-value">{{
+                    metricasClasifica.totalAciertos
+                  }}</span>
                   <span class="jn-stat-label">Aciertos</span>
                 </div>
-                <div class="jn-stat" [class.alerta-tiempo]="metricasClasifica.tiempoAgotados > 0">
-                  <span class="jn-stat-value">{{ metricasClasifica.tiempoAgotados }}x</span>
+                <div
+                  class="jn-stat"
+                  [class.alerta-tiempo]="metricasClasifica.tiempoAgotados > 0"
+                >
+                  <span class="jn-stat-value"
+                    >{{ metricasClasifica.tiempoAgotados }}x</span
+                  >
                   <span class="jn-stat-label">Tpo. agotado</span>
                 </div>
                 <div class="jn-stat">
-                  <span class="jn-stat-value">{{ metricasClasifica.tiempoPromedioSeg }}s</span>
+                  <span class="jn-stat-value"
+                    >{{ metricasClasifica.tiempoPromedioSeg }}s</span
+                  >
                   <span class="jn-stat-label">Tpo. promedio</span>
                 </div>
                 <div class="jn-stat">
-                  <span class="jn-stat-value pts-value">{{ metricasClasifica.puntosTotal }}</span>
+                  <span class="jn-stat-value pts-value">{{
+                    metricasClasifica.puntosTotal
+                  }}</span>
                   <span class="jn-stat-label">Puntos</span>
                 </div>
               </div>
               <div class="jn-grupo-badge">
                 <mat-icon>emoji_food_beverage</mat-icon>
-                <span>Grupo más practicado: <strong>{{ metricasClasifica.grupoMasFrecuente }}</strong></span>
+                <span
+                  >Grupo más practicado:
+                  <strong>{{
+                    metricasClasifica.grupoMasFrecuente
+                  }}</strong></span
+                >
               </div>
               <div class="jn-historial">
-                <div class="jn-historial-item" *ngFor="let n of metricasClasifica.historial">
-                  <div class="jn-historial-dot"
+                <div
+                  class="jn-historial-item"
+                  *ngFor="let n of metricasClasifica.historial"
+                >
+                  <div
+                    class="jn-historial-dot"
                     [class.dot-rojo]="n.tiempoAgotado"
                     [class.dot-verde]="!n.tiempoAgotado && n.aciertos > 0"
-                    [class.dot-naranja]="!n.tiempoAgotado && n.aciertos === 0">
-                  </div>
+                    [class.dot-naranja]="!n.tiempoAgotado && n.aciertos === 0"
+                  ></div>
                   <span class="jn-historial-texto">
                     Nivel {{ n.nivelNumero }} <em>({{ n.grupoObjetivo }})</em>:
                     <strong>{{ n.aciertos }}</strong> aciertos
-                    <span class="jn-timer-tag" *ngIf="n.tiempoAgotado">⏱ Agotado</span>
-                    <span class="jn-timer-tag ok" *ngIf="!n.tiempoAgotado">{{ n.tiempoUsado }}s</span>
-                    <span class="jn-historial-pts">+{{ n.puntosObtenidos }} pts</span>
+                    <span class="jn-timer-tag" *ngIf="n.tiempoAgotado"
+                      >⏱ Agotado</span
+                    >
+                    <span class="jn-timer-tag ok" *ngIf="!n.tiempoAgotado"
+                      >{{ n.tiempoUsado }}s</span
+                    >
+                    <span class="jn-historial-pts"
+                      >+{{ n.puntosObtenidos }} pts</span
+                    >
                   </span>
                 </div>
               </div>
             </mat-card-content>
           </mat-card>
 
-          <mat-card class="juego-nuevo-card juego-nuevo-empty" *ngIf="!metricasClasifica">
+          <mat-card
+            class="juego-nuevo-card juego-nuevo-empty"
+            *ngIf="!metricasClasifica"
+          >
             <mat-card-content>
               <mat-icon>restaurant_menu</mat-icon>
               <p>Sin datos de <strong>Clasifica tus Alimentos</strong></p>
               <span>Completa al menos un nivel para ver métricas</span>
             </mat-card-content>
           </mat-card>
-
         </div>
       </div>
       <!-- ════════════ FIN MÉTRICAS JUEGOS NUEVOS ════════════ -->
@@ -886,13 +1038,18 @@
            CP033: Comparación con distribución ideal
       ════════════════════════════════════════════════════════════════════════ -->
       <ng-container *ngIf="analisisDelDia as analisis">
-
         <!-- ── Encabezado de sección ─────────────────────────────────────── -->
         <div class="analisis-section-header">
           <mat-icon>today</mat-icon>
           <h2>Análisis Nutricional del Día</h2>
-          <span class="analisis-fecha">{{ analisis.fecha | date:'EEEE d MMMM':'':'es' }}</span>
-          <span class="offline-badge" *ngIf="analisis.guardadoOffline" title="Datos guardados localmente">
+          <span class="analisis-fecha">{{
+            analisis.fecha | date: "EEEE d MMMM" : "" : "es"
+          }}</span>
+          <span
+            class="offline-badge"
+            *ngIf="analisis.guardadoOffline"
+            title="Datos guardados localmente"
+          >
             <mat-icon>offline_bolt</mat-icon> Guardado local
           </span>
         </div>
@@ -905,47 +1062,72 @@
             <span class="data-source">Consumo acumulado vs meta calórica</span>
           </mat-card-header>
           <mat-card-content>
-
             <!-- Barra de Calorías totales -->
             <div class="macro-row">
               <div class="macro-label">
-                <mat-icon style="color:#ff7043">local_fire_department</mat-icon>
+                <mat-icon style="color: #ff7043"
+                  >local_fire_department</mat-icon
+                >
                 <span>Calorías Totales</span>
               </div>
               <div class="macro-bar-wrap">
                 <div class="macro-bar-track">
-                  <div class="macro-bar-fill calorias"
-                    [style.width.%]="getMacroPct(analisis.caloriasConsumidas, analisis.metaCalorica)">
-                  </div>
+                  <div
+                    class="macro-bar-fill calorias"
+                    [style.width.%]="
+                      getMacroPct(
+                        analisis.caloriasConsumidas,
+                        analisis.metaCalorica
+                      )
+                    "
+                  ></div>
                 </div>
                 <span class="macro-values">
-                  <strong>{{ analisis.caloriasConsumidas | number:'1.0-0' }}</strong>
-                  / {{ analisis.metaCalorica | number:'1.0-0' }} kcal
+                  <strong>{{
+                    analisis.caloriasConsumidas | number: "1.0-0"
+                  }}</strong>
+                  / {{ analisis.metaCalorica | number: "1.0-0" }} kcal
                 </span>
               </div>
-              <span class="macro-pct" [class.over]="analisis.caloriasConsumidas > analisis.metaCalorica">
-                {{ getMacroPct(analisis.caloriasConsumidas, analisis.metaCalorica) }}%
+              <span
+                class="macro-pct"
+                [class.over]="
+                  analisis.caloriasConsumidas > analisis.metaCalorica
+                "
+              >
+                {{
+                  getMacroPct(
+                    analisis.caloriasConsumidas,
+                    analisis.metaCalorica
+                  )
+                }}%
               </span>
             </div>
 
             <!-- Barra de Proteínas -->
             <div class="macro-row">
               <div class="macro-label">
-                <mat-icon style="color:#42a5f5">egg_alt</mat-icon>
+                <mat-icon style="color: #42a5f5">egg_alt</mat-icon>
                 <span>Proteínas</span>
               </div>
               <div class="macro-bar-wrap">
                 <div class="macro-bar-track">
-                  <div class="macro-bar-fill proteinas"
-                    [style.width.%]="getMacroPct(analisis.proteinasG, analisis.metaProteinasG)">
-                  </div>
+                  <div
+                    class="macro-bar-fill proteinas"
+                    [style.width.%]="
+                      getMacroPct(analisis.proteinasG, analisis.metaProteinasG)
+                    "
+                  ></div>
                 </div>
                 <span class="macro-values">
-                  <strong>{{ analisis.proteinasG | number:'1.0-1' }}</strong>
-                  / {{ analisis.metaProteinasG | number:'1.0-0' }} g
+                  <strong>{{ analisis.proteinasG | number: "1.0-1" }}</strong>
+                  / {{ analisis.metaProteinasG | number: "1.0-0" }} g
                 </span>
               </div>
-              <span class="macro-pct" [class.over]="analisis.proteinasG > analisis.metaProteinasG">
+              <span
+                class="macro-pct"
+                [class.over]="analisis.proteinasG > analisis.metaProteinasG"
+              >
                 {{ getMacroPct(analisis.proteinasG, analisis.metaProteinasG) }}%
               </span>
             </div>
@@ -953,108 +1135,153 @@
             <!-- Barra de Carbohidratos -->
             <div class="macro-row">
               <div class="macro-label">
-                <mat-icon style="color:#ffca28">grain</mat-icon>
+                <mat-icon style="color: #ffca28">grain</mat-icon>
                 <span>Carbohidratos</span>
               </div>
               <div class="macro-bar-wrap">
                 <div class="macro-bar-track">
-                  <div class="macro-bar-fill carbohidratos"
-                    [style.width.%]="getMacroPct(analisis.carbohidratosG, analisis.metaCarbohidratosG)">
-                  </div>
+                  <div
+                    class="macro-bar-fill carbohidratos"
+                    [style.width.%]="
+                      getMacroPct(
+                        analisis.carbohidratosG,
+                        analisis.metaCarbohidratosG
+                      )
+                    "
+                  ></div>
                 </div>
                 <span class="macro-values">
-                  <strong>{{ analisis.carbohidratosG | number:'1.0-1' }}</strong>
-                  / {{ analisis.metaCarbohidratosG | number:'1.0-0' }} g
+                  <strong>{{
+                    analisis.carbohidratosG | number: "1.0-1"
+                  }}</strong>
+                  / {{ analisis.metaCarbohidratosG | number: "1.0-0" }} g
                 </span>
               </div>
-              <span class="macro-pct" [class.over]="analisis.carbohidratosG > analisis.metaCarbohidratosG">
-                {{ getMacroPct(analisis.carbohidratosG, analisis.metaCarbohidratosG) }}%
+              <span
+                class="macro-pct"
+                [class.over]="
+                  analisis.carbohidratosG > analisis.metaCarbohidratosG
+                "
+              >
+                {{
+                  getMacroPct(
+                    analisis.carbohidratosG,
+                    analisis.metaCarbohidratosG
+                  )
+                }}%
               </span>
             </div>
 
             <!-- Barra de Grasas -->
             <div class="macro-row">
               <div class="macro-label">
-                <mat-icon style="color:#ab47bc">opacity</mat-icon>
+                <mat-icon style="color: #ab47bc">opacity</mat-icon>
                 <span>Grasas</span>
               </div>
               <div class="macro-bar-wrap">
                 <div class="macro-bar-track">
-                  <div class="macro-bar-fill grasas"
-                    [style.width.%]="getMacroPct(analisis.grasasG, analisis.metaGrasasG)">
-                  </div>
+                  <div
+                    class="macro-bar-fill grasas"
+                    [style.width.%]="
+                      getMacroPct(analisis.grasasG, analisis.metaGrasasG)
+                    "
+                  ></div>
                 </div>
                 <span class="macro-values">
-                  <strong>{{ analisis.grasasG | number:'1.0-1' }}</strong>
-                  / {{ analisis.metaGrasasG | number:'1.0-0' }} g
+                  <strong>{{ analisis.grasasG | number: "1.0-1" }}</strong>
+                  / {{ analisis.metaGrasasG | number: "1.0-0" }} g
                 </span>
               </div>
-              <span class="macro-pct" [class.over]="analisis.grasasG > analisis.metaGrasasG">
+              <span
+                class="macro-pct"
+                [class.over]="analisis.grasasG > analisis.metaGrasasG"
+              >
                 {{ getMacroPct(analisis.grasasG, analisis.metaGrasasG) }}%
               </span>
             </div>
-
           </mat-card-content>
         </mat-card>
 
         <!-- ── CP025 : Filtro por tipo de comida ──────────────────────────── -->
-        <mat-card class="analisis-card analisis-comidas-card"
-          *ngIf="analisis.desglosePorComida && analisis.desglosePorComida.length > 0">
+        <mat-card
+          class="analisis-card analisis-comidas-card"
+          *ngIf="
+            analisis.desglosePorComida && analisis.desglosePorComida.length > 0
+          "
+        >
           <mat-card-header>
             <mat-icon class="analisis-icon">restaurant</mat-icon>
             <mat-card-title>Análisis por Tipo de Comida</mat-card-title>
             <span class="data-source">Desglose por comida del día</span>
           </mat-card-header>
           <mat-card-content>
-
             <!-- Chips de selección de comida -->
             <div class="comida-chips">
               <button
                 *ngFor="let comida of analisis.desglosePorComida"
                 class="comida-chip"
                 [class.active]="selectedComida === comida.tipo"
-                (click)="selectComida(comida.tipo)">
-                <span class="comida-emoji">{{ getComidaEmoji(comida.tipo) }}</span>
+                (click)="selectComida(comida.tipo)"
+              >
+                <span class="comida-emoji">{{
+                  getComidaEmoji(comida.tipo)
+                }}</span>
                 {{ comida.tipo }}
               </button>
-              <button class="comida-chip" [class.active]="selectedComida === 'Todos'"
-                (click)="selectComida('Todos')">
+              <button
+                class="comida-chip"
+                [class.active]="selectedComida === 'Todos'"
+                (click)="selectComida('Todos')"
+              >
                 📊 Todos
               </button>
             </div>
 
             <!-- Detalle de la comida seleccionada -->
             <ng-container *ngFor="let comida of analisis.desglosePorComida">
-              <div class="comida-detalle"
-                *ngIf="selectedComida === comida.tipo || selectedComida === 'Todos'">
+              <div
+                class="comida-detalle"
+                *ngIf="
+                  selectedComida === comida.tipo || selectedComida === 'Todos'
+                "
+              >
                 <div class="comida-detalle-header">
-                  <span class="comida-tipo-badge">{{ getComidaEmoji(comida.tipo) }} {{ comida.tipo }}</span>
+                  <span class="comida-tipo-badge"
+                    >{{ getComidaEmoji(comida.tipo) }} {{ comida.tipo }}</span
+                  >
                 </div>
                 <div class="comida-macros-grid">
                   <div class="comida-macro-item calorias-bg">
                     <mat-icon>local_fire_department</mat-icon>
-                    <span class="cmacro-val">{{ comida.calorias | number:'1.0-0' }}</span>
+                    <span class="cmacro-val">{{
+                      comida.calorias | number: "1.0-0"
+                    }}</span>
                     <span class="cmacro-lbl">kcal</span>
                   </div>
                   <div class="comida-macro-item proteinas-bg">
                     <mat-icon>egg_alt</mat-icon>
-                    <span class="cmacro-val">{{ comida.proteinasG | number:'1.0-1' }}</span>
+                    <span class="cmacro-val">{{
+                      comida.proteinasG | number: "1.0-1"
+                    }}</span>
                     <span class="cmacro-lbl">g Prot.</span>
                   </div>
                   <div class="comida-macro-item carbos-bg">
                     <mat-icon>grain</mat-icon>
-                    <span class="cmacro-val">{{ comida.carbohidratosG | number:'1.0-1' }}</span>
+                    <span class="cmacro-val">{{
+                      comida.carbohidratosG | number: "1.0-1"
+                    }}</span>
                     <span class="cmacro-lbl">g Carb.</span>
                   </div>
                   <div class="comida-macro-item grasas-bg">
                     <mat-icon>opacity</mat-icon>
-                    <span class="cmacro-val">{{ comida.grasasG | number:'1.0-1' }}</span>
+                    <span class="cmacro-val">{{
+                      comida.grasasG | number: "1.0-1"
+                    }}</span>
                     <span class="cmacro-lbl">g Grasas</span>
                   </div>
                 </div>
               </div>
             </ng-container>
-
           </mat-card-content>
         </mat-card>
 
@@ -1066,59 +1293,103 @@
             <span class="data-source">Porcentaje del día</span>
           </mat-card-header>
           <mat-card-content>
-
             <!-- Toggle CP033 -->
             <div class="ideal-toggle">
               <label class="toggle-label">
-                <input type="checkbox" [(ngModel)]="mostrarDistribucionIdeal"
-                  class="toggle-input" />
+                <input
+                  type="checkbox"
+                  [(ngModel)]="mostrarDistribucionIdeal"
+                  class="toggle-input"
+                />
                 <span class="toggle-slider"></span>
                 Mostrar Distribución Ideal
               </label>
             </div>
 
             <div class="donut-distribucion-wrap">
-
               <!-- Gráfico de torta SVG (CP032) -->
               <div class="donut-chart-container">
                 <svg viewBox="0 0 200 200" class="donut-chart-day">
-
                   <!-- Segmento Proteínas -->
-                  <circle cx="100" cy="100" r="70"
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="70"
                     class="donut-seg proteinas-seg"
-                    [attr.stroke-dasharray]="getCircleSegmentR(analisis.proteinasPorcentaje, 70) + ' ' + (2 * 3.1416 * 70)"
-                    stroke-dashoffset="0" />
+                    [attr.stroke-dasharray]="
+                      getCircleSegmentR(analisis.proteinasPorcentaje, 70) +
+                      ' ' +
+                      2 * 3.1416 * 70
+                    "
+                    stroke-dashoffset="0"
+                  />
 
                   <!-- Segmento Carbohidratos -->
-                  <circle cx="100" cy="100" r="70"
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="70"
                     class="donut-seg carbos-seg"
-                    [attr.stroke-dasharray]="getCircleSegmentR(analisis.carbohidratosPorcentaje, 70) + ' ' + (2 * 3.1416 * 70)"
-                    [attr.stroke-dashoffset]="-(getCircleSegmentR(analisis.proteinasPorcentaje, 70))" />
+                    [attr.stroke-dasharray]="
+                      getCircleSegmentR(analisis.carbohidratosPorcentaje, 70) +
+                      ' ' +
+                      2 * 3.1416 * 70
+                    "
+                    [attr.stroke-dashoffset]="
+                      -getCircleSegmentR(analisis.proteinasPorcentaje, 70)
+                    "
+                  />
 
                   <!-- Segmento Grasas -->
-                  <circle cx="100" cy="100" r="70"
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="70"
                     class="donut-seg grasas-seg"
-                    [attr.stroke-dasharray]="getCircleSegmentR(analisis.grasasPorcentaje, 70) + ' ' + (2 * 3.1416 * 70)"
-                    [attr.stroke-dashoffset]="-(getCircleSegmentR(analisis.proteinasPorcentaje, 70) + getCircleSegmentR(analisis.carbohidratosPorcentaje, 70))" />
+                    [attr.stroke-dasharray]="
+                      getCircleSegmentR(analisis.grasasPorcentaje, 70) +
+                      ' ' +
+                      2 * 3.1416 * 70
+                    "
+                    [attr.stroke-dashoffset]="
+                      -(
+                        getCircleSegmentR(analisis.proteinasPorcentaje, 70) +
+                        getCircleSegmentR(analisis.carbohidratosPorcentaje, 70)
+                      )
+                    "
+                  />
 
                   <!-- Texto central -->
                   <text x="100" y="96" class="donut-center-label">HOY</text>
-                  <text x="100" y="112" class="donut-center-sub">{{ analisis.caloriasConsumidas | number:'1.0-0' }} kcal</text>
+                  <text x="100" y="112" class="donut-center-sub">
+                    {{ analisis.caloriasConsumidas | number: "1.0-0" }} kcal
+                  </text>
                 </svg>
 
                 <!-- Leyenda -->
                 <div class="donut-legend">
                   <div class="legend-row">
                     <span class="legend-dot proteinas-dot"></span>
-                    <span>Proteínas <strong>{{ analisis.proteinasPorcentaje }}%</strong></span>
+                    <span
+                      >Proteínas
+                      <strong>{{ analisis.proteinasPorcentaje }}%</strong></span
+                    >
                   </div>
                   <div class="legend-row">
                     <span class="legend-dot carbos-dot"></span>
-                    <span>Carbohidratos <strong>{{ analisis.carbohidratosPorcentaje }}%</strong></span>
+                    <span
+                      >Carbohidratos
+                      <strong
+                        >{{ analisis.carbohidratosPorcentaje }}%</strong
+                      ></span
+                    >
                   </div>
                   <div class="legend-row">
                     <span class="legend-dot grasas-dot"></span>
-                    <span>Grasas <strong>{{ analisis.grasasPorcentaje }}%</strong></span>
+                    <span
+                      >Grasas
+                      <strong>{{ analisis.grasasPorcentaje }}%</strong></span
+                    >
                   </div>
                 </div>
               </div>
@@ -1131,25 +1402,40 @@
                 </div>
 
                 <!-- Barra comparativa para cada macro -->
-                <div class="ideal-row" *ngFor="let macro of getMacrosComparativa(analisis)">
+                <div
+                  class="ideal-row"
+                  *ngFor="let macro of getMacrosComparativa(analisis)"
+                >
                   <span class="ideal-macro-name">{{ macro.nombre }}</span>
                   <div class="ideal-bars">
                     <div class="ideal-bar-group">
-                      <div class="ideal-bar real-bar" [style.width.%]="macro.real"
+                      <div
+                        class="ideal-bar real-bar"
+                        [style.width.%]="macro.real"
                         [class.deficit]="macro.real < macro.ideal"
-                        [class.superavit]="macro.real > macro.ideal">
-                      </div>
-                      <span class="ideal-bar-lbl real-lbl">Real {{ macro.real }}%</span>
+                        [class.superavit]="macro.real > macro.ideal"
+                      ></div>
+                      <span class="ideal-bar-lbl real-lbl"
+                        >Real {{ macro.real }}%</span
+                      >
                     </div>
                     <div class="ideal-bar-group">
-                      <div class="ideal-bar ideal-bar-fill" [style.width.%]="macro.ideal"></div>
-                      <span class="ideal-bar-lbl ideal-lbl">Ideal {{ macro.ideal }}%</span>
+                      <div
+                        class="ideal-bar ideal-bar-fill"
+                        [style.width.%]="macro.ideal"
+                      ></div>
+                      <span class="ideal-bar-lbl ideal-lbl"
+                        >Ideal {{ macro.ideal }}%</span
+                      >
                     </div>
                   </div>
-                  <span class="ideal-delta"
+                  <span
+                    class="ideal-delta"
                     [class.pos]="macro.real >= macro.ideal"
-                    [class.neg]="macro.real < macro.ideal">
-                    {{ macro.real >= macro.ideal ? '+' : '' }}{{ macro.real - macro.ideal }}%
+                    [class.neg]="macro.real < macro.ideal"
+                  >
+                    {{ macro.real >= macro.ideal ? "+" : ""
+                    }}{{ macro.real - macro.ideal }}%
                   </span>
                 </div>
 
@@ -1158,21 +1444,21 @@
                   Referencia basada en tu IMC y objetivo de salud.
                 </p>
               </div>
-
             </div>
           </mat-card-content>
         </mat-card>
-
       </ng-container>
 
       <!-- Estado vacío si el alumno aún no tiene análisis del día -->
-      <mat-card class="analisis-empty-card"
-        *ngIf="!analisisDelDia">
+      <mat-card class="analisis-empty-card" *ngIf="!analisisDelDia">
         <mat-card-content>
           <div class="empty-state">
             <mat-icon>insert_chart_outlined</mat-icon>
             <h3>Sin análisis del día</h3>
-            <p>Completa el <strong>Reto 7 Días</strong> para ver tu análisis nutricional diario aquí.</p>
+            <p>
+              Completa el <strong>Reto 7 Días</strong> para ver tu análisis
+              nutricional diario aquí.
+            </p>
           </div>
         </mat-card-content>
       </mat-card>

@@ -329,6 +329,18 @@ export class DashboardsComponent implements OnInit {
     } else {
       this.loadMyDashboard();
     }
+
+    window.addEventListener('focus', this.onWindowFocus);
+  }
+
+  private onWindowFocus = () => {
+    if (this.selectedStudent?.id) {
+      this.cargarMetricasJuegosNuevos();
+    }
+  };
+
+  ngOnDestroy(): void {
+    window.removeEventListener('focus', this.onWindowFocus);
   }
 
   private loadExternalScripts(): void {
