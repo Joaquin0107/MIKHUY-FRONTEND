@@ -138,22 +138,23 @@ export class DashboardsComponent implements OnInit {
   ) {}
 
   cargarMetricasJuegosNuevos(): void {
-    if (!this.selectedStudent?.id) {
+    const estudianteId =
+      this.selectedStudent?.id || (this.dashboardData as any)?.estudiante?.id;
+
+    if (!estudianteId) {
       this.cargarMetricasDesdeLocalStorage();
       return;
     }
 
-    const base = (this.sesionService as any).apiUrl.replace('/sesiones', '');
+    const base =
+      (this.sesionService as any).apiUrl?.replace('/sesiones', '') ||
+      'https://mikhuy-backend.onrender.com/api';
 
-    // ── Micronutrientes ──────────────────────────────────────────────────────
     this.http
-      .get<any>(
-        `${base}/sesiones/micronutrientes/estudiante/${this.selectedStudent.id}`,
-      )
+      .get<any>(`${base}/sesiones/micronutrientes/estudiante/${estudianteId}`)
       .subscribe({
         next: (res: any) => {
           const raw: any[] = res?.data || [];
-          // Normalizar snake_case → camelCase
           const niveles = raw.map((n: any) => ({
             nivelNumero: n.nivelNumero ?? n.nivel_numero ?? 0,
             aciertos: n.aciertos ?? 0,
@@ -163,16 +164,18 @@ export class DashboardsComponent implements OnInit {
               n.deficientesCorrectos ?? n.deficientes_correctos ?? [],
             deficientesSeleccionados:
               n.deficientesSeleccionados ?? n.deficientes_seleccionados ?? [],
-            pregunta: n.pregunta ?? '',
           }));
           if (niveles.length > 0) {
-            const totalAciertos = niveles.reduce((s, n) => s + n.aciertos, 0);
+            const totalAciertos = niveles.reduce(
+              (s: number, n: any) => s + n.aciertos,
+              0,
+            );
             const totalPosibles = niveles.reduce(
-              (s, n) => s + (n.deficientesCorrectos?.length || 2),
+              (s: number, n: any) => s + (n.deficientesCorrectos?.length || 2),
               0,
             );
             const puntosTotal = niveles.reduce(
-              (s, n) => s + n.puntosObtenidos,
+              (s: number, n: any) => s + n.puntosObtenidos,
               0,
             );
             this.metricasMicronutrientes = {
@@ -188,16 +191,14 @@ export class DashboardsComponent implements OnInit {
             };
           } else {
             this.metricasMicronutrientes = null;
+            this.cargarMetricasDesdeLocalStorage();
           }
         },
         error: () => this.cargarMetricasDesdeLocalStorage(),
       });
 
-    // ── Clasifica ────────────────────────────────────────────────────────────
     this.http
-      .get<any>(
-        `${base}/sesiones/clasifica/estudiante/${this.selectedStudent.id}`,
-      )
+      .get<any>(`${base}/sesiones/clasifica/estudiante/${estudianteId}`)
       .subscribe({
         next: (res: any) => {
           const raw: any[] = res?.data || [];
@@ -214,19 +215,23 @@ export class DashboardsComponent implements OnInit {
               n.alimentosSeleccionados ?? n.alimentos_seleccionados ?? [],
           }));
           if (niveles.length > 0) {
-            const totalAciertos = niveles.reduce((s, n) => s + n.aciertos, 0);
+            const totalAciertos = niveles.reduce(
+              (s: number, n: any) => s + n.aciertos,
+              0,
+            );
             const tiempoAgotados = niveles.filter(
-              (n) => n.tiempoAgotado,
+              (n: any) => n.tiempoAgotado,
             ).length;
             const puntosTotal = niveles.reduce(
-              (s, n) => s + n.puntosObtenidos,
+              (s: number, n: any) => s + n.puntosObtenidos,
               0,
             );
             const tiempoPromedioSeg = Math.round(
-              niveles.reduce((s, n) => s + n.tiempoUsado, 0) / niveles.length,
+              niveles.reduce((s: number, n: any) => s + n.tiempoUsado, 0) /
+                niveles.length,
             );
             const gruposMap: Record<string, number> = {};
-            niveles.forEach((n) => {
+            niveles.forEach((n: any) => {
               if (n.grupoObjetivo)
                 gruposMap[n.grupoObjetivo] =
                   (gruposMap[n.grupoObjetivo] || 0) + 1;
@@ -245,6 +250,7 @@ export class DashboardsComponent implements OnInit {
             };
           } else {
             this.metricasClasifica = null;
+            this.cargarMetricasDesdeLocalStorage();
           }
         },
         error: () => this.cargarMetricasDesdeLocalStorage(),
@@ -254,7 +260,6 @@ export class DashboardsComponent implements OnInit {
   private cargarMetricasDesdeLocalStorage(): void {
     const cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
     const uid = cu?.id || cu?.email || 'unknown';
-
     const nivelesM: any[] = [];
     for (let i = 1; i <= 5; i++) {
       const raw = localStorage.getItem(`mikhuy_micro_${uid}_nivel${i}`);
@@ -285,7 +290,6 @@ export class DashboardsComponent implements OnInit {
         historial: nivelesM,
       };
     }
-
     const nivelesC: any[] = [];
     for (let i = 1; i <= 10; i++) {
       const raw = localStorage.getItem(`mikhuy_clasifica_${uid}_nivel${i}`);
