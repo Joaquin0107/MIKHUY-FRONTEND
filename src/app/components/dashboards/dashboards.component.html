@@ -59,22 +59,27 @@
     </div>
 
     <div class="header-right">
-  <!-- Botón grupos solo para profesor -->
-  <button mat-stroked-button class="grupos-btn" *ngIf="isTeacher" (click)="irAGrupos()">
-    <mat-icon>groups</mat-icon>
-    Mis Grupos
-  </button>
+      <!-- Botón grupos solo para profesor -->
+      <button
+        mat-stroked-button
+        class="grupos-btn"
+        *ngIf="isTeacher"
+        (click)="irAGrupos()"
+      >
+        <mat-icon>groups</mat-icon>
+        Mis Grupos
+      </button>
 
-  <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
-    <mat-icon>menu</mat-icon>
-  </button>
-  <mat-menu #menu="matMenu" class="user-menu">
-    <button mat-menu-item (click)="logout()">
-      <mat-icon>logout</mat-icon>
-      <span>Salir</span>
-    </button>
-  </mat-menu>
-</div>
+      <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu" class="user-menu">
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Salir</span>
+        </button>
+      </mat-menu>
+    </div>
   </header>
 
   <!-- Loading Spinner -->
@@ -139,7 +144,7 @@
       </mat-list>
     </div>
     <!-- ========== FIN SIDEBAR ========== -->
-    
+
     <!-- ========== DASHBOARD MAIN ========== -->
     <div class="dashboard-main" *ngIf="selectedStudent && dashboardData">
       <!-- Profile Card -->
@@ -1956,12 +1961,21 @@
         <mat-card-content>
           <div class="empty-state">
             <mat-icon>monitor_heart</mat-icon>
-            <h3>No hay mediciones de salud registradas</h3>
-            <p>
-              Actualiza el peso y talla del estudiante en su perfil para
-              comenzar el seguimiento.
+            <h3>Sin mediciones antropométricas</h3>
+            <p *ngIf="isTeacher">
+              El estudiante aún no ha registrado su peso y talla. Puedes
+              actualizarlos desde el perfil del alumno.
             </p>
-            <button mat-raised-button color="primary" (click)="openProfile()">
+            <p *ngIf="!isTeacher">
+              Registra tu peso y talla en tu perfil para comenzar el seguimiento
+              de tu IMC.
+            </p>
+            <button
+              mat-raised-button
+              color="primary"
+              (click)="openProfile()"
+              *ngIf="!isTeacher"
+            >
               <mat-icon>edit</mat-icon>
               Ir al Perfil
             </button>
