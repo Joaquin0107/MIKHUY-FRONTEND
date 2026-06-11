@@ -937,7 +937,11 @@
                     {{ metricasClasifica.nivelesJugados }} de 10 niveles
                     completados
                   </h3>
-                  <p>{{ metricasClasifica.puntosTotal }} puntos acumulados</p>
+                  <p>
+                    {{ metricasClasifica.puntosTotal }} puntos · Aciertos:
+                    {{ metricasClasifica.totalAciertos }} · Grupo más
+                    practicado: {{ metricasClasifica.grupoMasFrecuente }}
+                  </p>
                 </div>
               </div>
               <div class="progress-bar-container">
@@ -948,18 +952,35 @@
                   "
                 ></div>
               </div>
-              <div class="game-stats">
-                <div class="game-stat-item">
-                  <mat-icon>emoji_food_beverage</mat-icon>
-                  <span
-                    >Grupo más practicado:
-                    {{ metricasClasifica.grupoMasFrecuente }}</span
-                  >
+
+              <!-- Historial de rondas -->
+              <p class="micro-nivel-label">Historial de rondas jugadas</p>
+              <div class="clasifica-historial-dash">
+                <div
+                  class="clasifica-ronda-item"
+                  *ngFor="let n of metricasClasifica.historial"
+                  [class.ronda-ok]="!n.tiempoAgotado && n.aciertos > 0"
+                  [class.ronda-parcial]="!n.tiempoAgotado && n.aciertos === 0"
+                  [class.ronda-agotada]="n.tiempoAgotado"
+                >
+                  <div class="ronda-header">
+                    <span class="ronda-nivel">Nivel {{ n.nivelNumero }}</span>
+                    <span class="ronda-grupo">{{ n.grupoObjetivo }}</span>
+                    <span class="ronda-tiempo-tag" *ngIf="n.tiempoAgotado"
+                      >⏱ Tiempo agotado</span
+                    >
+                    <span class="ronda-tiempo-ok" *ngIf="!n.tiempoAgotado"
+                      >{{ n.tiempoUsado }}s</span
+                    >
+                  </div>
+                  <div class="ronda-stats">
+                    <span>✓ {{ n.aciertos }} aciertos</span>
+                    <span>+{{ n.puntosObtenidos }} pts</span>
+                  </div>
                 </div>
-                <div class="game-stat-item">
-                  <mat-icon>check_circle</mat-icon>
-                  <span>Aciertos: {{ metricasClasifica.totalAciertos }}</span>
-                </div>
+              </div>
+
+              <div class="game-stats" style="margin-top: 12px">
                 <div
                   class="game-stat-item"
                   *ngIf="metricasClasifica.tiempoAgotados > 0"
@@ -968,6 +989,13 @@
                   <span
                     >Tiempo agotado:
                     {{ metricasClasifica.tiempoAgotados }}x</span
+                  >
+                </div>
+                <div class="game-stat-item">
+                  <mat-icon>schedule</mat-icon>
+                  <span
+                    >Tiempo promedio:
+                    {{ metricasClasifica.tiempoPromedioSeg }}s</span
                   >
                 </div>
               </div>
