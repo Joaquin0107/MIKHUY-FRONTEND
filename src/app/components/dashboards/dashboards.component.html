@@ -58,27 +58,23 @@
       </button>
     </div>
 
-    <div class="sidebar-grupos-btn" *ngIf="isTeacher">
-      <button
-        mat-stroked-button
-        (click)="irAGrupos()"
-        style="width: 100%; margin-top: 12px"
-      >
-        <mat-icon>groups</mat-icon> Mis Grupos de Estudio
-      </button>
-    </div>
-
     <div class="header-right">
-      <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
-        <mat-icon>menu</mat-icon>
-      </button>
-      <mat-menu #menu="matMenu" class="user-menu">
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>Salir</span>
-        </button>
-      </mat-menu>
-    </div>
+  <!-- Botón grupos solo para profesor -->
+  <button mat-stroked-button class="grupos-btn" *ngIf="isTeacher" (click)="irAGrupos()">
+    <mat-icon>groups</mat-icon>
+    Mis Grupos
+  </button>
+
+  <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu" class="user-menu">
+    <button mat-menu-item (click)="logout()">
+      <mat-icon>logout</mat-icon>
+      <span>Salir</span>
+    </button>
+  </mat-menu>
+</div>
   </header>
 
   <!-- Loading Spinner -->
