@@ -811,7 +811,11 @@
                     completados
                   </h3>
                   <p>
-                    {{ metricasMicronutrientes.puntosTotal }} puntos acumulados
+                    {{ metricasMicronutrientes.puntosTotal }} puntos ·
+                    Precisión: {{ metricasMicronutrientes.precision }}% ·
+                    Aciertos: {{ metricasMicronutrientes.totalAciertos }}/{{
+                      metricasMicronutrientes.totalPosibles
+                    }}
                   </p>
                 </div>
               </div>
@@ -823,22 +827,78 @@
                   "
                 ></div>
               </div>
-              <div class="game-stats">
-                <div class="game-stat-item">
-                  <mat-icon>check_circle</mat-icon>
-                  <span
-                    >Precisión: {{ metricasMicronutrientes.precision }}%</span
+
+              <!-- Último nivel jugado con sus micronutrientes -->
+              <ng-container
+                *ngIf="metricasMicronutrientes.historial?.length > 0"
+              >
+                <p class="micro-nivel-label">
+                  Último nivel jugado — Nivel
+                  {{
+                    metricasMicronutrientes.historial[
+                      metricasMicronutrientes.historial.length - 1
+                    ].nivelNumero
+                  }}
+                </p>
+                <div class="micro-lista-dash">
+                  <div
+                    class="micro-item-dash"
+                    *ngFor="
+                      let m of metricasMicronutrientes.historial[
+                        metricasMicronutrientes.historial.length - 1
+                      ].micronutrientes
+                    "
+                    [class.micro-deficiente]="
+                      m.estado === 'deficiente' || m.estado === 'critico'
+                    "
+                    [class.micro-normal]="m.estado === 'normal'"
+                    [class.micro-sin-datos]="m.estado === 'sin-datos'"
                   >
+                    <div class="micro-item-header">
+                      <span class="micro-item-nombre">{{ m.nombre }}</span>
+                      <span class="micro-item-pct" *ngIf="m.porcentaje !== null"
+                        >{{ m.porcentaje }}%</span
+                      >
+                      <span class="micro-item-pct" *ngIf="m.porcentaje === null"
+                        >—</span
+                      >
+                    </div>
+                    <div class="micro-barra-bg" *ngIf="m.porcentaje !== null">
+                      <div
+                        class="micro-barra-fill"
+                        [style.width.%]="m.porcentaje"
+                        [style.background]="
+                          m.estado === 'critico'
+                            ? '#f44336'
+                            : m.estado === 'deficiente'
+                              ? '#ff9800'
+                              : '#4caf50'
+                        "
+                      ></div>
+                    </div>
+                    <span
+                      class="micro-estado-tag"
+                      [style.color]="
+                        m.estado === 'critico'
+                          ? '#f44336'
+                          : m.estado === 'deficiente'
+                            ? '#ff9800'
+                            : '#4caf50'
+                      "
+                    >
+                      {{
+                        m.estado === "critico"
+                          ? "⚠ Crítico"
+                          : m.estado === "deficiente"
+                            ? "↓ Deficiente"
+                            : m.estado === "sin-datos"
+                              ? "— Sin datos"
+                              : "✓ Normal"
+                      }}
+                    </span>
+                  </div>
                 </div>
-                <div class="game-stat-item">
-                  <mat-icon>quiz</mat-icon>
-                  <span
-                    >Aciertos: {{ metricasMicronutrientes.totalAciertos }}/{{
-                      metricasMicronutrientes.totalPosibles
-                    }}</span
-                  >
-                </div>
-              </div>
+              </ng-container>
             </div>
           </div>
         </mat-card-content>

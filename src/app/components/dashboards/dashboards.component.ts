@@ -60,6 +60,49 @@ interface Student {
   puntosAcumulados?: number;
 }
 
+const BANCO_MICRO_DASH: Record<number, any> = {
+  1: {
+    micronutrientes: [
+      { nombre: 'Hierro (Fe)', porcentaje: 35, estado: 'deficiente' },
+      { nombre: 'Calcio (Ca)', porcentaje: 72, estado: 'normal' },
+      { nombre: 'Vitamina A', porcentaje: 45, estado: 'deficiente' },
+      { nombre: 'Vitamina C', porcentaje: 88, estado: 'normal' },
+    ],
+  },
+  2: {
+    micronutrientes: [
+      { nombre: 'Vitamina D', porcentaje: 22, estado: 'critico' },
+      { nombre: 'Zinc (Zn)', porcentaje: 65, estado: 'normal' },
+      { nombre: 'Vitamina B12', porcentaje: 38, estado: 'critico' },
+      { nombre: 'Magnesio', porcentaje: 55, estado: 'normal' },
+    ],
+  },
+  3: {
+    micronutrientes: [
+      { nombre: 'Potasio (K)', porcentaje: 48, estado: 'deficiente' },
+      { nombre: 'Hierro (Fe)', porcentaje: 90, estado: 'normal' },
+      { nombre: 'Folato', porcentaje: 55, estado: 'deficiente' },
+      { nombre: 'Vitamina C', porcentaje: 95, estado: 'normal' },
+    ],
+  },
+  4: {
+    micronutrientes: [
+      { nombre: 'Calcio (Ca)', porcentaje: null, estado: 'sin-datos' },
+      { nombre: 'Vitamina A', porcentaje: 68, estado: 'normal' },
+      { nombre: 'Hierro (Fe)', porcentaje: null, estado: 'sin-datos' },
+      { nombre: 'Vitamina C', porcentaje: 42, estado: 'deficiente' },
+    ],
+  },
+  5: {
+    micronutrientes: [
+      { nombre: 'Yodo (I)', porcentaje: 25, estado: 'critico' },
+      { nombre: 'Vitamina E', porcentaje: 78, estado: 'normal' },
+      { nombre: 'Selenio', porcentaje: 20, estado: 'critico' },
+      { nombre: 'Vitamina K', porcentaje: 85, estado: 'normal' },
+    ],
+  },
+};
+
 @Component({
   selector: 'app-dashboards',
   standalone: true,
@@ -205,19 +248,24 @@ export class DashboardsComponent implements OnInit {
         next: (res: any) => {
           const raw: any[] = res?.data || [];
           const niveles = raw
-            .map((n: any) => ({
-              nivelNumero: n.nivelNumero ?? n.nivel_numero ?? 0,
-              aciertos: n.aciertos ?? 0,
-              puntosObtenidos: n.puntosObtenidos ?? n.puntos_obtenidos ?? 0,
-              tiempoAgotado: n.tiempoAgotado ?? n.tiempo_agotado ?? false,
-              tiempoUsado: n.tiempoUsado ?? n.tiempo_usado ?? 0,
-              grupoObjetivo: n.grupoObjetivo ?? n.grupo_objetivo ?? '',
-              alimentosCorrectos:
-                n.alimentosCorrectos ?? n.alimentos_correctos ?? [],
-              alimentosSeleccionados:
-                n.alimentosSeleccionados ?? n.alimentos_seleccionados ?? [],
-            }))
-            .filter((n: any) => n.nivelNumero > 0); // ← filtra registros corruptos
+            .map((n: any) => {
+              const nivelNum = n.nivelNumero ?? n.nivel_numero ?? 0;
+              const bancoNivel = BANCO_MICRO_DASH[nivelNum];
+              return {
+                nivelNumero: nivelNum,
+                aciertos: n.aciertos ?? 0,
+                puntosObtenidos: n.puntosObtenidos ?? n.puntos_obtenidos ?? 0,
+                tiempoAgotado: n.tiempoAgotado ?? n.tiempo_agotado ?? false,
+                deficientesCorrectos:
+                  n.deficientesCorrectos ?? n.deficientes_correctos ?? [],
+                deficientesSeleccionados:
+                  n.deficientesSeleccionados ??
+                  n.deficientes_seleccionados ??
+                  [],
+                micronutrientes: bancoNivel?.micronutrientes || [], // ← enriquecido
+              };
+            })
+            .filter((n: any) => n.nivelNumero > 0);
           if (niveles.length > 0) {
             const totalAciertos = niveles.reduce(
               (s: number, n: any) => s + n.aciertos,

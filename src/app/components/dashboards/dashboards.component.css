@@ -2979,3 +2979,34 @@
     font-size: 1.15rem;
   }
 }
+
+.micro-nivel-label {
+  font-size: 13px;
+  color: #666;
+  margin: 16px 0 8px;
+  font-weight: 500;
+}
+.micro-lista-dash {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+.micro-item-dash {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #e0e0e0;
+  background: white;
+}
+.micro-item-dash.micro-deficiente { border-color: #ff9800; background: #fff8f0; }
+.micro-item-dash.micro-normal { border-color: #4caf50; background: #f1f8f1; }
+.micro-item-dash.micro-sin-datos { border-color: #bdbdbd; background: #fafafa; }
+.micro-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.micro-item-nombre { font-weight: 600; font-size: 14px; }
+.micro-item-pct { font-size: 13px; font-weight: 700; color: #555; }
+.micro-estado-tag { font-size: 12px; font-weight: 600; margin-top: 4px; display: block; }
