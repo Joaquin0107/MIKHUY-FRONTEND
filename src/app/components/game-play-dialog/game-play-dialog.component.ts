@@ -879,36 +879,41 @@ export class GamePlayDialog implements OnInit, OnDestroy {
 
   // ── Finalizar ─────────────────────────────────────────────────────────────
   finalizarJuego(completado: boolean): void {
-    if (!this.sesionId) {
-      // Sin sesionId: pasar directo a pantalla de resumen
-      if (this.intervalo) clearInterval(this.intervalo);
-      if (completado) this.puntosGanadosEnSesion += this.gameData.juego.puntosPorNivel;
-      this.gameEnded = true;
-      return;
-    }
+  if (!this.sesionId) {
     if (this.intervalo) clearInterval(this.intervalo);
-    this.loading = true;
-    this.loadingMessage = 'Guardando progreso...';
-    if (completado) this.puntosGanadosEnSesion += this.gameData.juego.puntosPorNivel;
-
-    this.sesionService.finalizarSesion({
-      sesionId: this.sesionId,
-      puntosObtenidos: this.puntosGanadosEnSesion,
-      tiempoJugado: this.tiempoTranscurrido,
-      completado,
-    }).subscribe({
-      next: (response) => {
-        if (response.success) this.gameEnded = true;
-        this.loading = false;
-      },
-      error: (err) => {
-        // Backend con error: igualmente mostramos el resumen al alumno
-        console.warn('Error finalizando sesión (backend), mostrando resumen offline:', err);
-        this.gameEnded = true;
-        this.loading = false;
-      },
-    });
+    // Solo Reto 7 Días y Coach Exprés reciben bonus por completar nivel
+    if (completado && (this.esReto7Dias() || this.esCoachExpres())) {
+      this.puntosGanadosEnSesion += this.gameData.juego.puntosPorNivel;
+    }
+    this.gameEnded = true;
+    return;
   }
+  if (this.intervalo) clearInterval(this.intervalo);
+  this.loading = true;
+  this.loadingMessage = 'Guardando progreso...';
+
+  // Solo Reto 7 Días y Coach Exprés reciben bonus por completar nivel
+  if (completado && (this.esReto7Dias() || this.esCoachExpres())) {
+    this.puntosGanadosEnSesion += this.gameData.juego.puntosPorNivel;
+  }
+
+  this.sesionService.finalizarSesion({
+    sesionId: this.sesionId,
+    puntosObtenidos: this.puntosGanadosEnSesion,
+    tiempoJugado: this.tiempoTranscurrido,
+    completado,
+  }).subscribe({
+    next: (response) => {
+      if (response.success) this.gameEnded = true;
+      this.loading = false;
+    },
+    error: (err) => {
+      console.warn('Error finalizando sesión (backend), mostrando resumen offline:', err);
+      this.gameEnded = true;
+      this.loading = false;
+    },
+  });
+}
 
   continuar(): void {
     this.studentService.sumarPuntos(this.puntosGanadosEnSesion);
