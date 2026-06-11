@@ -12,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment.prod';
+import { ViewEncapsulation } from '@angular/core';
 
 interface Miembro {
   id: string;
@@ -59,6 +60,7 @@ interface Estudiante {
     MatCardModule, MatDialogModule, MatSnackBarModule,
     MatProgressSpinnerModule, MatTooltipModule,
   ],
+  encapsulation: ViewEncapsulation.None,
   templateUrl: './grupos-estudio.component.html',
   styleUrls: ['./grupos-estudio.component.css'],
 })
