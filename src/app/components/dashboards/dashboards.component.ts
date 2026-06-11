@@ -198,17 +198,24 @@ export class DashboardsComponent implements OnInit {
         next: (res: any) => {
           const raw: any[] = res?.data || [];
           const niveles = raw
-            .map((n: any) => ({
-              nivelNumero: n.nivelNumero ?? n.nivel_numero ?? 0,
-              aciertos: n.aciertos ?? 0,
-              puntosObtenidos: n.puntosObtenidos ?? n.puntos_obtenidos ?? 0,
-              tiempoAgotado: n.tiempoAgotado ?? n.tiempo_agotado ?? false,
-              deficientesCorrectos:
-                n.deficientesCorrectos ?? n.deficientes_correctos ?? [],
-              deficientesSeleccionados:
-                n.deficientesSeleccionados ?? n.deficientes_seleccionados ?? [],
-            }))
-            .filter((n: any) => n.nivelNumero > 0); // ← filtra registros corruptos
+            .map((n: any) => {
+              const nivelNum = n.nivelNumero ?? n.nivel_numero ?? 0;
+              const bancoNivel = BANCO_MICRO_DASH[nivelNum]; // ← añadir
+              return {
+                nivelNumero: nivelNum,
+                aciertos: n.aciertos ?? 0,
+                puntosObtenidos: n.puntosObtenidos ?? n.puntos_obtenidos ?? 0,
+                tiempoAgotado: n.tiempoAgotado ?? n.tiempo_agotado ?? false,
+                deficientesCorrectos:
+                  n.deficientesCorrectos ?? n.deficientes_correctos ?? [],
+                deficientesSeleccionados:
+                  n.deficientesSeleccionados ??
+                  n.deficientes_seleccionados ??
+                  [],
+                micronutrientes: bancoNivel?.micronutrientes || [], // ← añadir
+              };
+            })
+            .filter((n: any) => n.nivelNumero > 0);
           if (niveles.length > 0) {
             const totalAciertos = niveles.reduce(
               (s: number, n: any) => s + n.aciertos,
@@ -248,23 +255,18 @@ export class DashboardsComponent implements OnInit {
         next: (res: any) => {
           const raw: any[] = res?.data || [];
           const niveles = raw
-            .map((n: any) => {
-              const nivelNum = n.nivelNumero ?? n.nivel_numero ?? 0;
-              const bancoNivel = BANCO_MICRO_DASH[nivelNum];
-              return {
-                nivelNumero: nivelNum,
-                aciertos: n.aciertos ?? 0,
-                puntosObtenidos: n.puntosObtenidos ?? n.puntos_obtenidos ?? 0,
-                tiempoAgotado: n.tiempoAgotado ?? n.tiempo_agotado ?? false,
-                deficientesCorrectos:
-                  n.deficientesCorrectos ?? n.deficientes_correctos ?? [],
-                deficientesSeleccionados:
-                  n.deficientesSeleccionados ??
-                  n.deficientes_seleccionados ??
-                  [],
-                micronutrientes: bancoNivel?.micronutrientes || [], // ← enriquecido
-              };
-            })
+            .map((n: any) => ({
+              nivelNumero: n.nivelNumero ?? n.nivel_numero ?? 0,
+              aciertos: n.aciertos ?? 0,
+              puntosObtenidos: n.puntosObtenidos ?? n.puntos_obtenidos ?? 0,
+              tiempoAgotado: n.tiempoAgotado ?? n.tiempo_agotado ?? false,
+              tiempoUsado: n.tiempoUsado ?? n.tiempo_usado ?? 0,
+              grupoObjetivo: n.grupoObjetivo ?? n.grupo_objetivo ?? '',
+              alimentosCorrectos:
+                n.alimentosCorrectos ?? n.alimentos_correctos ?? [],
+              alimentosSeleccionados:
+                n.alimentosSeleccionados ?? n.alimentos_seleccionados ?? [],
+            }))
             .filter((n: any) => n.nivelNumero > 0);
           if (niveles.length > 0) {
             const totalAciertos = niveles.reduce(
