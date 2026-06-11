@@ -162,11 +162,10 @@ export class DashboardsComponent implements OnInit {
   selectedDateLabel: string = ''; // texto legible en el botón
   todayStr: string = new Date().toISOString().split('T')[0];
 
-  // ── CP019/CP023/CP025/CP032/CP033: Análisis nutricional del día ──────────
-  /** Comida actualmente seleccionada en el filtro de CP025 */
   selectedComida: string = 'Todos';
-  /** Toggle del panel de distribución ideal CP033 */
   mostrarDistribucionIdeal: boolean = false;
+  mostrarPopupMasActivo = false;
+  estudianteMasActivo: Student | null = null;
 
   constructor(
     private router: Router,
@@ -439,6 +438,16 @@ export class DashboardsComponent implements OnInit {
           this.error = response.message || 'Error al cargar estudiantes';
           this.loading = false;
         }
+
+        this.estudianteMasActivo = this.students.reduce(
+          (max, s) =>
+            (s.puntosAcumulados || 0) > (max.puntosAcumulados || 0) ? s : max,
+          this.students[0],
+        );
+        this.mostrarPopupMasActivo = true;
+        setTimeout(() => {
+          this.mostrarPopupMasActivo = false;
+        }, 10000);
       },
       error: (err) => {
         console.error('Error cargando estudiantes:', err);

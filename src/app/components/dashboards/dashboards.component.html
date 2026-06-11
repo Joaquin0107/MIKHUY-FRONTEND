@@ -1,4 +1,43 @@
 <div class="dashboards-container">
+  <!-- ── Popup: Estudiante más activo ─────────────────────────────────── -->
+  <div
+    class="popup-mas-activo"
+    *ngIf="isTeacher && mostrarPopupMasActivo && estudianteMasActivo"
+  >
+    <div class="popup-mas-activo-content">
+      <button class="popup-close-btn" (click)="mostrarPopupMasActivo = false">
+        <mat-icon>close</mat-icon>
+      </button>
+      <div class="popup-icon-wrap">
+        <mat-icon class="popup-star-icon">emoji_events</mat-icon>
+      </div>
+      <div class="popup-body">
+        <p class="popup-label">⭐ Estudiante más activo</p>
+        <h3 class="popup-nombre">
+          {{ estudianteMasActivo.nombre }} {{ estudianteMasActivo.apellido }}
+        </h3>
+        <div class="popup-stats">
+          <span
+            ><mat-icon>grade</mat-icon>
+            {{ estudianteMasActivo.puntosAcumulados || 0 }} puntos</span
+          >
+          <span
+            ><mat-icon>school</mat-icon> {{ estudianteMasActivo.grado }} -
+            {{ estudianteMasActivo.seccion }}</span
+          >
+        </div>
+        <button
+          mat-stroked-button
+          class="popup-ver-btn"
+          (click)="
+            selectStudent(estudianteMasActivo); mostrarPopupMasActivo = false
+          "
+        >
+          Ver su dashboard
+        </button>
+      </div>
+    </div>
+  </div>
   <!-- Header -->
   <header class="dashboards-header">
     <div class="header-left">
