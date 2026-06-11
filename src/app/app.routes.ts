@@ -7,6 +7,7 @@ import { LandingAlumnosComponent } from './components/landing-alumnos/landing-al
 import { LandingProfesoresComponent } from './components/landing-profesores/landing-profesores.component';
 import { PerfilComponent } from './components/perfil/perfil.component';
 import { VerifyComponent } from './components/verify/verify.component';
+import { GruposEstudioComponent } from './components/grupos-estudio/grupos-estudio.component';
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 
@@ -38,6 +39,6 @@ export const routes: Routes = [
   { path: 'beneficios',  component: BeneficiosComponent,  canActivate: [AuthGuard], title: 'MIKHUY - Beneficios' },
   { path: 'perfil',      component: PerfilComponent,       canActivate: [AuthGuard], title: 'MIKHUY - Mi Perfil' },
   { path: 'dashboards',  component: DashboardsComponent,  canActivate: [AuthGuard], title: 'MIKHUY - Dashboards' },
-
+  { path: 'grupos-estudio', component: GruposEstudioComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: 'home' },
 ];

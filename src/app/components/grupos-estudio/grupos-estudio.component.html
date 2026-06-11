@@ -1,0 +1,209 @@
+<div class="grupos-container">
+  <!-- Header -->
+  <header class="grupos-header">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="grupos-title">
+      <mat-icon>groups</mat-icon>
+      Grupos de Estudio
+    </h1>
+    <button mat-raised-button class="btn-crear" (click)="abrirModalCrear()" *ngIf="!grupoSeleccionado">
+      <mat-icon>add</mat-icon> Nuevo Grupo
+    </button>
+  </header>
+
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <!-- ══ LISTA DE GRUPOS ══════════════════════════════════════════════════ -->
+  <div class="grupos-grid" *ngIf="!grupoSeleccionado && !loading">
+
+    <div class="empty-state" *ngIf="grupos.length === 0">
+      <mat-icon>group_add</mat-icon>
+      <h3>No tienes grupos creados</h3>
+      <p>Crea tu primer grupo de hasta 5 estudiantes para comparar su progreso.</p>
+      <button mat-raised-button color="primary" (click)="abrirModalCrear()">
+        <mat-icon>add</mat-icon> Crear grupo
+      </button>
+    </div>
+
+    <mat-card class="grupo-card" *ngFor="let g of grupos" (click)="verDetalle(g)">
+      <mat-card-header>
+        <div class="grupo-card-icon"><mat-icon>groups</mat-icon></div>
+        <mat-card-title>{{ g.nombre }}</mat-card-title>
+        <mat-card-subtitle>{{ g.totalMiembros }} estudiante{{ g.totalMiembros !== 1 ? 's' : '' }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="grupo-mini-stats">
+          <div class="mini-stat">
+            <mat-icon>grade</mat-icon>
+            <span>{{ g.promedioPuntos }} pts promedio</span>
+          </div>
+          <div class="mini-stat">
+            <mat-icon>videogame_asset</mat-icon>
+            <span>{{ g.juegoMasDominado }}</span>
+          </div>
+          <div class="mini-stat">
+            <mat-icon>emoji_events</mat-icon>
+            <span>{{ g.alumnoMasActivo }}</span>
+          </div>
+        </div>
+        <div class="grupo-miembros-preview">
+          <span class="miembro-chip" *ngFor="let m of g.miembros">
+            {{ m.nombre }}
+          </span>
+        </div>
+      </mat-card-content>
+      <mat-card-actions (click)="$event.stopPropagation()">
+        <button mat-icon-button matTooltip="Editar" (click)="abrirModalEditar(g)">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button matTooltip="Eliminar" color="warn" (click)="eliminarGrupo(g.id)">
+          <mat-icon>delete</mat-icon>
+        </button>
+        <button mat-stroked-button (click)="verDetalle(g)">
+          Ver detalle <mat-icon>chevron_right</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- ══ DETALLE DEL GRUPO ════════════════════════════════════════════════ -->
+  <div class="grupo-detalle" *ngIf="grupoSeleccionado && !loading">
+
+    <div class="detalle-header">
+      <button mat-icon-button (click)="volverALista()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h2>{{ grupoSeleccionado.nombre }}</h2>
+      <button mat-stroked-button (click)="abrirModalEditar(grupoSeleccionado)">
+        <mat-icon>edit</mat-icon> Editar grupo
+      </button>
+    </div>
+
+    <!-- Métricas compiladas -->
+    <div class="detalle-stats-grid">
+      <mat-card class="detalle-stat-card">
+        <mat-icon style="color:#f9a825">grade</mat-icon>
+        <h3>{{ grupoSeleccionado.promedioPuntos }}</h3>
+        <p>Pts promedio</p>
+      </mat-card>
+      <mat-card class="detalle-stat-card">
+        <mat-icon style="color:#1976d2">schedule</mat-icon>
+        <h3>{{ grupoSeleccionado.totalSesionesGrupo }}</h3>
+        <p>Sesiones totales</p>
+      </mat-card>
+      <mat-card class="detalle-stat-card">
+        <mat-icon style="color:#4caf50">emoji_events</mat-icon>
+        <h3 class="stat-name">{{ grupoSeleccionado.alumnoMasActivo }}</h3>
+        <p>Más activo</p>
+      </mat-card>
+      <mat-card class="detalle-stat-card">
+        <mat-icon style="color:#9c27b0">videogame_asset</mat-icon>
+        <h3 class="stat-name">{{ grupoSeleccionado.juegoMasDominado }}</h3>
+        <p>Juego dominado</p>
+      </mat-card>
+    </div>
+
+    <!-- Ranking interno -->
+    <mat-card class="ranking-card">
+      <mat-card-header>
+        <mat-card-title><mat-icon>leaderboard</mat-icon> Ranking del Grupo</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="ranking-item" *ngFor="let m of grupoSeleccionado.miembros">
+          <div class="ranking-pos" [style.background]="getMedalColor(m.posicionEnGrupo)">
+            <mat-icon>{{ getMedalIcon(m.posicionEnGrupo) }}</mat-icon>
+            <span>#{{ m.posicionEnGrupo }}</span>
+          </div>
+          <div class="ranking-info">
+            <strong>{{ m.nombre }} {{ m.apellido }}</strong>
+            <div class="ranking-bar-wrap">
+              <div class="ranking-bar"
+                [style.width.%]="grupoSeleccionado.miembros[0].puntosAcumulados > 0
+                  ? (m.puntosAcumulados / grupoSeleccionado.miembros[0].puntosAcumulados) * 100 : 0"
+                [style.background]="getMedalColor(m.posicionEnGrupo)">
+              </div>
+            </div>
+          </div>
+          <div class="ranking-stats">
+            <span>{{ m.puntosAcumulados }} pts</span>
+            <span>{{ m.totalSesiones }} sesiones</span>
+            <span>{{ m.juegosCompletados }} completados</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Comparativa de juegos -->
+    <mat-card class="comparativa-card">
+      <mat-card-header>
+        <mat-card-title><mat-icon>bar_chart</mat-icon> Comparativa de Juegos</mat-card-title>
+        <span class="data-source">Promedio del grupo</span>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="comparativa-item" *ngFor="let j of grupoSeleccionado.comparativaJuegos">
+          <div class="comparativa-nombre">
+            <mat-icon>videogame_asset</mat-icon>
+            <span>{{ j.juegoNombre }}</span>
+          </div>
+          <div class="comparativa-barra-wrap">
+            <div class="comparativa-barra" [style.width.%]="j.promedioProgreso"
+              [class.barra-alta]="j.promedioProgreso >= 70"
+              [class.barra-media]="j.promedioProgreso >= 40 && j.promedioProgreso < 70"
+              [class.barra-baja]="j.promedioProgreso < 40">
+            </div>
+          </div>
+          <div class="comparativa-info">
+            <span>{{ j.promedioProgreso | number:'1.0-0' }}% promedio</span>
+            <span class="completados-badge">{{ j.totalCompletados }}/{{ grupoSeleccionado.totalMiembros }} completaron</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+  </div>
+
+  <!-- ══ MODAL CREAR / EDITAR ═════════════════════════════════════════════ -->
+  <div class="modal-overlay" *ngIf="mostrarModal" (click)="cerrarModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ modoEdicion ? 'Editar Grupo' : 'Nuevo Grupo' }}</h3>
+        <button mat-icon-button (click)="cerrarModal()"><mat-icon>close</mat-icon></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Nombre del grupo</label>
+          <input type="text" [(ngModel)]="nombreGrupo" placeholder="Ej: Grupo A - Nutrición" maxlength="100"/>
+        </div>
+
+        <div class="form-field">
+          <label>Selecciona estudiantes <span class="badge-count">{{ estudiantesSeleccionados.length }}/5</span></label>
+          <div class="estudiantes-lista">
+            <div class="estudiante-option"
+              *ngFor="let e of estudiantesDisponibles"
+              [class.seleccionado]="esSeleccionado(e.id)"
+              [class.deshabilitado]="!esSeleccionado(e.id) && estudiantesSeleccionados.length >= 5"
+              (click)="toggleEstudiante(e.id)">
+              <mat-icon>{{ esSeleccionado(e.id) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+              <div class="est-info">
+                <strong>{{ e.nombres }} {{ e.apellidos }}</strong>
+                <span>{{ e.grado }} - {{ e.seccion }} · {{ e.puntosAcumulados }} pts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button mat-stroked-button (click)="cerrarModal()">Cancelar</button>
+        <button mat-raised-button color="primary" (click)="guardarGrupo()">
+          {{ modoEdicion ? 'Guardar cambios' : 'Crear grupo' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

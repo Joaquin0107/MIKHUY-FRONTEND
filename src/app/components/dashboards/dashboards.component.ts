@@ -179,6 +179,10 @@ export class DashboardsComponent implements OnInit {
     private sesionService: SesionJuegoService,
   ) {}
 
+  irAGrupos(): void {
+    this.router.navigate(['/grupos-estudio']);
+  }
+
   cargarMetricasJuegosNuevos(): void {
     const estudianteId =
       this.selectedStudent?.id || (this.dashboardData as any)?.estudiante?.id;
