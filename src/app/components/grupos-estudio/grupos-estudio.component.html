@@ -234,6 +234,107 @@
         </div>
       </mat-card-content>
     </mat-card>
+
+    <!-- ── Calendario de actividad ────────────────────────────────────── -->
+    <mat-card class="calendario-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>calendar_month</mat-icon>
+          Historial de Actividad
+        </mat-card-title>
+        <span class="data-source">Sesiones jugadas por el grupo</span>
+      </mat-card-header>
+      <mat-card-content>
+        <!-- Navegación de mes -->
+        <div class="cal-nav">
+          <button mat-icon-button (click)="mesAnterior()">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span class="cal-mes-label">{{ getNombreMes() | titlecase }}</span>
+          <button mat-icon-button (click)="mesSiguiente()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+
+        <!-- Cabecera días semana -->
+        <div class="cal-grid">
+          <div
+            class="cal-header-day"
+            *ngFor="let d of ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']"
+          >
+            {{ d }}
+          </div>
+
+          <!-- Días del mes -->
+          <div
+            class="cal-day"
+            *ngFor="let dia of diasDelMes"
+            [class.cal-day-vacio]="dia.fecha.getTime() === 0"
+            [class.cal-day-activo]="dia.tieneActividad"
+            [class.cal-day-seleccionado]="
+              diaSeleccionado?.fecha?.getTime() === dia.fecha.getTime()
+            "
+            (click)="seleccionarDia(dia)"
+          >
+            <span class="cal-day-num" *ngIf="dia.fecha.getTime() !== 0">
+              {{ dia.fecha.getDate() }}
+            </span>
+            <div class="cal-day-dots" *ngIf="dia.tieneActividad">
+              <span
+                class="cal-dot"
+                *ngFor="let s of dia.sesiones.slice(0, 3)"
+              ></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="cal-leyenda">
+          <span class="leyenda-item"
+            ><span class="cal-dot-leyenda activo"></span> Con actividad</span
+          >
+          <span class="leyenda-item"
+            ><span class="cal-dot-leyenda sin"></span> Sin actividad</span
+          >
+        </div>
+
+        <!-- Detalle del día seleccionado -->
+        <div class="cal-detalle" *ngIf="diaSeleccionado">
+          <div class="cal-detalle-header">
+            <mat-icon>today</mat-icon>
+            <strong>{{
+              diaSeleccionado.fecha
+                | date: "EEEE d MMMM" : "" : "es"
+                | titlecase
+            }}</strong>
+            <span
+              >{{ diaSeleccionado.sesiones.length }} sesión{{
+                diaSeleccionado.sesiones.length !== 1 ? "es" : ""
+              }}</span
+            >
+          </div>
+          <div
+            class="cal-sesion-item"
+            *ngFor="let s of diaSeleccionado.sesiones"
+          >
+            <div class="cal-sesion-alumno">
+              <mat-icon>person</mat-icon>
+              <span>{{ s.estudianteNombre }}</span>
+            </div>
+            <div class="cal-sesion-info">
+              <span class="cal-juego-badge">{{ s.juegoNombre }}</span>
+              <span class="cal-pts">+{{ s.puntosObtenidos }} pts</span>
+              <mat-icon
+                class="cal-check"
+                *ngIf="s.completado"
+                style="color: #4caf50"
+                >check_circle</mat-icon
+              >
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
   </div>
 
   <!-- ══ MODAL CREAR / EDITAR ═════════════════════════════════════════════ -->
