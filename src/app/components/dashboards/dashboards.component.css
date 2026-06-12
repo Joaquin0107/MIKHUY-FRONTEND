@@ -3168,3 +3168,30 @@
   width: 100%;
   font-size: 13px;
 }
+
+.viewonly-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #e3f2fd;
+  color: #1565c0;
+  padding: 0.6rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-bottom: 1px solid #bbdefb;
+}
+
+.viewonly-banner mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.close-dialog-btn {
+  color: #666;
+}
+
+.close-dialog-btn:hover {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.08);
+}

@@ -1,4 +1,4 @@
-import { Component, OnInit, Inject } from '@angular/core';
+import { Component, OnInit, Inject, Optional } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,7 +12,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatOptionModule } from '@angular/material/core';
-import { DatePipe, DecimalPipe, UpperCasePipe,LowerCasePipe,JsonPipe } from '@angular/common';
+import {
+  DatePipe,
+  DecimalPipe,
+  UpperCasePipe,
+  LowerCasePipe,
+  JsonPipe,
+} from '@angular/common';
 import {
   MatDialogModule,
   MatDialog,
@@ -143,7 +149,7 @@ export class DashboardsComponent implements OnInit {
   isViewOnly = false;
   amigoNombreCompleto: string | null = null;
   private amigoEstudianteId: string | null = null;
-  
+
   students: Student[] = [];
   filteredStudents: Student[] = [];
 
@@ -187,60 +193,68 @@ export class DashboardsComponent implements OnInit {
     private mailService: MailService,
     private http: HttpClient,
     private sesionService: SesionJuegoService,
+    @Optional() @Inject(MAT_DIALOG_DATA) public dialogData: any,
+    @Optional() public dialogRef: MatDialogRef<DashboardsComponent>,
   ) {}
 
   irAGrupos(): void {
     this.router.navigate(['/grupos-estudio']);
   }
 
+  cerrarDialog(): void {
+    this.dialogRef?.close();
+  }
+
   loadDashboardDeAmigo(estudianteId: string): void {
-  this.loading = true;
-  this.error = null;
-  this.metricasMicronutrientes = null;
-  this.metricasClasifica = null;
+    this.loading = true;
+    this.error = null;
+    this.metricasMicronutrientes = null;
+    this.metricasClasifica = null;
 
-  // CAMBIO: getDashboardAmigo en vez de getDashboardEstudiante
-  this.dashboardService.getDashboardAmigo(estudianteId).subscribe({
-    next: (response) => {
-      if (response.success && response.data) {
-        this.dashboardData = response.data;
-        this.originalJuegos = response.data.juegos || [];
-        this.originalHistorialImc =
-          response.data.salud?.historialMediciones || [];
-        this.selectedRange = 'all';
-        this.selectedDate = '';
-        this.selectedDateLabel = '';
-        this.showCalendar = false;
+    // CAMBIO: getDashboardAmigo en vez de getDashboardEstudiante
+    this.dashboardService.getDashboardAmigo(estudianteId).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          this.dashboardData = response.data;
+          this.originalJuegos = response.data.juegos || [];
+          this.originalHistorialImc =
+            response.data.salud?.historialMediciones || [];
+          this.selectedRange = 'all';
+          this.selectedDate = '';
+          this.selectedDateLabel = '';
+          this.showCalendar = false;
 
-        this.selectedStudent = this.mapEstudianteToStudent(
-          response.data.estudiante,
-        );
+          this.selectedStudent = this.mapEstudianteToStudent(
+            response.data.estudiante,
+          );
 
-        if (!this.isViewOnly) {
-          this.verificarAlertasSalud(response.data.salud);
+          if (!this.isViewOnly) {
+            this.verificarAlertasSalud(response.data.salud);
+          }
+
+          this.loading = false;
+          this.recalcularEstadisticas();
+
+          this.cargarMetricasJuegosNuevos();
+          this.cargarAnalisisReto7DesdBackend(this.amigoEstudianteId!);
+        } else {
+          this.error =
+            response.message || 'Error al cargar el dashboard del amigo';
+          this.loading = false;
         }
-
+      },
+      error: (err) => {
+        console.error('Error cargando dashboard del amigo:', err);
+        if (err.status === 403) {
+          this.error =
+            'No tienes permiso para ver el perfil de este estudiante.';
+        } else {
+          this.error = 'No se pudo cargar el dashboard de tu amigo.';
+        }
         this.loading = false;
-        this.recalcularEstadisticas();
-
-        this.cargarMetricasJuegosNuevos();
-        this.cargarAnalisisReto7DesdBackend(estudianteId);
-      } else {
-        this.error = response.message || 'Error al cargar el dashboard del amigo';
-        this.loading = false;
-      }
-    },
-    error: (err) => {
-      console.error('Error cargando dashboard del amigo:', err);
-      if (err.status === 403) {
-        this.error = 'No tienes permiso para ver el perfil de este estudiante.';
-      } else {
-        this.error = 'No se pudo cargar el dashboard de tu amigo.';
-      }
-      this.loading = false;
-    },
-  });
-}
+      },
+    });
+  }
 
   cargarMetricasJuegosNuevos(): void {
     const estudianteId =
@@ -382,6 +396,15 @@ export class DashboardsComponent implements OnInit {
       JSON.parse(localStorage.getItem('currentUser') || '{}');
 
     this.isTeacher = this.currentUser?.rol === 'teacher';
+
+    if (this.dialogData?.estudianteId) {
+      this.isViewOnly = this.dialogData.isViewOnly === true;
+      this.amigoEstudianteId = this.dialogData.estudianteId.toString();
+      this.amigoNombreCompleto = this.dialogData.nombreCompleto || null;
+      this.cargarAnalisisReto7DesdBackend(this.amigoEstudianteId!);
+      window.addEventListener('focus', this.onWindowFocus);
+      return; // ← IMPORTANTE: evita que siga a loadMyDashboard
+    }
 
     if (this.isTeacher) {
       this.loadAllStudents();

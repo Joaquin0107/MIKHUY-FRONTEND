@@ -38,6 +38,7 @@
       </div>
     </div>
   </div>
+
   <!-- Header -->
   <header class="dashboards-header">
     <div class="header-left">
@@ -70,6 +71,17 @@
         Mis Grupos
       </button>
 
+      <!-- NUEVO: botón cerrar solo si está abierto como dialog -->
+      <button
+        mat-icon-button
+        *ngIf="dialogRef"
+        (click)="cerrarDialog()"
+        class="close-dialog-btn"
+        matTooltip="Cerrar"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+
       <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
         <mat-icon>menu</mat-icon>
       </button>
@@ -81,6 +93,12 @@
       </mat-menu>
     </div>
   </header>
+
+  <!-- NUEVO: Banner "viendo perfil de amigo" -->
+  <div class="viewonly-banner" *ngIf="isViewOnly">
+    <mat-icon>visibility</mat-icon>
+    Viendo el progreso de <strong>{{ amigoNombreCompleto }}</strong>
+  </div>
 
   <!-- Loading Spinner -->
   <div class="loading-container" *ngIf="loading">
@@ -1516,21 +1534,6 @@
             <div class="health-summary">
               <!-- IMC Gauge -->
               <div class="imc-gauge" *ngIf="salud.estadisticas as stats">
-                <!--
-                  Gauge idéntico al del PDF:
-                  · Centro: cx=100 cy=90  radio=75
-                  · viewBox 0 0 200 105  (pivote y=90+9=99 < 105 ✓)
-                  · Aguja: misma fórmula que el PDF
-                      imcNorm = clamp((imc-10)/35, 0, 1)
-                      angleDeg = 180 + imcNorm*180   (180°→360°)
-                  · rotate(angleDeg, 100, 90) directo, sin offset
-                  · Coordenadas del arco (cx=100,cy=90,r=75):
-                      180° → (25,  90)
-                      225° → (46.97, 36.97)
-                      270° → (100,  15)
-                      315° → (153.03,36.97)
-                      360° → (175,  90)
-                -->
                 <svg viewBox="0 0 200 105" class="gauge-svg">
                   <!-- Fondo gris -->
                   <path
@@ -1719,14 +1722,13 @@
                   </div>
                 </div>
 
-                <!-- TALLA - ✅ CORREGIDO -->
+                <!-- TALLA -->
                 <div class="medicion-card">
                   <mat-icon>height</mat-icon>
                   <div class="medicion-info">
                     <h4>{{ salud.medicionActual.talla }} m</h4>
                     <p>Talla</p>
                     <ng-container *ngIf="salud.estadisticas as stats">
-                      <!-- ✅ CLASE CORRECTA: talla-up para color VERDE -->
                       <span
                         class="variacion talla-up"
                         *ngIf="stats.variacionTalla > 0"
