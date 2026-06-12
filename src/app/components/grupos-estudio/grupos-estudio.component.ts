@@ -13,6 +13,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../../environments/environment.prod';
 import { ViewEncapsulation } from '@angular/core';
+import { jsPDF } from 'jspdf';
 
 interface Miembro {
   id: string;
@@ -329,5 +330,279 @@ export class GruposEstudioComponent implements OnInit {
       month: 'long',
       year: 'numeric',
     });
+  }
+
+  // Variable de control para el spinner de carga en la vista
+  isGeneratingPDF = false;
+
+  async descargarReporteGrupo(): Promise<void> {
+    if (!this.grupoSeleccionado) {
+      this.snackBar.open('No hay un grupo seleccionado para generar el reporte', 'Cerrar', {
+        duration: 3000,
+      });
+      return;
+    }
+    
+    this.isGeneratingPDF = true;
+    this.snackBar.open('Generando reporte PDF del grupo...', '', { duration: 2000 });
+
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const PW = pdf.internal.pageSize.getWidth(); // 210 mm
+      const PH = pdf.internal.pageSize.getHeight(); // 297 mm
+      const TOTAL_PAGES = 2; // Estructurado simétricamente en 2 páginas
+
+      // ── Paleta Institucional MIKHUY (Sincronizado con Dashboard) ──
+      const BLUE = [48, 130, 220] as [number, number, number];
+      const BLUE_DARK = [30, 100, 180] as [number, number, number];
+      const BLUE_LIGHT = [232, 242, 255] as [number, number, number];
+      const GREEN = [76, 175, 80] as [number, number, number];
+      const GREEN_LIGHT = [232, 245, 233] as [number, number, number];
+      const ORANGE = [255, 152, 0] as [number, number, number];
+      const RED = [244, 67, 54] as [number, number, number];
+      const GRAY_BG = [248, 249, 250] as [number, number, number];
+      const GRAY_LINE = [220, 220, 220] as [number, number, number];
+      const TEXT_DARK = [33, 37, 41] as [number, number, number];
+      const TEXT_GRAY = [108, 117, 125] as [number, number, number];
+      const WHITE = [255, 255, 255] as [number, number, number];
+
+      // ── Helpers de Dibujo Estructural Nativo ───────────────────────
+      const sf = (c: [number, number, number]) => pdf.setFillColor(c[0], c[1], c[2]);
+      const ss = (c: [number, number, number]) => pdf.setDrawColor(c[0], c[1], c[2]);
+      const st = (c: [number, number, number]) => pdf.setTextColor(c[0], c[1], c[2]);
+
+      const rr = (x: number, y: number, w: number, h: number, fill: [number, number, number], r = 3) => {
+        sf(fill);
+        pdf.roundedRect(x, y, w, h, r, r, 'F');
+      };
+
+      const rect = (x: number, y: number, w: number, h: number, fill: [number, number, number]) => {
+        sf(fill);
+        pdf.rect(x, y, w, h, 'F');
+      };
+
+      const badge = (x: number, y: number, label: string, bg: [number, number, number], fg: [number, number, number], w = 40) => {
+        rr(x, y, w, 7, bg, 3);
+        st(fg);
+        pdf.setFontSize(7.5);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(label, x + w / 2, y + 5, { align: 'center' });
+      };
+
+      const hline = (y: number, x1 = 15, x2 = PW - 15) => {
+        ss(GRAY_LINE);
+        pdf.setLineWidth(0.3);
+        pdf.line(x1, y, x2, y);
+      };
+
+      const sectionBar = (x: number, y: number, title: string, color: [number, number, number], size = 11) => {
+        rect(x, y, 3, 9, color);
+        st(TEXT_DARK);
+        pdf.setFontSize(size);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(title, x + 5, y + 6.5);
+      };
+
+      const statBox = (x: number, y: number, w: number, h: number, value: string, label: string, accent: [number, number, number]) => {
+        rr(x, y, w, h, GRAY_BG, 4);
+        rect(x, y, 2.5, h, accent);
+        st(accent);
+        pdf.setFontSize(16);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(value, x + w / 2, y + h / 2 + 2, { align: 'center' });
+        st(TEXT_GRAY);
+        pdf.setFontSize(7);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(label, x + w / 2, y + h - 3.5, { align: 'center' });
+      };
+
+      // ══════════════════════════════════════════════════════
+      //  PÁGINA 1 — Resumen Ejecutivo e Integrantes del Grupo
+      // ══════════════════════════════════════════════════════
+      this.pdfHeader(pdf, 'REPORTE DEL GRUPO DE ESTUDIO', `Grupo: ${this.grupoSeleccionado.nombre}  |  Consolidado Docente`, '1 de 2', PW, BLUE, BLUE_DARK, WHITE);
+
+      st([170, 205, 245]);
+      pdf.setFontSize(8);
+      pdf.text(`Generado: ${new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}`, 18, 37);
+
+      let posY = 48;
+
+      // Card superior informativa del grupo
+      rr(15, posY, PW - 30, 26, GRAY_BG, 4);
+      st(TEXT_DARK);
+      pdf.setFontSize(13);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(`Resumen General: ${this.grupoSeleccionado.nombre}`, 22, posY + 10);
+      st(TEXT_GRAY);
+      pdf.setFontSize(8.5);
+      pdf.setFont('helvetica', 'normal');
+      
+      const fechaCrea = this.grupoSeleccionado.fechaCreacion ? new Date(this.grupoSeleccionado.fechaCreacion).toLocaleDateString('es-ES') : '—';
+      pdf.text(`Fecha de Creación: ${fechaCrea}}`, 22, posY + 18);
+
+      posY += 34;
+      sectionBar(15, posY, 'MÉTRICAS CLAVE DEL GRUPO', BLUE);
+      posY += 12;
+
+      // Extracción y procesamiento dinámico de los miembros
+      const alumnos = this.grupoSeleccionado.miembros || [];
+      const totalAlumnos = alumnos.length;
+      const totalPuntosGrupo = alumnos.reduce((sum: number, est: any) => sum + (est.puntosAcumulados || 0), 0);
+      const promedioPuntos = totalAlumnos > 0 ? Math.round(totalPuntosGrupo / totalAlumnos) : 0;
+
+      // Distribución de las cajas de estadísticas (3 columnas simétricas)
+      const boxWidth = (PW - 35) / 3;
+      statBox(15, posY, boxWidth, 26, String(totalAlumnos), 'Estudiantes Inscritos', BLUE);
+      statBox(15 + (boxWidth + 2.5), posY, boxWidth, 26, `${totalPuntosGrupo.toLocaleString()} pts`, 'Puntaje Acumulado Total', ORANGE);
+      statBox(15 + (boxWidth + 2.5) * 2, posY, boxWidth, 26, `${promedioPuntos} pts`, 'Promedio de Puntos', GREEN);
+
+      posY += 34;
+      hline(posY);
+      posY += 8;
+
+      // Tabla de alumnos pertenecientes al grupo
+      sectionBar(15, posY, 'ALUMNOS INTEGRANTES Y RENDIMIENTO INDIVIDUAL', GREEN);
+      posY += 12;
+
+      // Cabecera de la Tabla
+      const cols = { nombre: 18, sesiones: 110, juegos: 145, puntos: 175 };
+      rr(15, posY, PW - 30, 10, BLUE_LIGHT, 3);
+      st(BLUE_DARK);
+      pdf.setFontSize(8.5);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Estudiante (Apellidos y Nombres)', cols.nombre, posY + 7);
+      pdf.text('Sesiones', cols.sesiones, posY + 7);
+      pdf.text('Juegos Comp.', cols.juegos, posY + 7);
+      pdf.text('Puntaje', cols.puntos, posY + 7);
+      posY += 11;
+
+      if (alumnos.length === 0) {
+        st(TEXT_GRAY);
+        pdf.setFont('helvetica', 'italic');
+        pdf.text('No hay estudiantes registrados en este grupo de estudio.', 20, posY + 6);
+        posY += 10;
+      } else {
+        alumnos.forEach((est: any, idx: number) => {
+          if (posY > PH - 25) return; // Control preventivo de overflow de página
+          
+          const bgRow = idx % 2 === 0 ? WHITE : GRAY_BG;
+          rr(15, posY, PW - 30, 9, bgRow, 0);
+          
+          st(TEXT_DARK);
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'normal');
+          
+          const nombreCompleto = `${est.apellido || ''}, ${est.nombre || ''}`;
+          pdf.text(nombreCompleto, cols.nombre, posY + 6);
+          pdf.text(`${est.totalSesiones || 0} ses.`, cols.sesiones, posY + 6);
+          pdf.text(`${est.juegosCompletados || 0} juegos`, cols.juegos, posY + 6);
+          
+          // Resaltar los puntos en negrita
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`${(est.puntosAcumulados || 0).toLocaleString()} pts`, cols.puntos, posY + 6);
+          
+          posY += 9.5;
+        });
+      }
+
+      this.pdfFooter(pdf, 1, TOTAL_PAGES, PW, PH, BLUE, WHITE);
+
+      // ══════════════════════════════════════════════════════
+      //  PÁGINA 2 — Conclusiones Pedagógicas y Seguimiento
+      // ══════════════════════════════════════════════════════
+      pdf.addPage();
+      this.pdfHeader(pdf, 'REPORTE DEL GRUPO DE ESTUDIO', `Grupo: ${this.grupoSeleccionado.nombre}  |  Análisis Cognitivo`, '2 de 2', PW, BLUE, BLUE_DARK, WHITE);
+      
+      let posY2 = 48;
+      sectionBar(15, posY2, 'PLANIFICACIÓN Y MARCO PEDAGÓGICO', ORANGE);
+      posY2 += 14;
+
+      const planTexto = `Este reporte consolida el comportamiento nutricional y los hitos lúdicos alcanzados en la plataforma MIKHUY por el grupo "${this.grupoSeleccionado.nombre}". El objetivo es guiar el progreso pedagógico colectivo, asegurando que los alumnos alcancen las competencias cognitivas relacionadas a la identificación de micronutrientes deficientes y a la correcta categorización calórica de los alimentos diarios.`;
+      const splitPlan = pdf.splitTextToSize(planTexto, PW - 40);
+      rr(15, posY2, PW - 30, splitPlan.length * 5 + 8, GRAY_BG, 3);
+      rect(15, posY2, 2.5, splitPlan.length * 5 + 8, ORANGE);
+      st(TEXT_DARK);
+      pdf.setFontSize(8.5);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(splitPlan, 21, posY2 + 7);
+      
+      posY2 += splitPlan.length * 5 + 16;
+      hline(posY2);
+      posY2 += 8;
+
+      sectionBar(15, posY2, 'CONCLUSIÓN PEDAGÓGICA GENERAL', BLUE);
+      posY2 += 14;
+
+      // Generación automática de análisis situacional basado en el promedio real calculado
+      let conclusionGrupAL = '';
+      if (promedioPuntos >= 800) {
+        conclusionGrupAL = `El grupo "${this.grupoSeleccionado.nombre}" demuestra un desempeño sobresaliente en los juegos interactivos de MIKHUY. Presentan un promedio robusto de conocimiento alimentario. Se sugiere iniciar retos presenciales de planificación de menús saludables semanales para capitalizar el avance teórico avanzado.`;
+      } else if (promedioPuntos >= 400) {
+        conclusionGrupAL = `El grupo "${this.grupoSeleccionado.nombre}" se sitúa en un nivel de aprendizaje intermedio y estable. Se evidencia participación continua en los módulos. Se recomienda reforzar de manera presencial el uso del minijuego "Clasifica tus alimentos" para consolidar los conocimientos sobre carbohidratos y grasas saturadas.`;
+      } else {
+        conclusionGrupAL = `El grupo "${this.grupoSeleccionado.nombre}" registra un avance inicial en la plataforma MIKHUY. Se sugiere coordinar sesiones colectivas guiadas en el aula de cómputo para motivar la acumulación de puntos y la comprensión activa de las metas calóricas diarias de salud.`;
+      }
+
+      const splitConclusion = pdf.splitTextToSize(conclusionGrupAL, PW - 40);
+      const boxH = splitConclusion.length * 6 + 10;
+      rr(15, posY2, PW - 30, boxH, GRAY_BG, 4);
+      rect(15, posY2, PW - 30, 3, BLUE);
+      st(TEXT_DARK);
+      pdf.setFontSize(9);
+      pdf.text(splitConclusion, 21, posY2 + 11);
+
+      posY2 += boxH + 30;
+      hline(posY2);
+      
+      // Firmas automáticas institucionales de MIKHUY
+      st(TEXT_GRAY);
+      pdf.setFontSize(8);
+      pdf.setFont('helvetica', 'italic');
+      pdf.text('Reporte consolidado por aula - Plataforma de Monitoreo MIKHUY', PW / 2, posY2 + 8, { align: 'center' });
+      pdf.text('La información expuesta cumple con los lineamientos de privacidad del seguimiento estudiantil.', PW / 2, posY2 + 13, { align: 'center' });
+
+      this.pdfFooter(pdf, 2, TOTAL_PAGES, PW, PH, BLUE, WHITE);
+
+      // Generar nombre de archivo sanitizado y único
+      const nomArchivo = `Reporte_Grupo_${this.grupoSeleccionado.nombre.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+      pdf.save(nomArchivo);
+      
+      this.snackBar.open('Reporte del grupo en PDF descargado exitosamente', 'Cerrar', { duration: 3000 });
+      this.isGeneratingPDF = false;
+    } catch (err) {
+      console.error('Error generando PDF de grupos:', err);
+      this.snackBar.open('Error al compilar el reporte PDF del grupo', 'Cerrar', { duration: 3000 });
+      this.isGeneratingPDF = false;
+    }
+  }
+
+  // Métodos estructurales reutilizados para mantener consistencia visual con el Dashboard
+  private pdfHeader(pdf: any, title: string, subtitle: string, pageLabel: string, PW: number, blue: [number, number, number], blueDark: [number, number, number], white: [number, number, number]): void {
+    pdf.setFillColor(blue[0], blue[1], blue[2]);
+    pdf.rect(0, 0, PW, 40, 'F');
+    pdf.setFillColor(blueDark[0], blueDark[1], blueDark[2]);
+    pdf.rect(PW - 38, 0, 38, 40, 'F');
+    pdf.setTextColor(white[0], white[1], white[2]);
+    pdf.setFontSize(15);
+    pdf.setFont('helvetica', 'bold');
+    pdf.text(title, 18, 19);
+    pdf.setFontSize(8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(200, 225, 255);
+    pdf.text(subtitle, 18, 29);
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(170, 205, 245);
+    pdf.text(pageLabel, PW - 6, 18, { align: 'right' });
+  }
+
+  private pdfFooter(pdf: any, page: number, total: number, PW: number, PH: number, blue: [number, number, number], white: [number, number, number]): void {
+    pdf.setFillColor(blue[0], blue[1], blue[2]);
+    pdf.rect(0, PH - 12, PW, 12, 'F');
+    pdf.setTextColor(white[0], white[1], white[2]);
+    pdf.setFontSize(7.5);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('Plataforma MIKHUY — Sistema de Seguimiento Nutricional Estudiantil', 15, PH - 4.5);
+    pdf.text(`Página ${page} de ${total}`, PW - 15, PH - 4.5, { align: 'right' });
   }
 }

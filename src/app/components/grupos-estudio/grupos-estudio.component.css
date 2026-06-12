@@ -514,3 +514,43 @@
 }
 .cal-pts { font-size: 13px; font-weight: 700; color: #f9a825; }
 .cal-check { font-size: 18px !important; width: 18px !important; height: 18px !important; }
+
+/* Asegurar comportamiento flex para el contenedor de botones */
+.header-main {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  margin-bottom: 24px;
+}
+
+.acciones-detalle {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.btn-pdf {
+  background-color: #e02f2f !important; /* Rojo PDF Institucional MIKHUY */
+  color: white !important;
+  font-weight: 500 !important;
+  border-radius: 10px !important;
+  padding: 0 16px !important;
+  height: 40px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-pdf:hover {
+  background-color: #b82020 !important;
+}
+
+.button-spinner {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+::ng-deep .button-spinner circle {
+  stroke: white !important;
+}

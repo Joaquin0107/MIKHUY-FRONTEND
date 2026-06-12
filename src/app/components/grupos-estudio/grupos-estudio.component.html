@@ -98,17 +98,29 @@
   </div>
 
   <!-- ══ DETALLE DEL GRUPO ════════════════════════════════════════════════ -->
-  <div class="grupo-detalle" *ngIf="grupoSeleccionado && !loading">
-    <div class="detalle-header">
-      <button mat-icon-button (click)="volverALista()">
-        <mat-icon>arrow_back</mat-icon>
-      </button>
-      <h2>{{ grupoSeleccionado.nombre }}</h2>
-      <button mat-stroked-button (click)="abrirModalEditar(grupoSeleccionado)">
-        <mat-icon>edit</mat-icon> Editar grupo
-      </button>
-    </div>
+  <div class="detalle-grupo-container" *ngIf="grupoSeleccionado && !loading">
+    
+    <div class="header-main">
+      <div class="title-section">
+        <h2>{{ grupoSeleccionado?.nombre }}</h2>
+      </div>
+      
+      <div class="acciones-detalle">
+        <button mat-raised-button 
+                class="btn-pdf"
+                (click)="descargarReporteGrupo()" 
+                [disabled]="isGeneratingPDF">
+          <mat-icon *ngIf="!isGeneratingPDF">picture_as_pdf</mat-icon>
+          <mat-spinner diameter="18" *ngIf="isGeneratingPDF" class="button-spinner"></mat-spinner>
+          {{ isGeneratingPDF ? 'Generando...' : 'Exportar PDF' }}
+        </button>
 
+        <button mat-raised-button class="btn-editar" (click)="abrirModalEditar(grupoSeleccionado!)">
+          <mat-icon>edit</mat-icon> Editar Grupo
+        </button>
+      </div>
+    </div>
+    
     <!-- Métricas compiladas -->
     <div class="detalle-stats-grid">
       <mat-card class="detalle-stat-card">
