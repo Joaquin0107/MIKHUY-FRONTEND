@@ -140,6 +140,10 @@ export class DashboardsComponent implements OnInit {
   searchQuery = '';
   selectedStudent: Student | null = null;
 
+  isViewOnly = false;
+  amigoNombreCompleto: string | null = null;
+  private amigoEstudianteId: string | null = null;
+  
   students: Student[] = [];
   filteredStudents: Student[] = [];
 
@@ -188,6 +192,55 @@ export class DashboardsComponent implements OnInit {
   irAGrupos(): void {
     this.router.navigate(['/grupos-estudio']);
   }
+
+  loadDashboardDeAmigo(estudianteId: string): void {
+  this.loading = true;
+  this.error = null;
+  this.metricasMicronutrientes = null;
+  this.metricasClasifica = null;
+
+  // CAMBIO: getDashboardAmigo en vez de getDashboardEstudiante
+  this.dashboardService.getDashboardAmigo(estudianteId).subscribe({
+    next: (response) => {
+      if (response.success && response.data) {
+        this.dashboardData = response.data;
+        this.originalJuegos = response.data.juegos || [];
+        this.originalHistorialImc =
+          response.data.salud?.historialMediciones || [];
+        this.selectedRange = 'all';
+        this.selectedDate = '';
+        this.selectedDateLabel = '';
+        this.showCalendar = false;
+
+        this.selectedStudent = this.mapEstudianteToStudent(
+          response.data.estudiante,
+        );
+
+        if (!this.isViewOnly) {
+          this.verificarAlertasSalud(response.data.salud);
+        }
+
+        this.loading = false;
+        this.recalcularEstadisticas();
+
+        this.cargarMetricasJuegosNuevos();
+        this.cargarAnalisisReto7DesdBackend(estudianteId);
+      } else {
+        this.error = response.message || 'Error al cargar el dashboard del amigo';
+        this.loading = false;
+      }
+    },
+    error: (err) => {
+      console.error('Error cargando dashboard del amigo:', err);
+      if (err.status === 403) {
+        this.error = 'No tienes permiso para ver el perfil de este estudiante.';
+      } else {
+        this.error = 'No se pudo cargar el dashboard de tu amigo.';
+      }
+      this.loading = false;
+    },
+  });
+}
 
   cargarMetricasJuegosNuevos(): void {
     const estudianteId =

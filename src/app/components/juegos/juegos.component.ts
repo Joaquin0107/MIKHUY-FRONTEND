@@ -846,30 +846,36 @@ export class AmigosDialog implements OnInit {
   }
 
   aceptar(remitenteId: string, remitenteNombre: string): void {
-    this.loadingId = remitenteId;
-    this.amigoService
-      .aceptarSolicitud(
-        this.data.miEstudianteId,
-        this.data.miNombre,
-        remitenteId,
-        remitenteNombre,
-      )
-      .subscribe({
-        next: () => {
-          this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(
-            this.data.miEstudianteId,
-          );
-          this.snackBar.open(`¡Ahora eres amigo de ${remitenteNombre}!`, '', {
-            duration: 2500,
-            panelClass: 'snackbar-success',
-          });
-          this.loadingId = null;
-        },
-        error: () => {
-          this.loadingId = null;
-        },
-      });
-  }
+  this.loadingId = remitenteId;
+  this.amigoService
+    .aceptarSolicitud(
+      this.data.miEstudianteId,
+      this.data.miNombre,
+      remitenteId,
+      remitenteNombre,
+    )
+    .subscribe({
+      next: () => {
+        this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(
+          this.data.miEstudianteId,
+        );
+        this.snackBar.open(`¡Ahora eres amigo de ${remitenteNombre}!`, '', {
+          duration: 2500,
+          panelClass: 'snackbar-success',
+        });
+        this.loadingId = null;
+
+        // NUEVO: persistir amistad en backend para validar dashboards
+        this.amigoService.confirmarAmistadBackend(remitenteId).subscribe({
+          error: (err) =>
+            console.error('Error persistiendo amistad en backend:', err),
+        });
+      },
+      error: () => {
+        this.loadingId = null;
+      },
+    });
+}
 
   rechazar(remitenteId: string): void {
     this.loadingId = remitenteId;
@@ -893,9 +899,14 @@ export class AmigosDialog implements OnInit {
   }
 
   eliminar(amigoId: string): void {
-    this.amigoService.eliminarAmigo(this.data.miEstudianteId, amigoId);
-    this.snackBar.open('Amigo eliminado', '', { duration: 2000 });
-  }
+  this.amigoService.eliminarAmigo(this.data.miEstudianteId, amigoId);
+  this.snackBar.open('Amigo eliminado', '', { duration: 2000 });
+
+  // NUEVO: eliminar también en backend
+  this.amigoService.eliminarAmistadBackend(amigoId).subscribe({
+    error: (err) => console.error('Error eliminando amistad en backend:', err),
+  });
+}
 
   /**
    * NUEVO MÉTODO: Abre el dashboard de MIKHUY filtrando por el ID de tu compañero.

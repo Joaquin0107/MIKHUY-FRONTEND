@@ -225,4 +225,19 @@ export class AmigoService {
       sessionStorage.getItem('authToken') || '';
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
+
+  confirmarAmistadBackend(otroEstudianteId: string): Observable<void> {
+  return this.http.post<void>(
+    `${this.BASE}/amigos/confirmar`,
+    { otroEstudianteId },
+    { headers: this.authHeaders() }
+  );
+}
+
+eliminarAmistadBackend(otroEstudianteId: string): Observable<void> {
+  return this.http.delete<void>(
+    `${this.BASE}/amigos/${otroEstudianteId}`,
+    { headers: this.authHeaders() }
+  );
+}
 }

@@ -147,46 +147,58 @@ export interface MedicionSaludResponse {
 export interface EstadisticasSalud {
   imcActual: number;
   estadoNutricionalActual: string;
-  variacionPeso: number; 
+  variacionPeso: number;
   variacionTalla: number;
   totalMediciones: number;
-  tendencia: string; 
+  tendencia: string;
   recomendacion: string;
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DashboardService {
   private baseUrl = `${environment.apiUrl}/dashboard`;
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken() || 
-                  localStorage.getItem('authToken') || 
-                  sessionStorage.getItem('authToken');
-    
+    const token =
+      this.authService.getToken() ||
+      localStorage.getItem('authToken') ||
+      sessionStorage.getItem('authToken');
+
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
     });
   }
 
   getMiDashboard(): Observable<ApiResponse<DashboardEstudianteResponse>> {
     return this.http.get<ApiResponse<DashboardEstudianteResponse>>(
       this.baseUrl,
-      { headers: this.getHeaders() }
+      { headers: this.getHeaders() },
     );
   }
 
-  getDashboardEstudiante(estudianteId: string): Observable<ApiResponse<DashboardEstudianteResponse>> {
+  getDashboardEstudiante(
+    estudianteId: string,
+  ): Observable<ApiResponse<DashboardEstudianteResponse>> {
     return this.http.get<ApiResponse<DashboardEstudianteResponse>>(
       `${this.baseUrl}/estudiante/${estudianteId}`,
-      { headers: this.getHeaders() }
+      { headers: this.getHeaders() },
+    );
+  }
+
+  getDashboardAmigo(
+    estudianteId: string,
+  ): Observable<ApiResponse<DashboardEstudianteResponse>> {
+    return this.http.get<ApiResponse<DashboardEstudianteResponse>>(
+      `${this.baseUrl}/amigo/${estudianteId}`,
+      { headers: this.getHeaders() },
     );
   }
 }
