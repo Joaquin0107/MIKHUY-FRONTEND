@@ -281,12 +281,18 @@ export class PerfilComponent implements OnInit {
     this.amigoService.getCompaneros().subscribe({
       next: (lista) => {
         this.companeros = lista;
-        this.loadingCompaneros = false;
-      },
-      error: (err) => {
-        console.error('Error cargando compañeros:', err);
-        this.loadingCompaneros = false;
-      },
+        this.companeros.forEach(c => {
+          this.amigoService.getEstado(c.id).subscribe({
+            next: (estado) => {
+              this.estadosAmistad[c.id] = estado;
+            },
+            error: (err) => {
+              console.warn(`No se pudo obtener estado para el compañero ${c.id}:`, err);
+              this.estadosAmistad[c.id] = 'ninguno';
+            }
+          });
+        });
+      }
     });
   }
 

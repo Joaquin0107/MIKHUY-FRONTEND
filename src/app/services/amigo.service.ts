@@ -71,13 +71,19 @@ export class AmigoService {
   }
 
   /** GET /api/amistades/estado/{otroId} */
-  getEstado(otroId: string): Observable<EstadoAmistad> {
+  getEstado(otroId: string): Observable<string> {
     return this.http
-      .get<{ success: boolean; data: { estado: EstadoAmistad } }>(
+      .get<{ success: boolean; data: any }>(
         `${this.AMISTADES_BASE}/estado/${otroId}`,
-        { headers: this.authHeaders() },
+        { headers: this.authHeaders() }
       )
-      .pipe(map((r) => r.data?.estado ?? 'ninguno'));
+      .pipe(
+        map(res => {
+          if (typeof res.data === 'string') return res.data;
+          if (res.data && res.data.estado) return res.data.estado;
+          return 'ninguno';
+        })
+      );
   }
 
   // ── Amistad: acciones ─────────────────────────────────────────────────────
