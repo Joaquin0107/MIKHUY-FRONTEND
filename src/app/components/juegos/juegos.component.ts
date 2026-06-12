@@ -31,6 +31,8 @@ import { GamePlayDialog } from '../game-play-dialog/game-play-dialog.component';
 import { RankingInlineDialog } from '../ranking-dialog/ranking-dialog.component';
 import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.component';
 
+import { DashboardsComponent } from '../dashboards/dashboards.component';
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Dialog de instrucciones (sin cambios)
 // ─────────────────────────────────────────────────────────────────────────────
@@ -242,7 +244,6 @@ export class InstruccionesJuegoDialog {
   ],
   template: `
     <div class="amigos-wrap">
-      <!-- Header -->
       <div class="amigos-header">
         <div class="amigos-header-icon"><mat-icon>group</mat-icon></div>
         <div class="amigos-header-text">
@@ -255,7 +256,6 @@ export class InstruccionesJuegoDialog {
       </div>
 
       <mat-dialog-content>
-        <!-- Solicitudes recibidas -->
         <div
           *ngIf="solicitudesRecibidas.length > 0"
           class="solicitudes-section"
@@ -287,7 +287,6 @@ export class InstruccionesJuegoDialog {
           </div>
         </div>
 
-        <!-- Mis amigos -->
         <div *ngIf="amigosConfirmados.length > 0" class="amigos-section">
           <div class="section-label">
             <mat-icon>favorite</mat-icon>
@@ -301,6 +300,16 @@ export class InstruccionesJuegoDialog {
                 ><mat-icon>stars</mat-icon>{{ a.puntosAcumulados }} pts</span
               >
             </div>
+
+            <button
+              mat-flat-button
+              class="btn-ver-perfil-chip"
+              (click)="verPerfilAmigo(a)"
+              matTooltip="Ver progreso y dashboard de salud"
+            >
+              <mat-icon>dashboard</mat-icon> Perfil
+            </button>
+
             <button
               mat-icon-button
               class="eliminar-btn"
@@ -312,7 +321,6 @@ export class InstruccionesJuegoDialog {
           </div>
         </div>
 
-        <!-- Buscador -->
         <div class="section-label" style="margin-top:1rem">
           <mat-icon>people</mat-icon>
           Todos mis compañeros
@@ -327,12 +335,10 @@ export class InstruccionesJuegoDialog {
           />
         </div>
 
-        <!-- Loading -->
         <div class="spinner-wrap" *ngIf="loading">
           <mat-spinner diameter="36"></mat-spinner>
         </div>
 
-        <!-- Vacío -->
         <div
           class="empty-wrap"
           *ngIf="!loading && companerosFiltrados.length === 0"
@@ -345,7 +351,6 @@ export class InstruccionesJuegoDialog {
           </p>
         </div>
 
-        <!-- Lista -->
         <div class="companero-row" *ngFor="let c of companerosFiltrados">
           <mat-icon class="comp-avatar-icon">account_circle</mat-icon>
           <div class="comp-info">
@@ -355,7 +360,7 @@ export class InstruccionesJuegoDialog {
               <mat-icon>sports_esports</mat-icon>{{ c.juegosCompletados }}
             </span>
           </div>
-          <!-- Estado -->
+
           <button
             mat-raised-button
             color="primary"
@@ -366,6 +371,7 @@ export class InstruccionesJuegoDialog {
           >
             <mat-icon>person_add</mat-icon> Agregar
           </button>
+
           <button
             mat-stroked-button
             class="comp-btn pendiente"
@@ -374,6 +380,7 @@ export class InstruccionesJuegoDialog {
           >
             <mat-icon>hourglass_empty</mat-icon> Pendiente
           </button>
+
           <div
             class="recibida-row"
             *ngIf="getEstado(c.id) === 'pendiente_recibida'"
@@ -396,8 +403,19 @@ export class InstruccionesJuegoDialog {
               <mat-icon>close</mat-icon>
             </button>
           </div>
-          <div class="amigo-tag" *ngIf="getEstado(c.id) === 'amigos'">
-            <mat-icon>favorite</mat-icon> Amigos
+
+          <div
+            class="amigos-acciones-wrap"
+            *ngIf="getEstado(c.id) === 'amigos'"
+          >
+            <button
+              mat-stroked-button
+              class="comp-btn btn-ver-perfil"
+              (click)="verPerfilAmigo(c)"
+            >
+              <mat-icon>visibility</mat-icon> Perfil
+            </button>
+            <div class="amigo-tag"><mat-icon>favorite</mat-icon> Amigos</div>
           </div>
         </div>
       </mat-dialog-content>
@@ -409,21 +427,26 @@ export class InstruccionesJuegoDialog {
   `,
   styles: [
     `
+      /* SOLUCIÓN LÍNEA BLANCA: Ajuste del contenedor principal para asimilar el header */
       .amigos-wrap {
         font-family: 'Poppins', sans-serif;
         width: 520px;
         max-width: 100%;
+        margin: -24px -24px -24px -24px; /* Neutraliza el padding global del MatDialog por completo */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
       }
 
       .amigos-header {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 20px 2.5rem;
+        padding: 20px 24px;
         background: linear-gradient(135deg, #48a3f3, #5bb3ff);
-        margin: -2px -24px 0 -24px;
-        border-radius: 4px 4px 0 0;
+        border-radius: 0; /* Ya no requiere simular bordes redondeados forzados */
       }
+
       .amigos-header-icon {
         width: 40px;
         height: 40px;
@@ -458,12 +481,13 @@ export class InstruccionesJuegoDialog {
       }
 
       mat-dialog-content {
-        padding: 1rem 1.5rem !important;
+        padding: 1.25rem 24px !important;
         max-height: 55vh;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
+        margin: 0 !important; /* Limpia colisiones estructurales */
       }
 
       .section-label {
@@ -552,6 +576,25 @@ export class InstruccionesJuegoDialog {
         height: 13px;
         color: #ffd700;
       }
+
+      /* Estilo del nuevo botón Ver Perfil dentro del Chip de amigos */
+      .btn-ver-perfil-chip {
+        background-color: #1976d2 !important;
+        color: white !important;
+        font-size: 0.78rem !important;
+        height: 30px !important;
+        padding: 0 10px !important;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .btn-ver-perfil-chip mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+      }
+
       .eliminar-btn mat-icon {
         color: #bdbdbd;
         font-size: 18px;
@@ -662,10 +705,19 @@ export class InstruccionesJuegoDialog {
         border-color: #bdbdbd !important;
         color: #9e9e9e !important;
       }
+      .btn-ver-perfil {
+        border-color: #1976d2 !important;
+        color: #1976d2 !important;
+      }
       .recibida-row {
         display: flex;
         align-items: center;
         gap: 4px;
+      }
+      .amigos-acciones-wrap {
+        display: flex;
+        align-items: center;
+        gap: 8px;
       }
       .amigo-tag {
         display: flex;
@@ -684,11 +736,12 @@ export class InstruccionesJuegoDialog {
       }
 
       mat-dialog-actions {
-        padding: 0.75rem 1.5rem !important;
+        padding: 0.75rem 24px !important;
         margin: 0 !important;
         border-top: 1px solid #eee;
         display: flex;
         justify-content: flex-end;
+        background: #fafafa;
       }
     `,
   ],
@@ -729,9 +782,14 @@ export class AmigosDialog implements OnInit {
     public dialogRef: MatDialogRef<AmigosDialog>,
     private amigoService: AmigoService,
     private snackBar: MatSnackBar,
+    private dialog: MatDialog, // Inyectamos el servicio MatDialog para abrir submodales
   ) {}
 
   ngOnInit(): void {
+    this.cargarDatosIniciales();
+  }
+
+  cargarDatosIniciales(): void {
     this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(
       this.data.miEstudianteId,
     );
@@ -768,7 +826,6 @@ export class AmigosDialog implements OnInit {
             '',
             { duration: 2500, panelClass: 'snackbar-error' },
           );
-          // Revertir localStorage si el back falló
           const store = this.amigoService.getStore(this.data.miEstudianteId);
           store.enviadas = store.enviadas.filter((e: string) => e !== c.id);
           this.amigoService.saveStore(this.data.miEstudianteId, store);
@@ -827,6 +884,26 @@ export class AmigosDialog implements OnInit {
   eliminar(amigoId: string): void {
     this.amigoService.eliminarAmigo(this.data.miEstudianteId, amigoId);
     this.snackBar.open('Amigo eliminado', '', { duration: 2000 });
+  }
+
+  /**
+   * NUEVO MÉTODO: Abre el dashboard de MIKHUY filtrando por el ID de tu compañero.
+   * Dependiendo de cómo reciba los datos tu `DashboardsComponent`, se los inyectamos en el DATA.
+   */
+  verPerfilAmigo(amigo: Companero): void {
+    const config = new MatDialogConfig();
+    config.width = '95vw';
+    config.maxWidth = '1200px';
+    config.height = '90vh';
+    config.maxHeight = '90vh';
+
+    config.data = {
+      estudianteId: amigo.id,
+      nombreCompleto: `${amigo.nombres} ${amigo.apellidos}`,
+      isViewOnly: true, 
+    };
+
+    this.dialog.open(DashboardsComponent, config);
   }
 }
 
@@ -950,7 +1027,9 @@ export class JuegosComponent implements OnInit, OnDestroy {
 
     // Mostrar popup de juegos nuevos solo si no se ha visto antes
     if (!localStorage.getItem(this.POPUP_KEY)) {
-      setTimeout(() => { this.mostrarPopupJuevosNuevos = true; }, 800);
+      setTimeout(() => {
+        this.mostrarPopupJuevosNuevos = true;
+      }, 800);
     }
   }
 
