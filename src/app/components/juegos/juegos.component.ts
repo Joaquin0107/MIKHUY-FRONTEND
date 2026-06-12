@@ -803,9 +803,9 @@ export class AmigosDialog implements OnInit {
       error: () => this.loading = false
     });
 
-    this.amigoService.getAmigos().subscribe(amigos => {
-      this.amigosConfirmados = amigos;
-    });
+    this.amigoService.getAmigos().subscribe({
+  next: (amigos) => { this.amigosConfirmados = amigos; }
+});
 
     this.amigoService.getSolicitudesRecibidas().subscribe(solicitudes => {
       this.solicitudesRecibidas = solicitudes;

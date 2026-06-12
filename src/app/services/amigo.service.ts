@@ -49,21 +49,15 @@ export class AmigoService {
   /** GET /api/amistades — amigos confirmados */
   getAmigos(): Observable<Companero[]> {
     return this.http
-      .get<{ success: boolean; data: Companero[] }>(
-        `${this.AMISTADES_BASE}`,
-        { headers: this.authHeaders() },
-      )
-      .pipe(map((r) => r.data ?? []));
+      .get<{ success: boolean; data: Companero[] }>(`${this.AMISTADES_BASE}`, { headers: this.authHeaders() })
+      .pipe(map(res => res.data || [])); 
   }
 
   /** GET /api/amistades/solicitudes-recibidas */
-  getSolicitudesRecibidas(): Observable<Companero[]> {
+  getSolicitudesRecibidas(): Observable<any[]> {
     return this.http
-      .get<{ success: boolean; data: Companero[] }>(
-        `${this.AMISTADES_BASE}/solicitudes-recibidas`,
-        { headers: this.authHeaders() },
-      )
-      .pipe(map((r) => r.data ?? []));
+      .get<{ success: boolean; data: any[] }>(`${this.AMISTADES_BASE}/solicitudes-recibidas`, { headers: this.authHeaders() })
+      .pipe(map(res => res.data || []));
   }
 
   /** GET /api/amistades/solicitudes-enviadas — IDs de estudiantes con solicitud enviada */
