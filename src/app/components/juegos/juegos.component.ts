@@ -256,22 +256,19 @@ export class InstruccionesJuegoDialog {
       </div>
 
       <mat-dialog-content>
-        <div
-          *ngIf="solicitudesRecibidas.length > 0"
-          class="solicitudes-section"
-        >
+        <div *ngIf="solicitudesRecibidas.length > 0" class="solicitudes-section">
           <div class="section-label">
             <mat-icon>person_add</mat-icon>
             Solicitudes recibidas ({{ solicitudesRecibidas.length }})
           </div>
           <div class="solicitud-row" *ngFor="let s of solicitudesRecibidas">
             <mat-icon class="sol-avatar">account_circle</mat-icon>
-            <span class="sol-nombre">{{ s.nombre }}</span>
+            <span class="sol-nombre">{{ s.nombres }} {{ s.apellidos }}</span>
             <button
               mat-raised-button
               color="primary"
               class="sol-btn"
-              (click)="aceptar(s.id, s.nombre)"
+              (click)="aceptar(s.id, s.nombres)"
               [disabled]="loadingId === s.id"
             >
               <mat-icon>check</mat-icon> Aceptar
@@ -289,17 +286,13 @@ export class InstruccionesJuegoDialog {
 
         <div *ngIf="amigosConfirmados.length > 0" class="amigos-section">
           <div class="section-label">
-            <mat-icon>favorite</mat-icon> Mis amigos ({{
-              amigosConfirmados.length
-            }})
+            <mat-icon>favorite</mat-icon> Mis amigos ({{ amigosConfirmados.length }})
           </div>
           <div class="amigo-chip" *ngFor="let a of amigosConfirmados">
             <mat-icon class="chip-avatar-icon">account_circle</mat-icon>
             <div class="chip-info">
               <span class="chip-nombre">{{ a.nombres }} {{ a.apellidos }}</span>
-              <span class="chip-pts"
-                ><mat-icon>stars</mat-icon>{{ a.puntosAcumulados }} pts</span
-              >
+              <span class="chip-pts"><mat-icon>stars</mat-icon>{{ a.puntosAcumulados }} pts</span>
             </div>
 
             <button
@@ -316,6 +309,7 @@ export class InstruccionesJuegoDialog {
               class="eliminar-btn"
               matTooltip="Eliminar amigo"
               (click)="eliminar(a.id)"
+              [disabled]="loadingId === a.id"
             >
               <mat-icon>person_remove</mat-icon>
             </button>
@@ -338,16 +332,9 @@ export class InstruccionesJuegoDialog {
           <mat-spinner diameter="36"></mat-spinner>
         </div>
 
-        <div
-          class="empty-wrap"
-          *ngIf="!loading && companerosFiltrados.length === 0"
-        >
+        <div class="empty-wrap" *ngIf="!loading && companerosFiltrados.length === 0">
           <mat-icon>group_off</mat-icon>
-          <p>
-            {{
-              busqueda ? 'Sin resultados' : 'No hay compañeros registrados aún'
-            }}
-          </p>
+          <p>{{ busqueda ? 'Sin resultados' : 'No hay compañeros registrados aún' }}</p>
         </div>
 
         <div class="companero-row" *ngFor="let c of companerosFiltrados">
@@ -364,19 +351,22 @@ export class InstruccionesJuegoDialog {
             mat-raised-button
             color="primary"
             class="comp-btn"
-            *ngIf="getEstado(c.id) === 'NONE'"
+            *ngIf="estadosAmistad[c.id] === 'ninguno'"
             (click)="enviar(c)"
             [disabled]="loadingId === c.id"
           >
             <mat-icon>person_add</mat-icon> Agregar
           </button>
-          <span
-            class="status-badge pendiente"
-            *ngIf="getEstado(c.id) === 'SENT'"
-          >
+          
+          <span class="status-badge pendiente" *ngIf="estadosAmistad[c.id] === 'pendiente_enviada'">
             <mat-icon>hourglass_empty</mat-icon> Enviada
           </span>
-          <span class="status-badge amigo" *ngIf="getEstado(c.id) === 'FRIEND'">
+
+          <span class="status-badge pendiente" *ngIf="estadosAmistad[c.id] === 'pendiente_recibida'">
+            <mat-icon>alert</mat-icon> Te solicitó
+          </span>
+          
+          <span class="status-badge amigo" *ngIf="estadosAmistad[c.id] === 'amigos'">
             <mat-icon>check</mat-icon> Amigos
           </span>
         </div>
@@ -385,7 +375,6 @@ export class InstruccionesJuegoDialog {
   `,
   styles: [
     `
-      /* SOLUCIÓN LÍNEA BLANCA: Ajuste del contenedor principal para asimilar el header */
       .amigos-wrap {
         font-family: 'Poppins', sans-serif;
         width: 520px;
@@ -550,7 +539,6 @@ export class InstruccionesJuegoDialog {
         color: #ffd700;
       }
 
-      /* CORRECCIÓN: Botón Ver Perfil alineado a la identidad MIKHUY */
       .btn-ver-perfil-chip {
         background-color: #48a3f3 !important; /* Cambiado de #1976d2 para mantener armonía */
         color: white !important;
@@ -704,7 +692,6 @@ export class InstruccionesJuegoDialog {
         color: #9e9e9e !important;
       }
 
-      /* CORRECCIÓN: Botón secundario Ver Perfil adaptado a MIKHUY */
       .btn-ver-perfil {
         border-color: #48a3f3 !important; /* Cambiado de #1976d2 */
         color: #48a3f3 !important; /* Cambiado de #1976d2 */
@@ -719,7 +706,7 @@ export class InstruccionesJuegoDialog {
           163,
           243,
           0.08
-        ) !important; /* Efecto sutil al pasar el mouse */
+        ) !important; 
       }
 
       .recibida-row {
@@ -766,8 +753,13 @@ export class AmigosDialog implements OnInit {
   busqueda = '';
   loading = true;
   loadingId: string | null = null;
+  
   companeros: Companero[] = [];
-  solicitudesRecibidas: { id: string; nombre: string }[] = [];
+  amigosConfirmados: Companero[] = [];
+  solicitudesRecibidas: Companero[] = [];
+  
+  // Diccionario para almacenar de forma asíncrona el estado de cada compañero
+  estadosAmistad: { [key: string]: string } = {};
 
   get companerosFiltrados(): Companero[] {
     if (!this.busqueda.trim()) return this.companeros;
@@ -779,152 +771,120 @@ export class AmigosDialog implements OnInit {
     );
   }
 
-  get amigosConfirmados(): Companero[] {
-    return this.companeros.filter(
-      (c) =>
-        this.amigoService.getEstado(this.data.miEstudianteId, c.id) ===
-        'amigos',
-    );
-  }
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     public dialogRef: MatDialogRef<AmigosDialog>,
     private amigoService: AmigoService,
     private snackBar: MatSnackBar,
-    private router: Router,
     private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
-    this.cargarDatosIniciales();
+    this.cargarDatos();
   }
 
-  cargarDatosIniciales(): void {
-    this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(
-      this.data.miEstudianteId,
-    );
+  cargarDatos(): void {
+    this.loading = true;
+
+    // Ejecutamos consultas paralelas reales al Backend
     this.amigoService.getCompaneros().subscribe({
       next: (lista) => {
         this.companeros = lista;
+        
+        // Consultar el estado de amistad individual para cada compañero
+        this.companeros.forEach(c => {
+          this.amigoService.getEstado(c.id).subscribe(estado => {
+            this.estadosAmistad[c.id] = estado;
+          });
+        });
+        
         this.loading = false;
       },
-      error: () => {
-        this.loading = false;
-      },
+      error: () => this.loading = false
     });
-  }
 
-  getEstado(otroId: string): string {
-    return this.amigoService.getEstado(this.data.miEstudianteId, otroId);
+    this.amigoService.getAmigos().subscribe(amigos => {
+      this.amigosConfirmados = amigos;
+    });
+
+    this.amigoService.getSolicitudesRecibidas().subscribe(solicitudes => {
+      this.solicitudesRecibidas = solicitudes;
+    });
   }
 
   enviar(c: Companero): void {
     this.loadingId = c.id;
-    this.amigoService
-      .enviarSolicitud(this.data.miEstudianteId, this.data.miNombre, c)
-      .subscribe({
-        next: () => {
-          this.snackBar.open(`Solicitud enviada a ${c.nombres}`, '', {
-            duration: 2500,
-            panelClass: 'snackbar-success',
-          });
-          this.loadingId = null;
-        },
-        error: (err) => {
-          this.snackBar.open(
-            err.error?.message || 'Error al enviar solicitud',
-            '',
-            { duration: 2500, panelClass: 'snackbar-error' },
-          );
-          const store = this.amigoService.getStore(this.data.miEstudianteId);
-          store.enviadas = store.enviadas.filter((e: string) => e !== c.id);
-          this.amigoService.saveStore(this.data.miEstudianteId, store);
-          this.loadingId = null;
-        },
-      });
-  }
-
-  aceptar(remitenteId: string, remitenteNombre: string): void {
-  this.loadingId = remitenteId;
-  this.amigoService
-    .aceptarSolicitud(
-      this.data.miEstudianteId,
-      this.data.miNombre,
-      remitenteId,
-      remitenteNombre,
-    )
-    .subscribe({
+    this.amigoService.enviarSolicitud(c.id).subscribe({
       next: () => {
-        this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(
-          this.data.miEstudianteId,
-        );
-        this.snackBar.open(`¡Ahora eres amigo de ${remitenteNombre}!`, '', {
-          duration: 2500,
-          panelClass: 'snackbar-success',
-        });
+        this.snackBar.open(`Solicitud enviada a ${c.nombres}`, '', { duration: 2500 });
+        this.estadosAmistad[c.id] = 'pendiente_enviada';
         this.loadingId = null;
-
-        // NUEVO: persistir amistad en backend para validar dashboards
-        this.amigoService.confirmarAmistadBackend(remitenteId).subscribe({
-          error: (err) =>
-            console.error('Error persistiendo amistad en backend:', err),
-        });
+        
+        // Opcional: Enviar notificación push/backend si lo deseas
+        this.amigoService.notificar({
+          destinatarioEstudianteId: c.id,
+          tipo: 'SOLICITUD_AMISTAD',
+          mensaje: `${this.data.miNombre} te ha enviado una solicitud de amistad.`,
+          nombreRemitente: this.data.miNombre,
+          remitenteEstudianteId: this.data.miEstudianteId
+        }).subscribe();
       },
-      error: () => {
+      error: (err) => {
+        this.snackBar.open(err.error?.message || 'Error al enviar solicitud', '', { duration: 2500 });
         this.loadingId = null;
       },
     });
-}
+  }
+
+  aceptar(remitenteId: string, remitenteNombre: string): void {
+    this.loadingId = remitenteId;
+    this.amigoService.aceptarSolicitud(remitenteId).subscribe({
+      next: () => {
+        this.snackBar.open(`¡Ahora eres amigo de ${remitenteNombre}!`, '', { duration: 2500 });
+        this.estadosAmistad[remitenteId] = 'amigos';
+        this.loadingId = null;
+        this.cargarDatos(); // Recarga listas para moverlo a la sección de confirmados
+      },
+      error: () => this.loadingId = null
+    });
+  }
 
   rechazar(remitenteId: string): void {
     this.loadingId = remitenteId;
-    this.amigoService
-      .rechazarSolicitud(
-        this.data.miEstudianteId,
-        this.data.miNombre,
-        remitenteId,
-      )
-      .subscribe({
-        next: () => {
-          this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(
-            this.data.miEstudianteId,
-          );
-          this.loadingId = null;
-        },
-        error: () => {
-          this.loadingId = null;
-        },
-      });
+    this.amigoService.eliminarRelacion(remitenteId).subscribe({
+      next: () => {
+        this.estadosAmistad[remitenteId] = 'ninguno';
+        this.loadingId = null;
+        this.cargarDatos();
+      },
+      error: () => this.loadingId = null
+    });
   }
 
   eliminar(amigoId: string): void {
-  this.amigoService.eliminarAmigo(this.data.miEstudianteId, amigoId);
-  this.snackBar.open('Amigo eliminado', '', { duration: 2000 });
+    this.loadingId = amigoId;
+    this.amigoService.eliminarRelacion(amigoId).subscribe({
+      next: () => {
+        this.snackBar.open('Amigo eliminado', '', { duration: 2000 });
+        this.estadosAmistad[amigoId] = 'ninguno';
+        this.loadingId = null;
+        this.cargarDatos();
+      },
+      error: () => this.loadingId = null
+    });
+  }
 
-  // NUEVO: eliminar también en backend
-  this.amigoService.eliminarAmistadBackend(amigoId).subscribe({
-    error: (err) => console.error('Error eliminando amistad en backend:', err),
-  });
-}
-
-  /**
-   * NUEVO MÉTODO: Abre el dashboard de MIKHUY filtrando por el ID de tu compañero.
-   * Dependiendo de cómo reciba los datos tu `DashboardsComponent`, se los inyectamos en el DATA.
-   */
   verPerfilAmigo(amigo: Companero): void {
     const config = new MatDialogConfig();
     config.width = '95vw';
     config.maxWidth = '1200px';
     config.height = '90vh';
     config.maxHeight = '90vh';
-
     config.data = {
       estudianteId: amigo.id,
       nombreCompleto: `${amigo.nombres} ${amigo.apellidos}`,
       isViewOnly: true,
     };
-
     this.dialog.open(DashboardsComponent, config);
   }
 }
@@ -1102,32 +1062,12 @@ export class JuegosComponent implements OnInit, OnDestroy {
           this.miGrado = data.grado ?? '';
           this.miSeccion = data.seccion ?? '';
           // Actualizar badge de solicitudes pendientes
-          this.solicitudesCount = this.amigoService.getSolicitudesRecibidas(
-            this.miEstudianteId,
-          ).length;
-          // Procesar notificaciones de amistad
-          this.procesarNotificacionesAmistad();
+          this.amigoService.getSolicitudesRecibidas().subscribe(solicitudes => {
+            this.solicitudesCount = solicitudes.length;}
+          );
         }
       },
       error: (err) => console.error('Error cargando perfil:', err),
-    });
-  }
-
-  procesarNotificacionesAmistad(): void {
-    this.studentService.getMisNotificaciones().subscribe({
-      next: (response: any) => {
-        const notifs = Array.isArray(response)
-          ? response
-          : (response?.data ?? []);
-        this.amigoService.procesarNotificacionesAmistad(
-          this.miEstudianteId,
-          notifs,
-        );
-        this.solicitudesCount = this.amigoService.getSolicitudesRecibidas(
-          this.miEstudianteId,
-        ).length;
-      },
-      error: () => {},
     });
   }
 
@@ -1147,9 +1087,9 @@ export class JuegosComponent implements OnInit, OnDestroy {
 
     // Al cerrar refrescar badge
     dialogRef.afterClosed().subscribe(() => {
-      this.solicitudesCount = this.amigoService.getSolicitudesRecibidas(
-        this.miEstudianteId,
-      ).length;
+      this.amigoService.getSolicitudesRecibidas().subscribe(solicitudes => {
+        this.solicitudesCount = solicitudes.length;
+      });
     });
   }
 
