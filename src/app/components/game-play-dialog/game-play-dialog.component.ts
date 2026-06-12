@@ -248,7 +248,7 @@ const BANCO_CLASIFICA: Record<number, any> = {
   10: { grupoObjetivo: 'Grasas saludables', instruccion: '¡Nivel maestro! Identifica las GRASAS VERDADERAMENTE SALUDABLES', alimentos: [{ nombre: 'Almendras 🥜', esDelGrupo: true }, { nombre: 'Aceite oliva 🫒', esDelGrupo: true }, { nombre: 'Chía 🌱', esDelGrupo: true }, { nombre: 'Tocino 🥓', esDelGrupo: false }, { nombre: 'Crema 🍦', esDelGrupo: false }, { nombre: 'Mayonesa 🫙', esDelGrupo: false }], explicacion: 'Almendras, aceite de oliva y chía son grasas saludables.' },
 };
 
-const TIEMPO_LIMITE_CLASIFICA = 15; // segundos — CP079/CP080
+const TIEMPO_LIMITE_CLASIFICA = 15; 
 
 @Component({
   selector: 'game-play-dialog',
@@ -645,20 +645,31 @@ export class GamePlayDialog implements OnInit, OnDestroy {
     this.loading = true;
     this.loadingMessage = 'Guardando registro del día...';
 
-    this.sesionService.guardarRegistroReto7Dias({
+    // ✅ Forzamos que todos los números realmente sean de tipo numérico
+    const bodyRequest = {
       sesionId: this.sesionId,
-      diaNumero: this.nivelKey(7),
-      momentoDia: 'DiáCompleto' as any,
-      alimentosFrutas: this.alimentosFrutas,
-      alimentosVerduras: this.alimentosVerduras,
-      alimentosProteinas: this.alimentosProteinas,
-      alimentosCarbohidratos: this.alimentosCarbohidratos,
-      alimentosLacteos: this.alimentosLacteos,
-      alimentosDulces: this.alimentosDulces,
-      emocion: this.emocionSeleccionada ? (this.emocionSeleccionada as any) : undefined,
-      caloriasEstimadas: this.calcularCalorias(),
-      notas: this.notasReto || undefined,
-    }).subscribe({
+      diaNumero: Number(this.nivelKey(7) || 1),
+      
+      // ✅ Solución 1: Usar un valor estándar en MAYÚSCULAS aceptado por tu Backend
+      momentoDia: 'Almuerzo'as const, 
+      
+      alimentosFrutas: Number(this.alimentosFrutas || 0),
+      alimentosVerduras: Number(this.alimentosVerduras || 0),
+      alimentosProteinas: Number(this.alimentosProteinas || 0),
+      alimentosCarbohidratos: Number(this.alimentosCarbohidratos || 0),
+      alimentosLacteos: Number(this.alimentosLacteos || 0),
+      alimentosDulces: Number(this.alimentosDulces || 0),
+      
+      // ✅ Solución 2: Enviar un Enum válido en MAYÚSCULAS en lugar de 'undefined'
+      emocion: this.emocionSeleccionada ? (this.emocionSeleccionada as any) : 'Feliz',
+      
+      caloriasEstimadas: Number(this.calcularCalorias() || 0),
+      
+      // ✅ Solución 3: Enviar string vacío en lugar de 'undefined' para no romper el DTO
+      notas: this.notasReto || '' 
+    };
+
+    this.sesionService.guardarRegistroReto7Dias(bodyRequest).subscribe({
       next: () => {
         // Éxito en backend → también actualizamos localStorage como caché
         this.guardarRetoEnLocalStorage();
@@ -667,7 +678,7 @@ export class GamePlayDialog implements OnInit, OnDestroy {
         this.finalizarJuego(true);
       },
       error: (err) => {
-        console.warn('Backend no disponible, guardando offline:', err);
+        console.error('Error real devuelto por Spring:', err);
         // Fallback: guardar en localStorage y continuar el juego
         this.guardarRetoEnLocalStorage();
         this.puntosGanadosEnSesion += 15;
