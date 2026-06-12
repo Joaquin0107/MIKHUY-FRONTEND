@@ -12,7 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatOptionModule } from '@angular/material/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 import {
   MatDialogModule,
   MatDialog,
@@ -110,6 +110,7 @@ const BANCO_MICRO_DASH: Record<number, any> = {
   imports: [
     CommonModule,
     DatePipe,
+    DecimalPipe,
     FormsModule,
     MatButtonModule,
     MatIconModule,
