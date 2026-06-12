@@ -41,7 +41,7 @@
 
   <!-- Header -->
   <header class="dashboards-header">
-    <div class="header-left">
+    <div class="header-left" *ngIf="!isViewOnly">
       <button mat-icon-button class="back-btn" (click)="goBack()">
         <mat-icon>arrow_back</mat-icon>
       </button>
@@ -52,26 +52,25 @@
       />
     </div>
 
-    <div class="header-center">
+    <div class="header-center" *ngIf="!isViewOnly">
       <button mat-raised-button class="dashboard-btn">
         <mat-icon>bar_chart</mat-icon>
         DASHBOARDS
       </button>
     </div>
 
-    <div class="header-right">
-      <!-- Botón grupos solo para profesor -->
+    <!-- Cuando es viewOnly, este div ocupa todo el ancho y solo muestra la X -->
+    <div class="header-right" [class.viewonly-header]="isViewOnly">
       <button
         mat-stroked-button
         class="grupos-btn"
-        *ngIf="isTeacher"
+        *ngIf="isTeacher && !isViewOnly"
         (click)="irAGrupos()"
       >
         <mat-icon>groups</mat-icon>
         Mis Grupos
       </button>
 
-      <!-- NUEVO: botón cerrar solo si está abierto como dialog -->
       <button
         mat-icon-button
         *ngIf="dialogRef"
@@ -82,7 +81,12 @@
         <mat-icon>close</mat-icon>
       </button>
 
-      <button mat-icon-button class="icon-btn" [matMenuTriggerFor]="menu">
+      <button
+        mat-icon-button
+        class="icon-btn"
+        [matMenuTriggerFor]="menu"
+        *ngIf="!isViewOnly"
+      >
         <mat-icon>menu</mat-icon>
       </button>
       <mat-menu #menu="matMenu" class="user-menu">

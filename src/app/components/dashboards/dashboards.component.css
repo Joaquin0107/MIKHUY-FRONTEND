@@ -3195,3 +3195,8 @@
   color: #f44336;
   background: rgba(244, 67, 54, 0.08);
 }
+
+.viewonly-header {
+  width: 100%;
+  justify-content: flex-end;
+}
