@@ -99,29 +99,37 @@
 
   <!-- ══ DETALLE DEL GRUPO ════════════════════════════════════════════════ -->
   <div class="detalle-grupo-container" *ngIf="grupoSeleccionado && !loading">
-    
     <div class="header-main">
       <div class="title-section">
         <h2>{{ grupoSeleccionado?.nombre }}</h2>
       </div>
-      
+
       <div class="acciones-detalle">
-        <button mat-raised-button 
-                class="btn-pdf"
-                (click)="descargarReporteGrupo()" 
-                [disabled]="isGeneratingPDF">
+        <button
+          mat-raised-button
+          class="btn-pdf"
+          (click)="descargarReporteGrupo()"
+          [disabled]="isGeneratingPDF"
+        >
           <mat-icon *ngIf="!isGeneratingPDF">picture_as_pdf</mat-icon>
-          <mat-spinner diameter="18" *ngIf="isGeneratingPDF" class="button-spinner"></mat-spinner>
-          {{ isGeneratingPDF ? 'Generando...' : 'Exportar PDF' }}
+          <mat-spinner
+            diameter="18"
+            *ngIf="isGeneratingPDF"
+            class="button-spinner"
+          ></mat-spinner>
+          {{ isGeneratingPDF ? "Generando..." : "Exportar PDF" }}
         </button>
 
-        <button mat-raised-button class="btn-editar" (click)="abrirModalEditar(grupoSeleccionado!)">
+        <button
+          mat-raised-button
+          class="btn-editar"
+          (click)="abrirModalEditar(grupoSeleccionado!)"
+        >
           <mat-icon>edit</mat-icon> Editar Grupo
         </button>
       </div>
     </div>
-    
-    <!-- Métricas compiladas -->
+
     <div class="detalle-stats-grid">
       <mat-card class="detalle-stat-card">
         <div class="stat-icon-wrap" style="background: #e3f2fd">
@@ -130,9 +138,12 @@
             >grade</mat-icon
           >
         </div>
-        <h3>{{ grupoSeleccionado.promedioPuntos }}</h3>
-        <p>Pts promedio</p>
+        <div class="stat-content">
+          <h3>{{ grupoSeleccionado?.promedioPuntos }}</h3>
+          <p>Pts promedio</p>
+        </div>
       </mat-card>
+
       <mat-card class="detalle-stat-card">
         <div class="stat-icon-wrap" style="background: #e8f5e9">
           <mat-icon
@@ -140,9 +151,12 @@
             >schedule</mat-icon
           >
         </div>
-        <h3>{{ grupoSeleccionado.totalSesionesGrupo }}</h3>
-        <p>Sesiones totales</p>
+        <div class="stat-content">
+          <h3>{{ grupoSeleccionado?.totalSesionesGrupo }}</h3>
+          <p>Sesiones totales</p>
+        </div>
       </mat-card>
+
       <mat-card class="detalle-stat-card">
         <div class="stat-icon-wrap" style="background: #fff8e1">
           <mat-icon
@@ -150,9 +164,12 @@
             >emoji_events</mat-icon
           >
         </div>
-        <h3 class="stat-name">{{ grupoSeleccionado.alumnoMasActivo }}</h3>
-        <p>Más activo</p>
+        <div class="stat-content">
+          <h3 class="stat-name">{{ grupoSeleccionado?.alumnoMasActivo }}</h3>
+          <p>Más activo</p>
+        </div>
       </mat-card>
+
       <mat-card class="detalle-stat-card">
         <div class="stat-icon-wrap" style="background: #f3e5f5">
           <mat-icon
@@ -160,8 +177,10 @@
             >videogame_asset</mat-icon
           >
         </div>
-        <h3 class="stat-name">{{ grupoSeleccionado.juegoMasDominado }}</h3>
-        <p>Juego dominado</p>
+        <div class="stat-content">
+          <h3 class="stat-name">{{ grupoSeleccionado?.juegoMasDominado }}</h3>
+          <p>Juego dominado</p>
+        </div>
       </mat-card>
     </div>
 
