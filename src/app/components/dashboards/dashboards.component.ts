@@ -383,15 +383,11 @@ export class DashboardsComponent implements OnInit {
 
           // 📦 Complementar analisisDelDia desde localStorage si el backend no lo envía
           this.cargarMetricasJuegosNuevos();
-          if (!(this.dashboardData as any).analisisDelDia) {
-            const analisisLocal = this.leerAnalisisDesdLocalStorage(
-              response.data.estudiante?.id,
-            );
-            if (analisisLocal) {
-              (this.dashboardData as any).analisisDelDia = analisisLocal;
-            }
+          const idEstudianteActual =
+            response.data.estudiante?.id || this.selectedStudent?.id;
+          if (idEstudianteActual) {
+            this.cargarAnalisisReto7DesdBackend(idEstudianteActual.toString());
           }
-
           this.loading = false;
 
           // Forzamos el renderizado inicial de tus gráficos nativos
@@ -408,6 +404,124 @@ export class DashboardsComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  cargarAnalisisReto7DesdBackend(estudianteId: string): void {
+    const base = (this.sesionService as any).apiUrl?.replace(
+      '/api/sesiones',
+      '',
+    );
+    this.http
+      .get<any>(`${base}/api/sesiones/reto7dias/estudiante/${estudianteId}`)
+      .subscribe({
+        next: (res: any) => {
+          const registros: any[] = res?.data || [];
+          if (registros.length === 0) {
+            // Fallback a localStorage si no hay datos en backend
+            const analisisLocal =
+              this.leerAnalisisDesdLocalStorage(estudianteId);
+            if (analisisLocal)
+              (this.dashboardData as any).analisisDelDia = analisisLocal;
+            return;
+          }
+          // Tomar el registro más reciente
+          const reg = registros[0];
+          (this.dashboardData as any).analisisDelDia =
+            this.construirAnalisisDesdeRegistro(reg);
+        },
+        error: () => {
+          const analisisLocal = this.leerAnalisisDesdLocalStorage(estudianteId);
+          if (analisisLocal)
+            (this.dashboardData as any).analisisDelDia = analisisLocal;
+        },
+      });
+  }
+
+  private construirAnalisisDesdeRegistro(reg: any): any {
+    const cal =
+      (reg.alimentosFrutas ?? 0) * 60 +
+      (reg.alimentosVerduras ?? 0) * 25 +
+      (reg.alimentosProteinas ?? 0) * 120 +
+      (reg.alimentosCarbohidratos ?? 0) * 150 +
+      (reg.alimentosLacteos ?? 0) * 80 +
+      (reg.alimentosDulces ?? 0) * 200;
+
+    const protG =
+      (reg.alimentosProteinas ?? 0) * 25 +
+      (reg.alimentosLacteos ?? 0) * 8 +
+      (reg.alimentosFrutas ?? 0) * 1;
+
+    const carbG =
+      (reg.alimentosCarbohidratos ?? 0) * 30 +
+      (reg.alimentosFrutas ?? 0) * 15 +
+      (reg.alimentosDulces ?? 0) * 40 +
+      (reg.alimentosVerduras ?? 0) * 5;
+
+    const grasG =
+      (reg.alimentosDulces ?? 0) * 8 +
+      (reg.alimentosLacteos ?? 0) * 5 +
+      (reg.alimentosProteinas ?? 0) * 5;
+
+    const metaCal = (this.dashboardData as any)?.salud?.metaCalorica ?? 2000;
+    const metaProt = Math.round((metaCal * 0.15) / 4);
+    const metaCarb = Math.round((metaCal * 0.55) / 4);
+    const metaGras = Math.round((metaCal * 0.3) / 9);
+
+    const totalMacrosCal = protG * 4 + carbG * 4 + grasG * 9 || 1;
+    const protPct = Math.round(((protG * 4) / totalMacrosCal) * 100);
+    const carbPct = Math.round(((carbG * 4) / totalMacrosCal) * 100);
+    const grasPct = 100 - protPct - carbPct;
+
+    const desglosePorComida = [
+      {
+        tipo: 'Desayuno',
+        calorias: Math.round(cal * 0.25),
+        proteinasG: Math.round(protG * 0.25 * 10) / 10,
+        carbohidratosG: Math.round(carbG * 0.25 * 10) / 10,
+        grasasG: Math.round(grasG * 0.25 * 10) / 10,
+      },
+      {
+        tipo: 'Almuerzo',
+        calorias: Math.round(cal * 0.4),
+        proteinasG: Math.round(protG * 0.4 * 10) / 10,
+        carbohidratosG: Math.round(carbG * 0.4 * 10) / 10,
+        grasasG: Math.round(grasG * 0.4 * 10) / 10,
+      },
+      {
+        tipo: 'Cena',
+        calorias: Math.round(cal * 0.25),
+        proteinasG: Math.round(protG * 0.25 * 10) / 10,
+        carbohidratosG: Math.round(carbG * 0.25 * 10) / 10,
+        grasasG: Math.round(grasG * 0.25 * 10) / 10,
+      },
+      {
+        tipo: 'Merienda',
+        calorias: Math.round(cal * 0.1),
+        proteinasG: Math.round(protG * 0.1 * 10) / 10,
+        carbohidratosG: Math.round(carbG * 0.1 * 10) / 10,
+        grasasG: Math.round(grasG * 0.1 * 10) / 10,
+      },
+    ];
+
+    return {
+      fecha: reg.fecha,
+      caloriasConsumidas: Math.round(cal),
+      metaCalorica: metaCal,
+      proteinasG: Math.round(protG * 10) / 10,
+      metaProteinasG: metaProt,
+      carbohidratosG: Math.round(carbG * 10) / 10,
+      metaCarbohidratosG: metaCarb,
+      grasasG: Math.round(grasG * 10) / 10,
+      metaGrasasG: metaGras,
+      proteinasPorcentaje: protPct,
+      carbohidratosPorcentaje: carbPct,
+      grasasPorcentaje: grasPct,
+      desglosePorComida,
+      guardadoOffline: false,
+      diaReto: reg.diaNumero,
+      emocion: reg.emocion,
+      notas: reg.notas,
+    };
   }
 
   loadAllStudents(): void {
@@ -491,6 +605,8 @@ export class DashboardsComponent implements OnInit {
             response.message || 'Error al cargar datos del estudiante';
           this.loading = false;
         }
+
+        this.cargarAnalisisReto7DesdBackend(student.id);
       },
       error: (err) => {
         console.error('Error cargando dashboard del estudiante:', err);
