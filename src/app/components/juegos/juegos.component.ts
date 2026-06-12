@@ -289,8 +289,9 @@ export class InstruccionesJuegoDialog {
 
         <div *ngIf="amigosConfirmados.length > 0" class="amigos-section">
           <div class="section-label">
-            <mat-icon>favorite</mat-icon>
-            Mis amigos ({{ amigosConfirmados.length }})
+            <mat-icon>favorite</mat-icon> Mis amigos ({{
+              amigosConfirmados.length
+            }})
           </div>
           <div class="amigo-chip" *ngFor="let a of amigosConfirmados">
             <mat-icon class="chip-avatar-icon">account_circle</mat-icon>
@@ -322,10 +323,8 @@ export class InstruccionesJuegoDialog {
         </div>
 
         <div class="section-label" style="margin-top:1rem">
-          <mat-icon>people</mat-icon>
-          Todos mis compañeros
+          <mat-icon>people</mat-icon> Todos mis compañeros
         </div>
-
         <div class="buscar-wrap">
           <mat-icon class="buscar-icon">search</mat-icon>
           <input
@@ -365,64 +364,23 @@ export class InstruccionesJuegoDialog {
             mat-raised-button
             color="primary"
             class="comp-btn"
-            *ngIf="getEstado(c.id) === 'ninguno'"
+            *ngIf="getEstado(c.id) === 'NONE'"
             (click)="enviar(c)"
             [disabled]="loadingId === c.id"
           >
             <mat-icon>person_add</mat-icon> Agregar
           </button>
-
-          <button
-            mat-stroked-button
-            class="comp-btn pendiente"
-            *ngIf="getEstado(c.id) === 'pendiente_enviada'"
-            disabled
+          <span
+            class="status-badge pendiente"
+            *ngIf="getEstado(c.id) === 'SENT'"
           >
-            <mat-icon>hourglass_empty</mat-icon> Pendiente
-          </button>
-
-          <div
-            class="recibida-row"
-            *ngIf="getEstado(c.id) === 'pendiente_recibida'"
-          >
-            <button
-              mat-raised-button
-              color="primary"
-              class="comp-btn"
-              (click)="aceptar(c.id, c.nombres + ' ' + c.apellidos)"
-              [disabled]="loadingId === c.id"
-            >
-              <mat-icon>check</mat-icon>
-            </button>
-            <button
-              mat-icon-button
-              color="warn"
-              (click)="rechazar(c.id)"
-              [disabled]="loadingId === c.id"
-            >
-              <mat-icon>close</mat-icon>
-            </button>
-          </div>
-
-          <div
-            class="amigos-acciones-wrap"
-            *ngIf="getEstado(c.id) === 'amigos'"
-          >
-            <button
-              mat-stroked-button
-              class="comp-btn btn-ver-perfil"
-              (click)="verPerfilAmigo(c)"
-            >
-              <mat-icon>visibility</mat-icon> Perfil
-            </button>
-            <div class="amigo-tag"><mat-icon>favorite</mat-icon> Amigos</div>
-          </div>
+            <mat-icon>hourglass_empty</mat-icon> Enviada
+          </span>
+          <span class="status-badge amigo" *ngIf="getEstado(c.id) === 'FRIEND'">
+            <mat-icon>check</mat-icon> Amigos
+          </span>
         </div>
       </mat-dialog-content>
-
-      <mat-dialog-actions>
-        <button mat-button mat-dialog-close>Cerrar</button>
-      </mat-dialog-actions>
     </div>
   `,
   styles: [
@@ -432,7 +390,7 @@ export class InstruccionesJuegoDialog {
         font-family: 'Poppins', sans-serif;
         width: 520px;
         max-width: 100%;
-        margin: -24px -24px -24px -24px; /* Neutraliza el padding global del MatDialog por completo */
+        margin: -24px; /* Simplificado: un solo valor aplica a los 4 lados limpiamente */
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -444,7 +402,7 @@ export class InstruccionesJuegoDialog {
         gap: 12px;
         padding: 20px 24px;
         background: linear-gradient(135deg, #48a3f3, #5bb3ff);
-        border-radius: 0; /* Ya no requiere simular bordes redondeados forzados */
+        border-radius: 0;
       }
 
       .amigos-header-icon {
@@ -456,26 +414,31 @@ export class InstruccionesJuegoDialog {
         align-items: center;
         justify-content: center;
       }
+
       .amigos-header-icon mat-icon {
         color: #fff;
         font-size: 22px;
         width: 22px;
         height: 22px;
       }
+
       .amigos-header-text {
         flex: 1;
       }
+
       .amigos-header-text h2 {
         margin: 0;
         color: #fff;
         font-size: 1.05rem;
         font-weight: 700;
       }
+
       .amigos-header-text p {
         margin: 2px 0 0;
         color: rgba(255, 255, 255, 0.85);
         font-size: 0.8rem;
       }
+
       .close-btn {
         color: white !important;
       }
@@ -487,7 +450,7 @@ export class InstruccionesJuegoDialog {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
-        margin: 0 !important; /* Limpia colisiones estructurales */
+        margin: 0 !important;
       }
 
       .section-label {
@@ -501,6 +464,7 @@ export class InstruccionesJuegoDialog {
         border-bottom: 1px solid #e0e0e0;
         padding-bottom: 0.4rem;
       }
+
       .section-label mat-icon {
         font-size: 18px;
         width: 18px;
@@ -515,23 +479,27 @@ export class InstruccionesJuegoDialog {
         padding: 0.5rem 0;
         border-bottom: 1px solid #f5f5f5;
       }
+
       .sol-avatar {
         font-size: 32px;
         width: 32px;
         height: 32px;
         color: #ff9800;
       }
+
       .sol-nombre {
         flex: 1;
         font-size: 0.9rem;
         font-weight: 600;
         color: #333;
       }
+
       .sol-btn {
         font-size: 0.8rem !important;
         height: 32px !important;
         padding: 0 0.6rem !important;
       }
+
       .sol-btn.rechazar {
         border-color: #f44336 !important;
         color: #f44336 !important;
@@ -547,22 +515,26 @@ export class InstruccionesJuegoDialog {
         border-radius: 8px;
         margin-bottom: 0.4rem;
       }
+
       .chip-avatar-icon {
         font-size: 36px;
         width: 36px;
         height: 36px;
         color: #4caf50;
       }
+
       .chip-info {
         flex: 1;
         display: flex;
         flex-direction: column;
       }
+
       .chip-nombre {
         font-size: 0.88rem;
         font-weight: 600;
         color: #333;
       }
+
       .chip-pts {
         display: flex;
         align-items: center;
@@ -570,6 +542,7 @@ export class InstruccionesJuegoDialog {
         font-size: 0.75rem;
         color: #888;
       }
+
       .chip-pts mat-icon {
         font-size: 13px;
         width: 13px;
@@ -577,9 +550,9 @@ export class InstruccionesJuegoDialog {
         color: #ffd700;
       }
 
-      /* Estilo del nuevo botón Ver Perfil dentro del Chip de amigos */
+      /* CORRECCIÓN: Botón Ver Perfil alineado a la identidad MIKHUY */
       .btn-ver-perfil-chip {
-        background-color: #1976d2 !important;
+        background-color: #48a3f3 !important; /* Cambiado de #1976d2 para mantener armonía */
         color: white !important;
         font-size: 0.78rem !important;
         height: 30px !important;
@@ -588,7 +561,13 @@ export class InstruccionesJuegoDialog {
         display: flex;
         align-items: center;
         gap: 4px;
+        transition: background-color 0.2s ease;
       }
+
+      .btn-ver-perfil-chip:hover {
+        background-color: #358ed7 !important; /* Feedback visual interactivo */
+      }
+
       .btn-ver-perfil-chip mat-icon {
         font-size: 14px;
         width: 14px;
@@ -600,7 +579,9 @@ export class InstruccionesJuegoDialog {
         font-size: 18px;
         width: 18px;
         height: 18px;
+        transition: color 0.2s ease;
       }
+
       .eliminar-btn:hover mat-icon {
         color: #f44336;
       }
@@ -614,13 +595,20 @@ export class InstruccionesJuegoDialog {
         border-radius: 8px;
         padding: 0.4rem 0.75rem;
         margin-bottom: 0.5rem;
+        transition: border-color 0.2s ease;
       }
+
+      .buscar-wrap:focus-within {
+        border-color: #48a3f3; /* Destaca el input al hacer focus */
+      }
+
       .buscar-icon {
         color: #aaa;
         font-size: 20px;
         width: 20px;
         height: 20px;
       }
+
       .buscar-input {
         border: none;
         outline: none;
@@ -635,6 +623,7 @@ export class InstruccionesJuegoDialog {
         justify-content: center;
         padding: 1.5rem;
       }
+
       .empty-wrap {
         display: flex;
         flex-direction: column;
@@ -643,11 +632,13 @@ export class InstruccionesJuegoDialog {
         gap: 0.5rem;
         color: #bbb;
       }
+
       .empty-wrap mat-icon {
         font-size: 48px;
         width: 48px;
         height: 48px;
       }
+
       .empty-wrap p {
         margin: 0;
         font-size: 0.9rem;
@@ -661,6 +652,7 @@ export class InstruccionesJuegoDialog {
         padding: 0.6rem 0;
         border-bottom: 1px solid #f5f5f5;
       }
+
       .comp-avatar-icon {
         font-size: 38px;
         width: 38px;
@@ -668,12 +660,14 @@ export class InstruccionesJuegoDialog {
         color: #48a3f3;
         flex-shrink: 0;
       }
+
       .comp-info {
         flex: 1;
         display: flex;
         flex-direction: column;
         min-width: 0;
       }
+
       .comp-nombre {
         font-size: 0.9rem;
         font-weight: 600;
@@ -682,6 +676,7 @@ export class InstruccionesJuegoDialog {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+
       .comp-sub {
         display: flex;
         align-items: center;
@@ -689,36 +684,56 @@ export class InstruccionesJuegoDialog {
         font-size: 0.75rem;
         color: #888;
       }
+
       .comp-sub mat-icon {
         font-size: 13px;
         width: 13px;
         height: 13px;
         color: #ffd700;
       }
+
       .comp-btn {
         font-size: 0.8rem !important;
         height: 34px !important;
         padding: 0 0.75rem !important;
         white-space: nowrap;
       }
+
       .comp-btn.pendiente {
         border-color: #bdbdbd !important;
         color: #9e9e9e !important;
       }
+
+      /* CORRECCIÓN: Botón secundario Ver Perfil adaptado a MIKHUY */
       .btn-ver-perfil {
-        border-color: #1976d2 !important;
-        color: #1976d2 !important;
+        border-color: #48a3f3 !important; /* Cambiado de #1976d2 */
+        color: #48a3f3 !important; /* Cambiado de #1976d2 */
+        transition:
+          background-color 0.2s,
+          color 0.2s;
       }
+
+      .btn-ver-perfil:hover {
+        background-color: rgba(
+          72,
+          163,
+          243,
+          0.08
+        ) !important; /* Efecto sutil al pasar el mouse */
+      }
+
       .recibida-row {
         display: flex;
         align-items: center;
         gap: 4px;
       }
+
       .amigos-acciones-wrap {
         display: flex;
         align-items: center;
         gap: 8px;
       }
+
       .amigo-tag {
         display: flex;
         align-items: center;
@@ -728,6 +743,7 @@ export class InstruccionesJuegoDialog {
         color: #4caf50;
         white-space: nowrap;
       }
+
       .amigo-tag mat-icon {
         font-size: 16px;
         width: 16px;
@@ -772,17 +788,12 @@ export class AmigosDialog implements OnInit {
   }
 
   constructor(
-    @Inject(MAT_DIALOG_DATA)
-    public data: {
-      miEstudianteId: string;
-      miNombre: string;
-      grado: string;
-      seccion: string;
-    },
+    @Inject(MAT_DIALOG_DATA) public data: any,
     public dialogRef: MatDialogRef<AmigosDialog>,
     private amigoService: AmigoService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog, // Inyectamos el servicio MatDialog para abrir submodales
+    private router: Router,
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
@@ -900,7 +911,7 @@ export class AmigosDialog implements OnInit {
     config.data = {
       estudianteId: amigo.id,
       nombreCompleto: `${amigo.nombres} ${amigo.apellidos}`,
-      isViewOnly: true, 
+      isViewOnly: true,
     };
 
     this.dialog.open(DashboardsComponent, config);

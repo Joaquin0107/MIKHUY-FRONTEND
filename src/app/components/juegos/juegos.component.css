@@ -568,3 +568,23 @@ mat-dialog-content {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
+
+::ng-deep .mat-mdc-tab-group {
+  font-family: 'Poppins', sans-serif !important;
+  background: white !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}
+
+::ng-deep .mat-mdc-tab {
+  font-weight: 500 !important;
+}
+
+/* Arreglar la lista de compañeros para que no se vea amontonada */
+::ng-deep .mat-mdc-list-item {
+  background: #ffffff !important;
+  margin-bottom: 8px !important;
+  border-radius: 8px !important;
+  border: 1px solid #e0e0e0 !important;
+}
