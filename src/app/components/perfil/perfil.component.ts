@@ -88,7 +88,9 @@ export class PerfilComponent implements OnInit {
   loadingCompaneros = false;
   loadingAmigo = false;
   busquedaAmigo = '';
-  solicitudesRecibidas: { id: string; nombre: string }[] = [];
+  solicitudesRecibidas: any[] = [];
+  amigosConfirmados: Companero[] = [];
+  estadosAmistad: { [key: string]: string } = {};
 
   private miEstudianteId = '';
   private miNombreCompleto = '';
@@ -103,9 +105,8 @@ export class PerfilComponent implements OnInit {
     );
   }
 
-  get amigosConfirmados(): Companero[] {
-    const ids = this.amigoService.getAmigos(this.miEstudianteId);
-    return this.companeros.filter((c) => ids.includes(c.id));
+  getAmigosConfirmados(): Companero[] {
+    return this.amigosConfirmados;
   }
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -117,7 +118,7 @@ export class PerfilComponent implements OnInit {
     private studentService: StudentService,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private amigoService: AmigoService,   // ← inyectado correctamente
+    private amigoService: AmigoService,
   ) {}
 
   ngOnInit(): void {
@@ -207,7 +208,7 @@ export class PerfilComponent implements OnInit {
               `${response.data.nombres} ${response.data.apellidos}`;
           }
           // Procesar notificaciones de amistad y cargar compañeros
-          this.loadNotificacionesAmistad();
+          this.procesarNotificacionesAmistad();
           this.loadCompaneros();
           // ─────────────────────────────────────────────────────────────────
 
@@ -266,15 +267,12 @@ export class PerfilComponent implements OnInit {
    * Carga las notificaciones del back y procesa las de tipo amistad
    * para actualizar el localStorage y las solicitudes recibidas.
    */
-  loadNotificacionesAmistad(): void {
-    this.studentService.getMisNotificaciones().subscribe({
-      next: (response: any) => {
-        // getMisNotificaciones devuelve ApiResponse<Notificacion[]> — extraer .data
-        const notifs = Array.isArray(response) ? response : (response?.data ?? []);
-        this.amigoService.procesarNotificacionesAmistad(this.miEstudianteId, notifs);
-        this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(this.miEstudianteId);
+  procesarNotificacionesAmistad(): void {
+    this.amigoService.getSolicitudesRecibidas().subscribe({
+      next: (solicitudes) => {
+        this.solicitudesRecibidas = solicitudes;
       },
-      error: (err: any) => console.error('Error cargando notificaciones:', err),
+      error: (err: any) => console.error('Error al cargar solicitudes:', err)
     });
   }
 
@@ -293,71 +291,55 @@ export class PerfilComponent implements OnInit {
   }
 
   getEstadoAmigo(otroId: string): string {
-    return this.amigoService.getEstado(this.miEstudianteId, otroId);
-  }
+  return this.estadosAmistad[otroId] || 'ninguno';
+}
 
   enviarSolicitud(companero: Companero): void {
-    if (!this.miEstudianteId) return;
-    this.loadingAmigo = true;
-    this.amigoService
-      .enviarSolicitud(this.miEstudianteId, this.miNombreCompleto, companero)
-      .subscribe({
-        next: () => {
-          this.showMessage(`Solicitud enviada a ${companero.nombres}`, 'success');
-          this.loadingAmigo = false;
-        },
-        error: (err) => {
-          console.error('Error enviando solicitud:', err);
-          this.showMessage(err.error?.message || 'Error al enviar solicitud', 'error');
-          // Revertir estado local si el back falló
-          const store = this.amigoService.getStore(this.miEstudianteId);
-          store.enviadas = store.enviadas.filter((e: string) => e !== companero.id);
-          this.amigoService.saveStore(this.miEstudianteId, store);
-          this.loadingAmigo = false;
-        },
-      });
+    this.amigoService.enviarSolicitud(companero.id).subscribe({
+      next: () => {
+        this.showMessage(`Solicitud enviada a ${companero.nombres}`, 'success');
+        this.estadosAmistad[companero.id] = 'pendiente_enviada';
+      },
+      error: (err: any) => this.showMessage(err.error?.message || 'Error al enviar solicitud', 'error')
+    });
   }
 
   aceptarSolicitud(remitenteId: string, remitenteNombre: string): void {
-    if (!this.miEstudianteId) return;
-    this.loadingAmigo = true;
-    this.amigoService
-      .aceptarSolicitud(this.miEstudianteId, this.miNombreCompleto, remitenteId, remitenteNombre)
-      .subscribe({
-        next: () => {
-          this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(this.miEstudianteId);
-          this.showMessage(`¡Ahora eres amigo de ${remitenteNombre}!`, 'success');
-          this.loadingAmigo = false;
-        },
-        error: (err) => {
-          console.error('Error aceptando solicitud:', err);
-          this.showMessage('Error al aceptar solicitud', 'error');
-          this.loadingAmigo = false;
-        },
-      });
+    this.amigoService.aceptarSolicitud(remitenteId).subscribe({
+      next: () => {
+        this.showMessage(`¡Ahora eres amigo de ${remitenteNombre}!`, 'success');
+        this.estadosAmistad[remitenteId] = 'amigos';
+        this.procesarNotificacionesAmistad();
+        this.amigoService.getAmigos().subscribe(a => this.amigosConfirmados = a);
+      },
+      error: (err: any) => this.showMessage('Error al aceptar amistad', 'error')
+    });
   }
 
-  rechazarSolicitud(remitenteId: string): void {
-    if (!this.miEstudianteId) return;
-    this.loadingAmigo = true;
-    this.amigoService
-      .rechazarSolicitud(this.miEstudianteId, this.miNombreCompleto, remitenteId)
-      .subscribe({
-        next: () => {
-          this.solicitudesRecibidas = this.amigoService.getSolicitudesRecibidas(this.miEstudianteId);
-          this.showMessage('Solicitud rechazada', 'success');
-          this.loadingAmigo = false;
-        },
-        error: (err) => {
-          console.error('Error rechazando solicitud:', err);
-          this.loadingAmigo = false;
-        },
-      });
+  rechazarSolicitud(remitenteId: string, remitenteNombre?: string): void {
+    this.amigoService.eliminarRelacion(remitenteId).subscribe({
+      next: () => {
+        this.showMessage('Solicitud rechazada', 'success');
+        this.estadosAmistad[remitenteId] = 'ninguno';
+        this.procesarNotificacionesAmistad();
+      },
+      error: (err: any) => this.showMessage('Error al rechazar solicitud', 'error')
+    });
   }
 
   eliminarAmigo(amigoId: string): void {
-    this.amigoService.eliminarAmigo(this.miEstudianteId, amigoId);
-    this.showMessage('Amigo eliminado', 'success');
+    this.amigoService.eliminarRelacion(amigoId).subscribe({
+      next: () => {
+        this.showMessage('Amigo eliminado de tu lista', 'success');
+        this.estadosAmistad[amigoId] = 'ninguno';
+        this.amigoService.getAmigos().subscribe(a => this.amigosConfirmados = a);
+      },
+      error: (err: any) => this.showMessage('Error al eliminar amigo', 'error')
+    });
+  }
+
+  getEstado(otroId: string): string {
+    return this.estadosAmistad[otroId] || 'ninguno';
   }
 
   // ─────────────────────────────────────────────────────────────────────────
