@@ -90,12 +90,12 @@ export class AuthService {
   }
 
   saveSessionExpiry(): void {
-    const expiry = Date.now() + 30 * 60 * 1000;
+    const expiry = Date.now() + 2 * 60 * 1000;
     localStorage.setItem(this.sessionExpiryKey, expiry.toString());
   }
 
   refreshSessionExpiry(): void {
-    const expiry = Date.now() + 30 * 60 * 1000;
+    const expiry = Date.now() + 2 * 60 * 1000;
     localStorage.setItem(this.sessionExpiryKey, expiry.toString());
   }
 
