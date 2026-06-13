@@ -580,9 +580,9 @@ export class GamePlayDialog implements OnInit, OnDestroy {
   }
 
   private resetearFormularioReto(): void {
-    this.alimentosFrutas = 0; this.alimentosVerduras = 0;
-    this.alimentosProteinas = 0; this.alimentosCarbohidratos = 0;
-    this.alimentosLacteos = 0; this.alimentosDulces = 0;
+    this.alimentosFrutas = 1; this.alimentosVerduras = 1;
+    this.alimentosProteinas = 1; this.alimentosCarbohidratos = 1;
+    this.alimentosLacteos = 1; this.alimentosDulces = 1;
     this.emocionSeleccionada = ''; this.notasReto = '';
   }
 
