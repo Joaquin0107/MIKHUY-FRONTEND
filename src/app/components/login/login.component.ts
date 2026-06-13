@@ -143,12 +143,19 @@ export class LoginComponent implements OnInit {
 
     console.log('🔐 Iniciando login para:', loginData.email);
 
-    const cuentasDeshabilitadas = [
-      'alumno#@mikhuy.com',
-    ];
+    const cuentasDeshabilitadas = ['alumno#@mikhuy.com'];
     if (cuentasDeshabilitadas.includes(loginData.email.toLowerCase())) {
       alert(
         'Tu cuenta se encuentra deshabilitada. Contacta a helpdesk@mikhuy.com para más información.',
+      );
+      this.loading = false;
+      return;
+    }
+
+    const cuentasNoRegistradas = ['alumno0@mikhuy.com'];
+    if (cuentasNoRegistradas.includes(loginData.email.toLowerCase())) {
+      alert(
+        'Correo no registrado. Para más información contáctanos: helpdesk@mikhuy.com',
       );
       this.loading = false;
       return;
