@@ -518,6 +518,10 @@ export class PerfilComponent implements OnInit {
         : undefined,
     };
 
+    if (this.avatarFile && this.selectedAvatar) {
+      updateData.avatarUrl = this.selectedAvatar;
+    }
+
     if (!this.isViewingOwnProfile && this.estudianteId) {
       this.studentService
         .updateEstudiante(this.estudianteId, updateData)
@@ -561,8 +565,10 @@ export class PerfilComponent implements OnInit {
             const currentUser = this.authService.getCurrentUser();
             if (currentUser) {
               currentUser.name = `${updateData.nombres} ${updateData.apellidos}`;
+              if (updateData.avatarUrl) currentUser.avatarUrl = updateData.avatarUrl;
               this.authService.saveUser(currentUser);
             }
+            this.avatarFile = null;
             this.loadPerfilData();
           }
           this.loading = false;
