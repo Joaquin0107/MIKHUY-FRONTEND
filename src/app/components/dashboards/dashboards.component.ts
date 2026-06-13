@@ -2785,6 +2785,15 @@ export class DashboardsComponent implements OnInit {
    * Así se ve el "estado" del historial en esa fecha exacta.
    */
   applyDateFilter(dateStr: string): void {
+     console.log('🗓️ Juegos originales con fechas:', 
+    this.originalJuegos.map((j: any) => ({
+      nombre: j.nombre || j.title,
+      fechaModificacion: j.fechaModificacion,
+      fecha: j.fecha,
+      updatedAt: j.updatedAt,
+      createdAt: j.createdAt,
+    }))
+  );
     if (!this.dashboardData) return;
 
     const [year, month, day] = dateStr.split('-').map(Number);
