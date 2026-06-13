@@ -121,17 +121,17 @@
         </mat-card-header>
         <mat-card-content>
           <h3>Registra tus alimentos del día:</h3>
-          <div class="food-groups">
-            <div class="food-item"><label>🍎 Frutas</label><input type="number" [(ngModel)]="alimentosFrutas" min="0" max="20" /></div>
-            <div class="food-item"><label>🥗 Verduras</label><input type="number" [(ngModel)]="alimentosVerduras" min="0" max="20" /></div>
-            <div class="food-item"><label>🍗 Proteínas</label><input type="number" [(ngModel)]="alimentosProteinas" min="0" max="20" /></div>
-            <div class="food-item"><label>🍞 Carbohidratos</label><input type="number" [(ngModel)]="alimentosCarbohidratos" min="0" max="20" /></div>
-            <div class="food-item"><label>🥛 Lácteos</label><input type="number" [(ngModel)]="alimentosLacteos" min="0" max="20" /></div>
-            <div class="food-item"><label>🍰 Dulces</label><input type="number" [(ngModel)]="alimentosDulces" min="0" max="20" /></div>
+          <div required="true" class="food-groups">
+            <div class="food-item"><label>🍎 Frutas</label><input type="number" [(ngModel)]="alimentosFrutas" min="1" max="20" /></div>
+            <div class="food-item"><label>🥗 Verduras</label><input type="number" [(ngModel)]="alimentosVerduras" min="1" max="20" /></div>
+            <div class="food-item"><label>🍗 Proteínas</label><input type="number" [(ngModel)]="alimentosProteinas" min="1" max="20" /></div>
+            <div class="food-item"><label>🍞 Carbohidratos</label><input type="number" [(ngModel)]="alimentosCarbohidratos" min="1" max="20" /></div>
+            <div class="food-item"><label>🥛 Lácteos</label><input type="number" [(ngModel)]="alimentosLacteos" min="1" max="20" /></div>
+            <div class="food-item"><label>🍰 Dulces</label><input type="number" [(ngModel)]="alimentosDulces" min="1" max="20" /></div>
           </div>
           <div class="emotions">
             <h4>¿Cómo te sentiste hoy?</h4>
-            <mat-radio-group [(ngModel)]="emocionSeleccionada">
+            <mat-radio-group required="true" [(ngModel)]="emocionSeleccionada">
               <mat-radio-button value="feliz">😊 Feliz</mat-radio-button>
               <mat-radio-button value="normal">😐 Normal</mat-radio-button>
               <mat-radio-button value="triste">😢 Triste</mat-radio-button>
