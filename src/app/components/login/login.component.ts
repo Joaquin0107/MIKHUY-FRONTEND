@@ -50,14 +50,14 @@ export class LoginComponent implements OnInit {
 
   // ── Estado de cuenta no verificada ─────────────────
   cuentaNoVerificada = false;
-  tokenVerificacion  = '';
+  tokenVerificacion = '';
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
     private dialog: MatDialog,
-    private authService: AuthService
+    private authService: AuthService,
   ) {}
 
   ngOnInit(): void {
@@ -143,6 +143,17 @@ export class LoginComponent implements OnInit {
 
     console.log('🔐 Iniciando login para:', loginData.email);
 
+    const cuentasDeshabilitadas = [
+      'alumno#@mikhuy.com',
+    ];
+    if (cuentasDeshabilitadas.includes(loginData.email.toLowerCase())) {
+      alert(
+        'Tu cuenta se encuentra deshabilitada. Contacta a helpdesk@mikhuy.com para más información.',
+      );
+      this.loading = false;
+      return;
+    }
+
     this.authService.login(loginData).subscribe({
       next: (res) => {
         console.log('📦 Respuesta del servidor:', res);
@@ -158,7 +169,7 @@ export class LoginComponent implements OnInit {
         if (res.data?.user?.verificado === false) {
           console.warn('⚠️ Cuenta no verificada:', res.data.user.email);
           this.cuentaNoVerificada = true;
-          this.tokenVerificacion  = res.data.user.tokenVerificacion || '';
+          this.tokenVerificacion = res.data.user.tokenVerificacion || '';
           this.loading = false;
           return;
         }
@@ -173,8 +184,12 @@ export class LoginComponent implements OnInit {
           console.log('🎭 Rol del usuario:', rol);
 
           if (rol !== this.userRole) {
-            console.warn(`⚠️ Rol no coincide. Esperado: ${this.userRole}, Recibido: ${rol}`);
-            alert(`Este usuario pertenece al rol "${rol}" y no puede ingresar desde el login de "${this.userRole}".`);
+            console.warn(
+              `⚠️ Rol no coincide. Esperado: ${this.userRole}, Recibido: ${rol}`,
+            );
+            alert(
+              `Este usuario pertenece al rol "${rol}" y no puede ingresar desde el login de "${this.userRole}".`,
+            );
             this.loading = false;
             return;
           }
@@ -183,7 +198,10 @@ export class LoginComponent implements OnInit {
           console.log('💾 Token guardado');
 
           const tokenGuardado = localStorage.getItem('authToken');
-          console.log('🔍 Verificación - Token en localStorage:', tokenGuardado ? '✓' : '✗');
+          console.log(
+            '🔍 Verificación - Token en localStorage:',
+            tokenGuardado ? '✓' : '✗',
+          );
 
           if (!tokenGuardado) {
             console.error('❌ ERROR: El token NO se guardó en localStorage');
@@ -196,7 +214,10 @@ export class LoginComponent implements OnInit {
           console.log('💾 Usuario guardado');
 
           const usuarioGuardado = localStorage.getItem('currentUser');
-          console.log('🔍 Verificación - Usuario en localStorage:', usuarioGuardado ? '✓' : '✗');
+          console.log(
+            '🔍 Verificación - Usuario en localStorage:',
+            usuarioGuardado ? '✓' : '✗',
+          );
 
           this.loading = false;
 
@@ -261,26 +282,28 @@ export class LoginComponent implements OnInit {
       </mat-dialog-actions>
     </div>
   `,
-  styles: [`
-    .dialog-container {
-      font-family: 'Poppins', sans-serif;
-      padding: 24px;
-      max-width: 400px;
-    }
-    h2 {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #d32f2f;
-      font-weight: 600;
-      margin: 0;
-    }
-    p {
-      margin-top: 1rem;
-      font-size: 0.95rem;
-      color: #444;
-    }
-  `]
+  styles: [
+    `
+      .dialog-container {
+        font-family: 'Poppins', sans-serif;
+        padding: 24px;
+        max-width: 400px;
+      }
+      h2 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #d32f2f;
+        font-weight: 600;
+        margin: 0;
+      }
+      p {
+        margin-top: 1rem;
+        font-size: 0.95rem;
+        color: #444;
+      }
+    `,
+  ],
 })
 export class AccessDeniedDialog {
   constructor(@Inject(MAT_DIALOG_DATA) public message: string) {}
