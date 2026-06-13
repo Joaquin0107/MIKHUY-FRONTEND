@@ -31,3 +31,15 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   color: white !important;
 }
 
+.email-dialog-panel .mat-mdc-dialog-container {
+  overflow: hidden !important;
+}
+
+.email-dialog-panel .mdc-dialog__surface {
+  overflow: hidden !important;
+  border-radius: 16px !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  max-height: 90vh !important;
+}

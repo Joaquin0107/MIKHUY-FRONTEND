@@ -215,9 +215,6 @@
 
 /* ========== SIDEBAR ========== */
 .sidebar {
-  width: 300px;
-  background: white;
-  border-right: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
 }
@@ -245,9 +242,7 @@
 }
 
 .student-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0 !important;
+  flex: 0 0 auto;
 }
 
 .student-list mat-list-item {
@@ -3201,13 +3196,6 @@
   justify-content: flex-end;
 }
 
-.email-dialog-panel .mat-mdc-dialog-container,
-.email-dialog-panel .mdc-dialog__surface {
-  overflow: hidden !important;
-  border-radius: 16px !important;
-  padding: 0 !important;
-}
-
 .no-results {
   display: flex;
   flex-direction: column;
@@ -3216,6 +3204,7 @@
   padding: 2rem 1rem;
   text-align: center;
   color: #999;
+  margin-top: 0;
 }
 
 .no-results mat-icon {

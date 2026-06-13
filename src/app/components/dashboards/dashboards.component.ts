@@ -3701,7 +3701,6 @@ export class AlertaSaludDialog {
         flex-direction: column;
         max-height: 90vh;
         overflow: hidden;
-        margin: -24px;
       }
 
       /* ========== HEADER ========== */
