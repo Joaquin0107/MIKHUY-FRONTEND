@@ -297,12 +297,12 @@ export class GamePlayDialog implements OnInit, OnDestroy {
 
   // ── RETO 7 DÍAS ───────────────────────────────────────────────────────────
   temaReto: { titulo: string; descripcion: string; emoji: string } | null = null;
-  alimentosFrutas: number = 0;
-  alimentosVerduras: number = 0;
-  alimentosProteinas: number = 0;
-  alimentosCarbohidratos: number = 0;
-  alimentosLacteos: number = 0;
-  alimentosDulces: number = 0;
+  alimentosFrutas: number = 1;
+  alimentosVerduras: number = 1;
+  alimentosProteinas: number = 1;
+  alimentosCarbohidratos: number = 1;
+  alimentosLacteos: number = 1;
+  alimentosDulces: number = 1;
   emocionSeleccionada: string = '';
   notasReto: string = '';
 
