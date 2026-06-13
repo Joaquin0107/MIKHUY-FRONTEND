@@ -30,6 +30,7 @@ import { AmigoService, Companero } from '../../services/amigo.service';
 import { GamePlayDialog } from '../game-play-dialog/game-play-dialog.component';
 import { RankingInlineDialog } from '../ranking-dialog/ranking-dialog.component';
 import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.component';
+import { EstadoAmistad } from '../../services/amigo.service';
 
 import { DashboardsComponent } from '../dashboards/dashboards.component';
 
@@ -256,7 +257,10 @@ export class InstruccionesJuegoDialog {
       </div>
 
       <mat-dialog-content>
-        <div *ngIf="solicitudesRecibidas.length > 0" class="solicitudes-section">
+        <div
+          *ngIf="solicitudesRecibidas.length > 0"
+          class="solicitudes-section"
+        >
           <div class="section-label">
             <mat-icon>person_add</mat-icon>
             Solicitudes recibidas ({{ solicitudesRecibidas.length }})
@@ -286,13 +290,17 @@ export class InstruccionesJuegoDialog {
 
         <div *ngIf="amigosConfirmados.length > 0" class="amigos-section">
           <div class="section-label">
-            <mat-icon>favorite</mat-icon> Mis amigos ({{ amigosConfirmados.length }})
+            <mat-icon>favorite</mat-icon> Mis amigos ({{
+              amigosConfirmados.length
+            }})
           </div>
           <div class="amigo-chip" *ngFor="let a of amigosConfirmados">
             <mat-icon class="chip-avatar-icon">account_circle</mat-icon>
             <div class="chip-info">
               <span class="chip-nombre">{{ a.nombres }} {{ a.apellidos }}</span>
-              <span class="chip-pts"><mat-icon>stars</mat-icon>{{ a.puntosAcumulados }} pts</span>
+              <span class="chip-pts"
+                ><mat-icon>stars</mat-icon>{{ a.puntosAcumulados }} pts</span
+              >
             </div>
 
             <button
@@ -332,9 +340,16 @@ export class InstruccionesJuegoDialog {
           <mat-spinner diameter="36"></mat-spinner>
         </div>
 
-        <div class="empty-wrap" *ngIf="!loading && companerosFiltrados.length === 0">
+        <div
+          class="empty-wrap"
+          *ngIf="!loading && companerosFiltrados.length === 0"
+        >
           <mat-icon>group_off</mat-icon>
-          <p>{{ busqueda ? 'Sin resultados' : 'No hay compañeros registrados aún' }}</p>
+          <p>
+            {{
+              busqueda ? 'Sin resultados' : 'No hay compañeros registrados aún'
+            }}
+          </p>
         </div>
 
         <div class="companero-row" *ngFor="let c of companerosFiltrados">
@@ -357,16 +372,25 @@ export class InstruccionesJuegoDialog {
           >
             <mat-icon>person_add</mat-icon> Agregar
           </button>
-          
-          <span class="status-badge pendiente" *ngIf="estadosAmistad[c.id] === 'pendiente_enviada'">
+
+          <span
+            class="status-badge pendiente"
+            *ngIf="estadosAmistad[c.id] === 'pendiente_enviada'"
+          >
             <mat-icon>hourglass_empty</mat-icon> Enviada
           </span>
 
-          <span class="status-badge pendiente" *ngIf="estadosAmistad[c.id] === 'pendiente_recibida'">
+          <span
+            class="status-badge pendiente"
+            *ngIf="estadosAmistad[c.id] === 'pendiente_recibida'"
+          >
             <mat-icon>alert</mat-icon> Te solicitó
           </span>
-          
-          <span class="status-badge amigo" *ngIf="estadosAmistad[c.id] === 'amigos'">
+
+          <span
+            class="status-badge amigo"
+            *ngIf="estadosAmistad[c.id] === 'amigos'"
+          >
             <mat-icon>check</mat-icon> Amigos
           </span>
         </div>
@@ -701,12 +725,7 @@ export class InstruccionesJuegoDialog {
       }
 
       .btn-ver-perfil:hover {
-        background-color: rgba(
-          72,
-          163,
-          243,
-          0.08
-        ) !important; 
+        background-color: rgba(72, 163, 243, 0.08) !important;
       }
 
       .recibida-row {
@@ -753,13 +772,13 @@ export class AmigosDialog implements OnInit {
   busqueda = '';
   loading = true;
   loadingId: string | null = null;
-  
+
   companeros: Companero[] = [];
   amigosConfirmados: Companero[] = [];
   solicitudesRecibidas: Companero[] = [];
-  
-  // Diccionario para almacenar de forma asíncrona el estado de cada compañero
-  estadosAmistad: { [key: string]: string } = {};
+  solicitudesEnviadasIds: string[] = [];
+
+  estadosAmistad: Record<string, EstadoAmistad> = {};
 
   get companerosFiltrados(): Companero[] {
     if (!this.busqueda.trim()) return this.companeros;
@@ -776,61 +795,97 @@ export class AmigosDialog implements OnInit {
     public dialogRef: MatDialogRef<AmigosDialog>,
     private amigoService: AmigoService,
     private snackBar: MatSnackBar,
+    private router: Router,
     private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
-    this.cargarDatos();
+    this.cargarDatosIniciales();
   }
 
-  cargarDatos(): void {
+  cargarDatosIniciales(): void {
     this.loading = true;
 
-    // Ejecutamos consultas paralelas reales al Backend
+    // 1. Solicitudes recibidas
+    this.amigoService.getSolicitudesRecibidas().subscribe({
+      next: (lista) => (this.solicitudesRecibidas = lista as any),
+      error: (err) => console.error('Error al cargar solicitudes:', err),
+    });
+
+    // 2. Amigos confirmados
+    this.amigoService.getAmigos().subscribe({
+      next: (lista) => (this.amigosConfirmados = lista),
+      error: (err) => console.error('Error al cargar amigos:', err),
+    });
+
+    // 3. Compañeros + estado de cada uno
     this.amigoService.getCompaneros().subscribe({
       next: (lista) => {
         this.companeros = lista;
-        
-        // Consultar el estado de amistad individual para cada compañero
-        this.companeros.forEach(c => {
-          this.amigoService.getEstado(c.id).subscribe(estado => {
-            this.estadosAmistad[c.id] = estado;
-          });
-        });
-        
+        this.loading = false;
+        this.cargarEstados(lista);
+      },
+      error: () => {
         this.loading = false;
       },
-      error: () => this.loading = false
     });
+  }
 
-    this.amigoService.getAmigos().subscribe({
-  next: (amigos) => { this.amigosConfirmados = amigos; }
-});
-
-    this.amigoService.getSolicitudesRecibidas().subscribe(solicitudes => {
-      this.solicitudesRecibidas = solicitudes;
+  /** Carga el estado de relación (ninguno/pendiente/amigos) para cada compañero */
+  private cargarEstados(lista: Companero[]): void {
+    lista.forEach((c) => {
+      this.amigoService.getEstado(c.id).subscribe({
+        next: (estado) => (this.estadosAmistad[c.id] = estado),
+        error: (err) =>
+          console.error(
+            `No se pudo obtener estado para el compañero ${c.id}:`,
+            err,
+          ),
+      });
     });
+  }
+
+  getEstado(otroId: string): string {
+    const estado = this.estadosAmistad[otroId] ?? 'ninguno';
+    // El template original usaba 'NONE' | 'SENT' | 'FRIEND'
+    switch (estado) {
+      case 'amigos':
+        return 'FRIEND';
+      case 'pendiente_enviada':
+        return 'SENT';
+      default:
+        return 'NONE';
+    }
   }
 
   enviar(c: Companero): void {
     this.loadingId = c.id;
     this.amigoService.enviarSolicitud(c.id).subscribe({
       next: () => {
-        this.snackBar.open(`Solicitud enviada a ${c.nombres}`, '', { duration: 2500 });
+        this.snackBar.open(`Solicitud enviada a ${c.nombres}`, '', {
+          duration: 2500,
+          panelClass: 'snackbar-success',
+        });
         this.estadosAmistad[c.id] = 'pendiente_enviada';
         this.loadingId = null;
-        
-        // Opcional: Enviar notificación push/backend si lo deseas
-        this.amigoService.notificar({
-          destinatarioEstudianteId: c.id,
-          tipo: 'SOLICITUD_AMISTAD',
-          mensaje: `${this.data.miNombre} te ha enviado una solicitud de amistad.`,
-          nombreRemitente: this.data.miNombre,
-          remitenteEstudianteId: this.data.miEstudianteId
-        }).subscribe();
+
+        // Notificación visual al destinatario (opcional)
+        this.amigoService
+          .notificar({
+            destinatarioEstudianteId: c.id,
+            tipo: 'amistad_solicitud',
+            mensaje: `${this.data.miNombre} te envió una solicitud de amistad`,
+            nombreRemitente: this.data.miNombre,
+            remitenteEstudianteId: this.data.miEstudianteId,
+          })
+          .subscribe({ error: () => {} });
       },
       error: (err) => {
-        this.snackBar.open(err.error?.message || 'Error al enviar solicitud', '', { duration: 2500 });
+        this.snackBar.open(
+          err.error?.message || 'Error al enviar solicitud',
+          '',
+          { duration: 2500, panelClass: 'snackbar-error' },
+        );
         this.loadingId = null;
       },
     });
@@ -840,12 +895,35 @@ export class AmigosDialog implements OnInit {
     this.loadingId = remitenteId;
     this.amigoService.aceptarSolicitud(remitenteId).subscribe({
       next: () => {
-        this.snackBar.open(`¡Ahora eres amigo de ${remitenteNombre}!`, '', { duration: 2500 });
+        this.solicitudesRecibidas = this.solicitudesRecibidas.filter(
+          (s: any) => s.id !== remitenteId,
+        );
+        this.snackBar.open(`¡Ahora eres amigo de ${remitenteNombre}!`, '', {
+          duration: 2500,
+          panelClass: 'snackbar-success',
+        });
         this.estadosAmistad[remitenteId] = 'amigos';
         this.loadingId = null;
-        this.cargarDatos(); // Recarga listas para moverlo a la sección de confirmados
+
+        // Refrescar lista de amigos confirmados
+        this.amigoService.getAmigos().subscribe({
+          next: (lista) => (this.amigosConfirmados = lista),
+        });
+
+        // Notificación visual (opcional)
+        this.amigoService
+          .notificar({
+            destinatarioEstudianteId: remitenteId,
+            tipo: 'amistad_aceptada',
+            mensaje: `${this.data.miNombre} aceptó tu solicitud de amistad`,
+            nombreRemitente: this.data.miNombre,
+            remitenteEstudianteId: this.data.miEstudianteId,
+          })
+          .subscribe({ error: () => {} });
       },
-      error: () => this.loadingId = null
+      error: () => {
+        this.loadingId = null;
+      },
     });
   }
 
@@ -853,24 +931,34 @@ export class AmigosDialog implements OnInit {
     this.loadingId = remitenteId;
     this.amigoService.eliminarRelacion(remitenteId).subscribe({
       next: () => {
+        this.solicitudesRecibidas = this.solicitudesRecibidas.filter(
+          (s: any) => s.id !== remitenteId,
+        );
         this.estadosAmistad[remitenteId] = 'ninguno';
         this.loadingId = null;
-        this.cargarDatos();
       },
-      error: () => this.loadingId = null
+      error: () => {
+        this.loadingId = null;
+      },
     });
   }
 
   eliminar(amigoId: string): void {
-    this.loadingId = amigoId;
     this.amigoService.eliminarRelacion(amigoId).subscribe({
       next: () => {
-        this.snackBar.open('Amigo eliminado', '', { duration: 2000 });
+        this.amigosConfirmados = this.amigosConfirmados.filter(
+          (a) => a.id !== amigoId,
+        );
         this.estadosAmistad[amigoId] = 'ninguno';
-        this.loadingId = null;
-        this.cargarDatos();
+        this.snackBar.open('Amigo eliminado', '', { duration: 2000 });
       },
-      error: () => this.loadingId = null
+      error: (err) => {
+        console.error('Error eliminando amistad en backend:', err);
+        this.snackBar.open('No se pudo eliminar el amigo', '', {
+          duration: 2000,
+          panelClass: 'snackbar-error',
+        });
+      },
     });
   }
 
@@ -880,11 +968,13 @@ export class AmigosDialog implements OnInit {
     config.maxWidth = '1200px';
     config.height = '90vh';
     config.maxHeight = '90vh';
+
     config.data = {
       estudianteId: amigo.id,
       nombreCompleto: `${amigo.nombres} ${amigo.apellidos}`,
       isViewOnly: true,
     };
+
     this.dialog.open(DashboardsComponent, config);
   }
 }
@@ -1052,7 +1142,6 @@ export class JuegosComponent implements OnInit, OnDestroy {
       error: (err) => console.error('Error cargando puntos:', err),
     });
 
-    // Cargar perfil para obtener id, nombre, grado y sección
     this.studentService.getMiPerfil().subscribe({
       next: (response: any) => {
         const data = response?.data ?? response;
@@ -1061,13 +1150,19 @@ export class JuegosComponent implements OnInit, OnDestroy {
           this.miNombre = `${data.nombres} ${data.apellidos}`;
           this.miGrado = data.grado ?? '';
           this.miSeccion = data.seccion ?? '';
-          // Actualizar badge de solicitudes pendientes
-          this.amigoService.getSolicitudesRecibidas().subscribe(solicitudes => {
-            this.solicitudesCount = solicitudes.length;}
-          );
+
+          // NUEVO: contar solicitudes recibidas desde backend
+          this.refrescarSolicitudesCount();
         }
       },
       error: (err) => console.error('Error cargando perfil:', err),
+    });
+  }
+
+  refrescarSolicitudesCount(): void {
+    this.amigoService.getSolicitudesRecibidas().subscribe({
+      next: (lista) => (this.solicitudesCount = lista.length),
+      error: () => (this.solicitudesCount = 0),
     });
   }
 
@@ -1085,11 +1180,8 @@ export class JuegosComponent implements OnInit, OnDestroy {
       },
     });
 
-    // Al cerrar refrescar badge
     dialogRef.afterClosed().subscribe(() => {
-      this.amigoService.getSolicitudesRecibidas().subscribe(solicitudes => {
-        this.solicitudesCount = solicitudes.length;
-      });
+      this.refrescarSolicitudesCount();
     });
   }
 
