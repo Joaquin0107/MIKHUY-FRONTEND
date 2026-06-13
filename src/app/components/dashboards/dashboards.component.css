@@ -3200,3 +3200,32 @@
   width: 100%;
   justify-content: flex-end;
 }
+
+.email-dialog-panel .mat-mdc-dialog-container,
+.email-dialog-panel .mdc-dialog__surface {
+  overflow: hidden !important;
+  border-radius: 16px !important;
+  padding: 0 !important;
+}
+
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #999;
+}
+
+.no-results mat-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: #ccc;
+}
+
+.no-results p {
+  margin: 0;
+  font-size: 0.85rem;
+}

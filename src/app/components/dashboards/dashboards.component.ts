@@ -2682,6 +2682,9 @@ export class DashboardsComponent implements OnInit {
 
     const dialogRef = this.dialog.open(EmailDialog, {
       width: '500px',
+      maxWidth: '95vw',
+      maxHeight: '90vh',
+      panelClass: 'email-dialog-panel',
       data: { student: this.selectedStudent },
     });
 
@@ -3694,6 +3697,11 @@ export class AlertaSaludDialog {
         font-family: 'Poppins', sans-serif;
         width: 500px;
         max-width: 90vw;
+        display: flex;
+        flex-direction: column;
+        max-height: 90vh;
+        overflow: hidden;
+        margin: -24px;
       }
 
       /* ========== HEADER ========== */

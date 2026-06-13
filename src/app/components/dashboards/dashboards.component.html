@@ -164,6 +164,15 @@
           </div>
         </mat-list-item>
       </mat-list>
+      <!-- NUEVO: empty state cuando no hay resultados -->
+      <div class="no-results" *ngIf="filteredStudents.length === 0">
+        <mat-icon>search_off</mat-icon>
+        <p>
+          No se encontraron estudiantes{{
+            searchQuery ? ' para "' + searchQuery + '"' : ""
+          }}
+        </p>
+      </div>
     </div>
     <!-- ========== FIN SIDEBAR ========== -->
 
