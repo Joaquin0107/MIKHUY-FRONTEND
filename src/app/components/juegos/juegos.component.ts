@@ -144,11 +144,24 @@ import { DashboardsComponent } from '../dashboards/dashboards.component';
         color: white !important;
       }
       mat-dialog-content {
-        padding: 0 !important;
-        margin: 0 !important;
-        max-height: 60vh;
+        padding: 1rem 0 1rem 1.5rem !important;
+        max-height: 55vh;
         overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        border: none !important;
+        outline: none !important;
       }
+
+      .solicitud-row,
+      .buscar-wrap,
+      .section-label,
+      .companero-row,
+      .amigo-chip {
+        margin-right: 1.5rem !important;
+      }
+      
       .inst-lista {
         margin: 0 0 1.25rem;
         padding: 0 1.5rem;
