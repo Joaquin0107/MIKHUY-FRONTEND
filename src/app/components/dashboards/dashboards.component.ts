@@ -2801,10 +2801,9 @@ export class DashboardsComponent implements OnInit {
     const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
     // Juegos jugados HASTA esa fecha
-    // Juegos jugados HASTA esa fecha
 this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
   const raw =
-    juego.fechaModificacion ??
+    juego.fechaModificacFion ??
     juego.fecha ??
     juego.updatedAt ??
     juego.createdAt;
