@@ -462,6 +462,23 @@ export class PerfilComponent implements OnInit {
         this.selectedAvatar = e.target.result;
         sessionStorage.setItem('userAvatar', e.target.result);
       };
+      reader.onload = (e: any) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 200;
+          const scale = Math.min(MAX / img.width, MAX / img.height, 1);
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          canvas
+            .getContext('2d')!
+            .drawImage(img, 0, 0, canvas.width, canvas.height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.7);
+          this.selectedAvatar = compressed;
+          sessionStorage.setItem('userAvatar', compressed);
+        };
+        img.src = e.target.result;
+      };
       reader.readAsDataURL(file);
     }
   }
@@ -565,7 +582,8 @@ export class PerfilComponent implements OnInit {
             const currentUser = this.authService.getCurrentUser();
             if (currentUser) {
               currentUser.name = `${updateData.nombres} ${updateData.apellidos}`;
-              if (updateData.avatarUrl) currentUser.avatarUrl = updateData.avatarUrl;
+              if (updateData.avatarUrl)
+                currentUser.avatarUrl = updateData.avatarUrl;
               this.authService.saveUser(currentUser);
             }
             this.avatarFile = null;
