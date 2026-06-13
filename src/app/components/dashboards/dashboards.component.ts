@@ -2803,6 +2803,7 @@ export class DashboardsComponent implements OnInit {
     // Juegos jugados HASTA esa fecha
 this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
   const raw =
+    juego.ultimaJugada ??
     juego.fechaModificacFion ??
     juego.fecha ??
     juego.updatedAt ??
