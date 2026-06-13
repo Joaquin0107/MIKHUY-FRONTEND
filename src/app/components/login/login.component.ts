@@ -196,6 +196,7 @@ export class LoginComponent implements OnInit {
 
           this.authService.saveToken(res.data.token);
           console.log('💾 Token guardado');
+          this.authService.saveSessionExpiry();
 
           const tokenGuardado = localStorage.getItem('authToken');
           console.log(

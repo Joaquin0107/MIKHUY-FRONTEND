@@ -20,6 +20,7 @@ export class AuthService {
   private baseUrl = `${environment.apiUrl}/api/auth`;
   private tokenKey = 'authToken';
   private userKey = 'currentUser';
+  private sessionExpiryKey = 'sessionExpiry';
 
   constructor(private http: HttpClient) {}
 
@@ -28,27 +29,31 @@ export class AuthService {
   }
 
   cambiarContrasena(data: ChangePasswordRequest): Observable<ApiResponse<any>> {
-    return this.http.put<ApiResponse<any>>(`${this.baseUrl}/change-password`, data);
+    return this.http.put<ApiResponse<any>>(
+      `${this.baseUrl}/change-password`,
+      data,
+    );
   }
 
   // ── CP010: Activar cuenta con token ──────────────────────────────────────
   activarCuenta(token: string): Observable<ApiResponse<void>> {
     return this.http.get<ApiResponse<void>>(
-      `${this.baseUrl}/activate?token=${token}`
+      `${this.baseUrl}/activate?token=${token}`,
     );
   }
 
   // ── CP011: Reenviar enlace de activación ──────────────────────────────────
   reenviarActivacion(tokenAntiguo: string): Observable<ApiResponse<string>> {
     return this.http.post<ApiResponse<string>>(
-      `${this.baseUrl}/resend?token=${tokenAntiguo}`, {}
+      `${this.baseUrl}/resend?token=${tokenAntiguo}`,
+      {},
     );
   }
 
   // ── Panel admin: obtener URL de activación ────────────────────────────────
   getActivationUrl(email: string): Observable<ApiResponse<string>> {
     return this.http.get<ApiResponse<string>>(
-      `${this.baseUrl}/activation-url?email=${encodeURIComponent(email)}`
+      `${this.baseUrl}/activation-url?email=${encodeURIComponent(email)}`,
     );
   }
 
@@ -73,6 +78,7 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
     localStorage.removeItem('studentPoints');
+    localStorage.removeItem(this.sessionExpiryKey);
   }
 
   isLoggedIn(): boolean {
@@ -81,5 +87,21 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     return this.isLoggedIn();
+  }
+
+  saveSessionExpiry(): void {
+    const expiry = Date.now() + 30 * 60 * 1000;
+    localStorage.setItem(this.sessionExpiryKey, expiry.toString());
+  }
+
+  refreshSessionExpiry(): void {
+    const expiry = Date.now() + 30 * 60 * 1000;
+    localStorage.setItem(this.sessionExpiryKey, expiry.toString());
+  }
+
+  isSessionExpired(): boolean {
+    const expiry = localStorage.getItem(this.sessionExpiryKey);
+    if (!expiry) return true;
+    return Date.now() > parseInt(expiry);
   }
 }

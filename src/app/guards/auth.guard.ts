@@ -9,11 +9,14 @@ import { AuthService } from '../services/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
+    state: RouterStateSnapshot,
   ): boolean {
     const token =
       this.authService.getToken?.() ||
@@ -26,6 +29,15 @@ export class AuthGuard implements CanActivate {
       });
       return false;
     }
+
+    // ── Verificar expiración por inactividad ──────────────
+    if (this.authService.isSessionExpired()) {
+      this.authService.logout();
+      alert('Tu sesión ha expirado. Por favor inicia sesión nuevamente.');
+      this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+      return false;
+    }
+    // ─────────────────────────────────────────────────────
 
     const user = this.authService.getCurrentUser?.();
     const expectedRole = route.data['role'] as string;
