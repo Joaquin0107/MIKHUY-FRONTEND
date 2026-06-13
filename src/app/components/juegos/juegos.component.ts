@@ -403,9 +403,11 @@ export class InstruccionesJuegoDialog {
         font-family: 'Poppins', sans-serif;
         width: 520px;
         max-width: 100%;
-        margin: -24px; /* Simplificado: un solo valor aplica a los 4 lados limpiamente */
+        margin: -24px;
         display: flex;
         flex-direction: column;
+        max-height: 90vh;
+        border-radius: 8px;
         overflow: hidden;
       }
 
@@ -458,7 +460,7 @@ export class InstruccionesJuegoDialog {
 
       mat-dialog-content {
         padding: 1.25rem 24px !important;
-        max-height: 55vh;
+        max-height: 65vh;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
@@ -523,10 +525,16 @@ export class InstruccionesJuegoDialog {
         display: flex;
         align-items: center;
         gap: 0.6rem;
-        padding: 0.5rem 0.75rem;
+        padding: 0.7rem 1rem;
         background: #f1f8e9;
-        border-radius: 8px;
-        margin-bottom: 0.4rem;
+        border: 1px solid #c8e6c9;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        transition: box-shadow 0.2s;
+      }
+
+      .amigo-chip:hover {
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.15);
       }
 
       .chip-avatar-icon {
@@ -661,8 +669,19 @@ export class InstruccionesJuegoDialog {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        padding: 0.6rem 0;
-        border-bottom: 1px solid #f5f5f5;
+        padding: 0.7rem 1rem;
+        background: #f8fbff;
+        border: 1px solid #e3f2fd;
+        border-radius: 10px;
+        margin-bottom: 0.5rem;
+        transition:
+          box-shadow 0.2s,
+          border-color 0.2s;
+      }
+
+      .companero-row:hover {
+        border-color: #48a3f3;
+        box-shadow: 0 2px 8px rgba(72, 163, 243, 0.12);
       }
 
       .comp-avatar-icon {
