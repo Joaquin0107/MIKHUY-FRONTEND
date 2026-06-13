@@ -43,3 +43,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   flex-direction: column !important;
   max-height: 90vh !important;
 }
+
+.email-dialog-panel mat-dialog-actions {
+  margin: 0 !important;
+  box-sizing: border-box;
+}

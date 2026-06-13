@@ -3462,8 +3462,11 @@ export class DashboardsComponent implements OnInit {
       }
 
       mat-dialog-content {
-        max-height: 70vh;
+        padding: 0 1.5rem !important;
+        margin: 0 !important;
+        overflow-x: hidden;
         overflow-y: auto;
+        max-height: 50vh;
       }
 
       mat-dialog-actions button mat-icon {
@@ -3974,12 +3977,12 @@ export class AlertaSaludDialog {
 
       /* ========== ACTIONS ========== */
       mat-dialog-actions {
-        padding: 1.25rem 1.5rem !important;
-        margin: 1rem -24px -24px -24px !important;
-        gap: 1rem;
+        padding: 1rem 1.5rem !important;
+        margin: 0 !important;
+        border-top: 1px solid #eee;
         display: flex;
         justify-content: flex-end;
-        border-top: 1px solid #eee;
+        gap: 8px;
         background: #fafafa;
       }
 
