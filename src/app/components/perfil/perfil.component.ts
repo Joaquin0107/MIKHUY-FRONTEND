@@ -101,7 +101,7 @@ export class PerfilComponent implements OnInit {
     return this.companeros.filter(
       (c) =>
         c.nombres.toLowerCase().includes(q) ||
-        c.apellidos.toLowerCase().includes(q)
+        c.apellidos.toLowerCase().includes(q),
     );
   }
 
@@ -204,8 +204,7 @@ export class PerfilComponent implements OnInit {
           // ── Amigos: capturar id y nombre del estudiante autenticado ───────
           if (response.data.id) {
             this.miEstudianteId = response.data.id.toString();
-            this.miNombreCompleto =
-              `${response.data.nombres} ${response.data.apellidos}`;
+            this.miNombreCompleto = `${response.data.nombres} ${response.data.apellidos}`;
           }
           // Procesar notificaciones de amistad y cargar compañeros
           this.procesarNotificacionesAmistad();
@@ -224,10 +223,15 @@ export class PerfilComponent implements OnInit {
       error: (error) => {
         console.error('❌ Error cargando perfil:', error);
         if (error.status === 401) {
-          this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
+          this.showMessage(
+            'Sesión expirada. Inicia sesión nuevamente.',
+            'error',
+          );
           setTimeout(() => {
             this.authService.logout();
-            this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+            this.router.navigate(['/login'], {
+              queryParams: { role: 'student' },
+            });
           }, 2000);
         } else {
           this.showMessage('Error al cargar el perfil', 'error');
@@ -272,7 +276,7 @@ export class PerfilComponent implements OnInit {
       next: (solicitudes) => {
         this.solicitudesRecibidas = solicitudes;
       },
-      error: (err: any) => console.error('Error al cargar solicitudes:', err)
+      error: (err: any) => console.error('Error al cargar solicitudes:', err),
     });
   }
 
@@ -281,24 +285,37 @@ export class PerfilComponent implements OnInit {
     this.amigoService.getCompaneros().subscribe({
       next: (lista) => {
         this.companeros = lista;
-        this.companeros.forEach(c => {
+        this.loadingCompaneros = false; // ← AGREGAR
+
+        this.amigoService.getAmigos().subscribe({
+          next: (lista) => (this.amigosConfirmados = lista),
+          error: () => (this.amigosConfirmados = []),
+        });
+        this.companeros.forEach((c) => {
           this.amigoService.getEstado(c.id).subscribe({
             next: (estado) => {
               this.estadosAmistad[c.id] = estado;
             },
             error: (err) => {
-              console.warn(`No se pudo obtener estado para el compañero ${c.id}:`, err);
+              console.warn(
+                `No se pudo obtener estado para el compañero ${c.id}:`,
+                err,
+              );
               this.estadosAmistad[c.id] = 'ninguno';
-            }
+            },
           });
         });
-      }
+      },
+      error: (err) => {
+        console.error('Error al cargar compañeros:', err);
+        this.loadingCompaneros = false;
+      },
     });
   }
 
   getEstadoAmigo(otroId: string): string {
-  return this.estadosAmistad[otroId] || 'ninguno';
-}
+    return this.estadosAmistad[otroId] || 'ninguno';
+  }
 
   enviarSolicitud(companero: Companero): void {
     this.amigoService.enviarSolicitud(companero.id).subscribe({
@@ -306,7 +323,11 @@ export class PerfilComponent implements OnInit {
         this.showMessage(`Solicitud enviada a ${companero.nombres}`, 'success');
         this.estadosAmistad[companero.id] = 'pendiente_enviada';
       },
-      error: (err: any) => this.showMessage(err.error?.message || 'Error al enviar solicitud', 'error')
+      error: (err: any) =>
+        this.showMessage(
+          err.error?.message || 'Error al enviar solicitud',
+          'error',
+        ),
     });
   }
 
@@ -316,9 +337,12 @@ export class PerfilComponent implements OnInit {
         this.showMessage(`¡Ahora eres amigo de ${remitenteNombre}!`, 'success');
         this.estadosAmistad[remitenteId] = 'amigos';
         this.procesarNotificacionesAmistad();
-        this.amigoService.getAmigos().subscribe(a => this.amigosConfirmados = a);
+        this.amigoService
+          .getAmigos()
+          .subscribe((a) => (this.amigosConfirmados = a));
       },
-      error: (err: any) => this.showMessage('Error al aceptar amistad', 'error')
+      error: (err: any) =>
+        this.showMessage('Error al aceptar amistad', 'error'),
     });
   }
 
@@ -329,7 +353,8 @@ export class PerfilComponent implements OnInit {
         this.estadosAmistad[remitenteId] = 'ninguno';
         this.procesarNotificacionesAmistad();
       },
-      error: (err: any) => this.showMessage('Error al rechazar solicitud', 'error')
+      error: (err: any) =>
+        this.showMessage('Error al rechazar solicitud', 'error'),
     });
   }
 
@@ -338,9 +363,11 @@ export class PerfilComponent implements OnInit {
       next: () => {
         this.showMessage('Amigo eliminado de tu lista', 'success');
         this.estadosAmistad[amigoId] = 'ninguno';
-        this.amigoService.getAmigos().subscribe(a => this.amigosConfirmados = a);
+        this.amigoService
+          .getAmigos()
+          .subscribe((a) => (this.amigosConfirmados = a));
       },
-      error: (err: any) => this.showMessage('Error al eliminar amigo', 'error')
+      error: (err: any) => this.showMessage('Error al eliminar amigo', 'error'),
     });
   }
 
@@ -354,14 +381,20 @@ export class PerfilComponent implements OnInit {
     if (!fechaRegistro) return 0;
     const fecha = new Date(fechaRegistro);
     const hoy = new Date();
-    return Math.floor((hoy.getTime() - fecha.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.floor(
+      (hoy.getTime() - fecha.getTime()) / (1000 * 60 * 60 * 24),
+    );
   }
 
   calcularDiasDesdeRegistro(): number {
     if (this.perfilData) {
-      const fechaRegistro = new Date(this.perfilData.fechaRegistro || Date.now());
+      const fechaRegistro = new Date(
+        this.perfilData.fechaRegistro || Date.now(),
+      );
       const hoy = new Date();
-      return Math.floor((hoy.getTime() - fechaRegistro.getTime()) / (1000 * 60 * 60 * 24));
+      return Math.floor(
+        (hoy.getTime() - fechaRegistro.getTime()) / (1000 * 60 * 60 * 24),
+      );
     }
     return 0;
   }
@@ -402,7 +435,7 @@ export class PerfilComponent implements OnInit {
         newPassword: ['', [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', Validators.required],
       },
-      { validators: this.passwordMatchValidator }
+      { validators: this.passwordMatchValidator },
     );
   }
 
@@ -442,7 +475,10 @@ export class PerfilComponent implements OnInit {
 
   guardarPerfil(): void {
     if (!this.perfilForm.valid) {
-      this.showMessage('Por favor completa todos los campos requeridos', 'error');
+      this.showMessage(
+        'Por favor completa todos los campos requeridos',
+        'error',
+      );
       return;
     }
 
@@ -462,7 +498,8 @@ export class PerfilComponent implements OnInit {
     this.loading = true;
 
     const seccionRaw = this.perfilForm.value.seccion as string;
-    const seccionNormalizada = seccionRaw?.replace('Sección ', '').trim() ?? seccionRaw;
+    const seccionNormalizada =
+      seccionRaw?.replace('Sección ', '').trim() ?? seccionRaw;
     const pesoValue = this.perfilForm.value.peso;
     const tallaValue = this.perfilForm.value.talla;
     const edadValue = this.perfilForm.value.edad;
@@ -476,33 +513,46 @@ export class PerfilComponent implements OnInit {
       seccion: seccionNormalizada,
       edad: edadValue ? parseInt(edadValue) : undefined,
       peso: pesoValue ? parseFloat(pesoValue) : undefined,
-      talla: tallaValue ? parseFloat(parseFloat(tallaValue).toFixed(2)) : undefined,
+      talla: tallaValue
+        ? parseFloat(parseFloat(tallaValue).toFixed(2))
+        : undefined,
     };
 
     if (!this.isViewingOwnProfile && this.estudianteId) {
-      this.studentService.updateEstudiante(this.estudianteId, updateData).subscribe({
-        next: (response) => {
-          this.showMessage('Perfil del estudiante actualizado exitosamente', 'success');
-          this.loading = false;
-          this.loadEstudianteDataForTeacher(this.estudianteId!);
-        },
-        error: (error) => {
-          console.error('❌ Error actualizando estudiante:', error);
-          if (error.status === 401) {
-            this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
-            setTimeout(() => {
-              this.authService.logout();
-              this.router.navigate(['/login'], { queryParams: { role: 'teacher' } });
-            }, 2000);
-          } else {
+      this.studentService
+        .updateEstudiante(this.estudianteId, updateData)
+        .subscribe({
+          next: (response) => {
             this.showMessage(
-              error.error?.message || 'Error al actualizar el perfil del estudiante',
-              'error'
+              'Perfil del estudiante actualizado exitosamente',
+              'success',
             );
-          }
-          this.loading = false;
-        },
-      });
+            this.loading = false;
+            this.loadEstudianteDataForTeacher(this.estudianteId!);
+          },
+          error: (error) => {
+            console.error('❌ Error actualizando estudiante:', error);
+            if (error.status === 401) {
+              this.showMessage(
+                'Sesión expirada. Inicia sesión nuevamente.',
+                'error',
+              );
+              setTimeout(() => {
+                this.authService.logout();
+                this.router.navigate(['/login'], {
+                  queryParams: { role: 'teacher' },
+                });
+              }, 2000);
+            } else {
+              this.showMessage(
+                error.error?.message ||
+                  'Error al actualizar el perfil del estudiante',
+                'error',
+              );
+            }
+            this.loading = false;
+          },
+        });
     } else {
       this.perfilService.updateMiPerfil(updateData).subscribe({
         next: (response) => {
@@ -520,15 +570,23 @@ export class PerfilComponent implements OnInit {
         error: (error) => {
           console.error('❌ Error actualizando perfil:', error);
           if (error.status === 401) {
-            this.showMessage('Sesión expirada. Inicia sesión nuevamente.', 'error');
+            this.showMessage(
+              'Sesión expirada. Inicia sesión nuevamente.',
+              'error',
+            );
             setTimeout(() => {
               this.authService.logout();
-              this.router.navigate(['/login'], { queryParams: { role: 'student' } });
+              this.router.navigate(['/login'], {
+                queryParams: { role: 'student' },
+              });
             }, 2000);
           } else if (error.status === 0) {
             this.showMessage('No se pudo conectar con el servidor.', 'error');
           } else {
-            this.showMessage(error.error?.message || 'Error al actualizar el perfil', 'error');
+            this.showMessage(
+              error.error?.message || 'Error al actualizar el perfil',
+              'error',
+            );
           }
           this.loading = false;
         },
@@ -538,7 +596,10 @@ export class PerfilComponent implements OnInit {
 
   cambiarContrasena(): void {
     if (!this.seguridadForm.valid) {
-      this.showMessage('Por favor completa todos los campos correctamente', 'error');
+      this.showMessage(
+        'Por favor completa todos los campos correctamente',
+        'error',
+      );
       return;
     }
     if (this.seguridadForm.errors?.['passwordMismatch']) {
@@ -566,7 +627,10 @@ export class PerfilComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ Error cambiando contraseña:', error);
-        this.showMessage(error.error?.message || 'Error al cambiar la contraseña.', 'error');
+        this.showMessage(
+          error.error?.message || 'Error al cambiar la contraseña.',
+          'error',
+        );
         this.loading = false;
       },
     });

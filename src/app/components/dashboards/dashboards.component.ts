@@ -390,20 +390,19 @@ export class DashboardsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadExternalScripts();
-
     this.currentUser =
       this.authService.getCurrentUser() ||
       JSON.parse(localStorage.getItem('currentUser') || '{}');
-
     this.isTeacher = this.currentUser?.rol === 'teacher';
 
     if (this.dialogData?.estudianteId) {
       this.isViewOnly = this.dialogData.isViewOnly === true;
       this.amigoEstudianteId = this.dialogData.estudianteId.toString();
       this.amigoNombreCompleto = this.dialogData.nombreCompleto || null;
+      this.loadDashboardDeAmigo(this.amigoEstudianteId!);
       this.cargarAnalisisReto7DesdBackend(this.amigoEstudianteId!);
       window.addEventListener('focus', this.onWindowFocus);
-      return; // ← IMPORTANTE: evita que siga a loadMyDashboard
+      return;
     }
 
     if (this.isTeacher) {
@@ -497,21 +496,23 @@ export class DashboardsComponent implements OnInit {
       .get<any>(`${base}/api/sesiones/reto7dias/estudiante/${estudianteId}`)
       .subscribe({
         next: (res: any) => {
+          if (!this.dashboardData) return; // ← guard
+
           const registros: any[] = res?.data || [];
           if (registros.length === 0) {
-            // Fallback a localStorage si no hay datos en backend
             const analisisLocal =
               this.leerAnalisisDesdLocalStorage(estudianteId);
             if (analisisLocal)
               (this.dashboardData as any).analisisDelDia = analisisLocal;
             return;
           }
-          // Tomar el registro más reciente
           const reg = registros[0];
           (this.dashboardData as any).analisisDelDia =
             this.construirAnalisisDesdeRegistro(reg);
         },
         error: () => {
+          if (!this.dashboardData) return; // ← guard
+
           const analisisLocal = this.leerAnalisisDesdLocalStorage(estudianteId);
           if (analisisLocal)
             (this.dashboardData as any).analisisDelDia = analisisLocal;
