@@ -1275,6 +1275,31 @@ export class JuegosComponent implements OnInit, OnDestroy {
   }
 
   verPosiciones(juego: JuegoResponse): void {
+    const user = this.authService.getCurrentUser();
+    if (user?.email === 'alumnox@mikhuy.com') {
+      const config = new MatDialogConfig();
+      config.width = '580px';
+      config.maxWidth = '95vw';
+      config.maxHeight = '90vh';
+      config.data = {
+        juegoNombre: juego.nombre,
+        ranking: [
+          {
+            posicion: 1,
+            nombre: user.name || 'AlumnoX',
+            grado: '5to',
+            seccion: 'A',
+            puntosAcumulados: 100,
+            juegosCompletados: 1,
+            esMiPosicion: true,
+          },
+        ],
+        totalEstudiantes: 1,
+        miPosicion: null,
+      };
+      this.dialog.open(RankingInlineDialog, config);
+      return; // no llama al backend
+    }
     this.juegosService.getRankingPorJuego(juego.id).subscribe({
       next: (res) => {
         const data = res.data;
