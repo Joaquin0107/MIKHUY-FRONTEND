@@ -2801,15 +2801,16 @@ export class DashboardsComponent implements OnInit {
     const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
 
     // Juegos jugados HASTA esa fecha
-    this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
-      const raw =
-        juego.fechaModificacion ??
-        juego.fecha ??
-        juego.updatedAt ??
-        juego.createdAt;
-      if (!raw) return true; // sin fecha → siempre visible
-      return new Date(raw) <= endOfDay;
-    });
+    // Juegos jugados HASTA esa fecha
+this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
+  const raw =
+    juego.fechaModificacion ??
+    juego.fecha ??
+    juego.updatedAt ??
+    juego.createdAt;
+  if (!raw) return false;
+  return new Date(raw) <= endOfDay;
+});
 
     // Mediciones de salud/IMC HASTA esa fecha
     if (this.dashboardData.salud && this.originalHistorialImc) {
