@@ -161,7 +161,7 @@ import { DashboardsComponent } from '../dashboards/dashboards.component';
       .amigo-chip {
         margin-right: 1.5rem !important;
       }
-      
+
       .inst-lista {
         margin: 0 0 1.25rem;
         padding: 0 1.5rem;
@@ -414,13 +414,11 @@ export class InstruccionesJuegoDialog {
     `
       .amigos-wrap {
         font-family: 'Poppins', sans-serif;
-        width: 520px;
+        width: 680px;
         max-width: 100%;
-        margin: -24px;
         display: flex;
         flex-direction: column;
         max-height: 90vh;
-        border-radius: 8px;
         overflow: hidden;
       }
 
@@ -1201,9 +1199,10 @@ export class JuegosComponent implements OnInit, OnDestroy {
   // ── Dialog de Amigos ─────────────────────────────────────────────────────
   abrirAmigos(): void {
     const dialogRef = this.dialog.open(AmigosDialog, {
-      width: '560px',
+      width: '680px',
       maxWidth: '95vw',
       maxHeight: '90vh',
+      panelClass: 'amigos-dialog-panel',
       data: {
         miEstudianteId: this.miEstudianteId,
         miNombre: this.miNombre,

@@ -588,3 +588,10 @@ mat-dialog-content {
   border-radius: 8px !important;
   border: 1px solid #e0e0e0 !important;
 }
+
+.amigos-dialog-panel .mat-mdc-dialog-container,
+.amigos-dialog-panel .mdc-dialog__surface {
+  overflow: hidden !important;
+  border-radius: 16px !important;
+  padding: 0 !important;
+}
