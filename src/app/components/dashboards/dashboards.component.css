@@ -244,9 +244,14 @@
 }
 
 .student-list {
-  flex: 0 0 auto;
-  overflow-y: auto;
+  flex: 1 1 auto;
+  overflow-y: auto !important;
   min-height: 0;
+}
+
+.student-list mat-nav-list,
+.student-list mat-list {
+  overflow-y: visible;
 }
 
 .student-list mat-list-item {
@@ -535,6 +540,7 @@
   transition: all 0.3s;
   position: relative;
   overflow: hidden;
+  margin-bottom: 1.5rem;
 }
 
 .chart-card:hover {
