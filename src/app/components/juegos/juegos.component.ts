@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -248,6 +249,7 @@ export class InstruccionesJuegoDialog {
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     MatButtonModule,
     MatIconModule,
     MatDialogModule,

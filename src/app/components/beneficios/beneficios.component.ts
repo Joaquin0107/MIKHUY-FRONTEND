@@ -12,6 +12,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatMenuModule } from '@angular/material/menu';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   MatDialogModule,
   MatDialog,
@@ -39,6 +40,7 @@ import { FloatingChatbotComponent } from '../floating-chatbot/floating-chatbot.c
   standalone: true,
   imports: [
     CommonModule,
+    RouterLink,
     MatButtonModule,
     MatIconModule,
     MatCardModule,

@@ -22,6 +22,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AmigoService, Companero } from '../../services/amigo.service';
+import { RouterLink } from '@angular/router';
 import {
   PerfilService,
   EstudianteResponse,
@@ -37,6 +38,7 @@ import { AuthService } from '../../services/auth.service';
     CommonModule,
     ReactiveFormsModule,
     FormsModule,
+    RouterLink,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
