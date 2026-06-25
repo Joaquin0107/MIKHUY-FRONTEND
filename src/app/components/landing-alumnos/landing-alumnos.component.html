@@ -2,7 +2,7 @@
   <!-- Header -->
   <header class="header">
     <div class="header-left">
-      <a href="landing-alumnos.html" class="logo-link">
+      <a routerLink="/landing-alumnos" class="logo-link">
         <img
           src="assets/images/MIKHUY.png"
           alt="MIKHUY Logo"
@@ -37,7 +37,7 @@
         <span class="points-value">{{ studentPoints }}</span>
       </div>
 
-    <!--Apartado de Notificaciones (a futuro)-->
+      <!--Apartado de Notificaciones (a futuro)-->
 
       <mat-menu #notificationMenu="matMenu" class="notification-menu">
         <div class="notification-header">
@@ -167,6 +167,5 @@
   </main>
 
   <!-- Floating Chatbot Button -->
-<app-floating-chatbot></app-floating-chatbot>
-
+  <app-floating-chatbot></app-floating-chatbot>
 </div>

@@ -5,7 +5,7 @@
       <button mat-icon-button class="back-btn" (click)="goBack()">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <a href="landing-alumnos.html" class="logo-link">
+      <a routerLink="/landing-alumnos" class="logo-link">
         <img
           src="assets/images/MIKHUY.png"
           alt="MIKHUY Logo"
@@ -19,7 +19,11 @@
     </div>
 
     <div class="header-right">
-      <button mat-raised-button class="benefits-btn" (click)="navigateToBenefits()">
+      <button
+        mat-raised-button
+        class="benefits-btn"
+        (click)="navigateToBenefits()"
+      >
         <mat-icon>card_giftcard</mat-icon>
         BENEFICIOS
       </button>
@@ -75,10 +79,13 @@
   <!-- Games Grid -->
   <div class="games-grid" *ngIf="!loading && juegos.length > 0">
     <mat-card *ngFor="let juego of juegos" class="game-card">
-
       <!-- Imagen -->
       <div class="card-image">
-        <img [src]="juego.image" [alt]="juego.title" (error)="onImageError($event)">
+        <img
+          [src]="juego.image"
+          [alt]="juego.title"
+          (error)="onImageError($event)"
+        />
         <div class="categoria-badge">{{ juego.categoria }}</div>
       </div>
 
@@ -96,28 +103,40 @@
           <mat-progress-bar
             mode="determinate"
             [value]="getProgressPercent(juego)"
-            color="primary">
+            color="primary"
+          >
           </mat-progress-bar>
         </div>
       </mat-card-content>
 
       <!-- Acciones -->
       <mat-card-actions>
-        <button mat-button class="action-btn-posiciones" (click)="verPosiciones(juego)">
+        <button
+          mat-button
+          class="action-btn-posiciones"
+          (click)="verPosiciones(juego)"
+        >
           <mat-icon>leaderboard</mat-icon>
           Posiciones
         </button>
-        <button mat-icon-button class="action-btn-instrucciones"
-          title="Ver instrucciones" (click)="verInstrucciones(juego)">
+        <button
+          mat-icon-button
+          class="action-btn-instrucciones"
+          title="Ver instrucciones"
+          (click)="verInstrucciones(juego)"
+        >
           <mat-icon>help_outline</mat-icon>
         </button>
-        <button mat-raised-button color="primary" class="action-btn-jugar"
-          (click)="jugar(juego)">
+        <button
+          mat-raised-button
+          color="primary"
+          class="action-btn-jugar"
+          (click)="jugar(juego)"
+        >
           <mat-icon>play_arrow</mat-icon>
           Jugar
         </button>
       </mat-card-actions>
-
     </mat-card>
   </div>
 
@@ -125,9 +144,12 @@
 </div>
 
 <!-- ── Pop-up "Actualizamos los juegos" (se muestra 1 sola vez) ── -->
-<div class="popup-overlay" *ngIf="mostrarPopupJuevosNuevos" (click)="cerrarPopupJuegosNuevos()">
+<div
+  class="popup-overlay"
+  *ngIf="mostrarPopupJuevosNuevos"
+  (click)="cerrarPopupJuegosNuevos()"
+>
   <div class="popup-modal" (click)="$event.stopPropagation()">
-
     <div class="popup-header">
       <span class="popup-emoji">🎮</span>
       <div>
@@ -141,19 +163,30 @@
         <span class="popup-juego-emoji">🔬</span>
         <div>
           <strong>Micronutrientes</strong>
-          <p>Analiza tus vitaminas y minerales diarios. Identifica deficiencias y aprende sobre nutrición.</p>
+          <p>
+            Analiza tus vitaminas y minerales diarios. Identifica deficiencias y
+            aprende sobre nutrición.
+          </p>
         </div>
       </div>
       <div class="popup-juego-item">
         <span class="popup-juego-emoji">🍽️</span>
         <div>
           <strong>Clasifica tus Alimentos</strong>
-          <p>Clasifica alimentos en su grupo correcto. ¡Tienes 15 segundos por ronda!</p>
+          <p>
+            Clasifica alimentos en su grupo correcto. ¡Tienes 15 segundos por
+            ronda!
+          </p>
         </div>
       </div>
     </div>
 
-    <button mat-raised-button color="primary" class="popup-btn" (click)="cerrarPopupJuegosNuevos()">
+    <button
+      mat-raised-button
+      color="primary"
+      class="popup-btn"
+      (click)="cerrarPopupJuegosNuevos()"
+    >
       <mat-icon>sports_esports</mat-icon>
       ¡Empezar a jugar!
     </button>
