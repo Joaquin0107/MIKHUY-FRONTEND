@@ -1073,6 +1073,7 @@ function getInstruccionesPorJuego(nombre: string): {
   imports: [
     CommonModule,
     MatButtonModule,
+    RouterLink,
     MatIconModule,
     MatCardModule,
     MatDialogModule,
