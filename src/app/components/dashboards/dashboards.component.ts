@@ -3344,7 +3344,7 @@ this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
   `,
   styles: [
     `
-      .alerta-dialog {
+    .alerta-dialog {
         font-family: 'Poppins', sans-serif;
       }
 
@@ -3422,6 +3422,7 @@ this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
         background: #f8f9fa;
         border-radius: 8px;
         text-align: center;
+        min-width: 0;
       }
 
       .estado-item .label {
@@ -3434,6 +3435,9 @@ this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
         font-size: 1.1rem;
         font-weight: 600;
         color: #333;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .value.bajo-peso {
@@ -3488,6 +3492,73 @@ this.dashboardData.juegos = this.originalJuegos.filter((juego: any) => {
       @media (max-width: 600px) {
         .estado-grid {
           grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 480px) {
+        h2 {
+          font-size: 1.1rem;
+          gap: 0.5rem;
+        }
+
+        .warning-icon {
+          font-size: 26px;
+          width: 26px;
+          height: 26px;
+        }
+
+        mat-dialog-content {
+          padding: 0 1rem !important;
+          max-height: 55vh;
+        }
+
+        .alerta-item,
+        .recomendacion-box {
+          padding: 0.85rem;
+          gap: 0.75rem;
+        }
+
+        mat-dialog-actions {
+          flex-direction: column;
+          gap: 8px;
+          padding: 1rem !important;
+        }
+
+        mat-dialog-actions button {
+          width: 100%;
+          margin: 0 !important;
+        }
+      }
+      
+      @media (max-width: 380px) {
+        .dialog-header {
+          padding: 0.85rem;
+        }
+
+        .header-icon {
+          width: 36px;
+          height: 36px;
+          min-width: 36px;
+        }
+
+        .header-text h2 {
+          font-size: 0.92rem;
+        }
+
+        .upload-area {
+          padding: 1.25rem 0.75rem;
+        }
+
+        .upload-icon {
+          font-size: 34px;
+          width: 34px;
+          height: 34px;
+        }
+
+        .file-preview {
+          width: 42px;
+          height: 42px;
+          min-width: 42px;
         }
       }
     `,
