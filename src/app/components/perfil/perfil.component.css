@@ -18,6 +18,8 @@
   top: 0;
   z-index: 100;
   gap: 1rem;
+  flex-wrap: wrap;
+  row-gap: 0.75rem;
 }
 
 .header-left {
@@ -25,11 +27,13 @@
   align-items: center;
   gap: 1rem;
   flex: 1;
+  min-width: 0;
 }
 
 .back-btn {
   background: #f5f5f5;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .back-btn:hover {
@@ -43,6 +47,7 @@
   object-fit: contain;
   cursor: pointer;
   transition: transform 0.3s;
+  flex-shrink: 0;
 }
 
 .header-logo:hover {
@@ -52,6 +57,7 @@
 .header-center {
   flex: 2;
   text-align: center;
+  min-width: 0;
 }
 
 .header-center h1 {
@@ -59,6 +65,9 @@
   font-size: 1.8rem;
   font-weight: 700;
   color: #333;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .header-right {
@@ -67,6 +76,8 @@
   gap: 1rem;
   flex: 1;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
 }
 
 .games-btn, .benefits-btn {
@@ -81,6 +92,7 @@
   transition: all 0.3s !important;
   background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%) !important;
   color: white !important;
+  white-space: nowrap;
 }
 
 .games-btn:hover, .benefits-btn:hover {
@@ -144,6 +156,7 @@
 
 .notification-menu {
   min-width: 320px;
+  max-width: calc(100vw - 32px);
 }
 
 .notification-header {
@@ -538,13 +551,28 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 /* Responsive */
-@media (max-width: 968px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+@media (max-width: 1024px) {
+  .perfil-header {
+    flex-wrap: wrap;
   }
 
+  .header-left {
+    flex: 0 0 auto;
+  }
+
+  .header-right {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+  }
+
+  /* El título pasa a su propia fila para no pelear con los botones */
   .header-center {
-    flex: auto;
+    order: 3;
+    flex: 1 1 100%;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .games-btn, .benefits-btn {
@@ -568,6 +596,18 @@ input[type="number"]::-webkit-inner-spin-button {
 
   .header-right {
     gap: 0.5rem;
+  }
+
+  .games-btn, .benefits-btn {
+    height: 42px !important;
+  }
+
+  .points-display {
+    padding: 0.4rem 0.9rem;
+  }
+
+  .points-value {
+    font-size: 1rem;
   }
 
   .form-row {
@@ -615,6 +655,78 @@ input[type="number"]::-webkit-inner-spin-button {
 
   .loading-container {
     min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .perfil-header {
+    padding: 0.75rem;
+  }
+
+  .header-logo {
+    width: 42px;
+    height: 42px;
+  }
+
+  .back-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .header-center h1 {
+    font-size: 1.1rem;
+  }
+
+  .games-btn, .benefits-btn {
+    font-size: 0.75rem !important;
+    padding: 0 0.75rem !important;
+    height: 38px !important;
+  }
+
+  .games-btn mat-icon, .benefits-btn mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 0.25rem;
+  }
+
+  .points-display {
+    padding: 0.35rem 0.75rem;
+  }
+
+  .points-value {
+    font-size: 0.9rem;
+  }
+
+  .points-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .avatar-circle {
+    width: 100px;
+    height: 100px;
+    border-width: 3px;
+  }
+
+  .avatar-circle mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+  }
+
+  .action-buttons-gap button {
+    font-size: 0.82rem !important;
+    padding: 0 1rem !important;
+  }
+
+  .user-info h2 {
+    font-size: 1.25rem;
+  }
+
+  .profile-header {
+    padding: 1.25rem 1rem;
   }
 }
 

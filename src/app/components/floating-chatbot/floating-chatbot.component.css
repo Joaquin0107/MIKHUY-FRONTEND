@@ -64,15 +64,6 @@
   pointer-events: all;
 }
 
-.chat-window.minimized {
-  height: 72px;
-}
-
-.chat-window.minimized .chat-mensajes,
-.chat-window.minimized .chat-input-container {
-  display: none;
-}
-
 /* Header del Chat */
 .chat-header {
   display: flex;
@@ -85,14 +76,11 @@
   flex-shrink: 0;
 }
 
-.chat-window.minimized .chat-header {
-  border-radius: 20px;
-}
-
 .header-info {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
 }
 
 .bot-avatar {
@@ -104,6 +92,7 @@
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(10px);
+  flex-shrink: 0;
 }
 
 .bot-avatar mat-icon {
@@ -113,10 +102,17 @@
   height: 28px;
 }
 
+.header-text {
+  min-width: 0;
+}
+
 .header-text h3 {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .status {
@@ -146,7 +142,8 @@
 
 .header-actions {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.4rem;
+  flex-shrink: 0;
 }
 
 .header-actions button {
@@ -157,7 +154,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(6px);
   transition: all .25s ease-out;
 }
 
@@ -169,52 +165,19 @@
   color: white !important;
 }
 
-/* Minimizar */
-.header-actions button:nth-child(1) {
-  background: #BEE3FF !important;
+/* Refrescar / limpiar chat: tono neutro translúcido sobre el header */
+.header-actions button.refresh-btn {
+  background: rgba(255, 255, 255, 0.25) !important;
 }
 
-/* Restaurar */
-.header-actions button:nth-child(2) {
-  background: #90D0FF !important;
-}
-
-/* Cerrar */
-.header-actions button:nth-child(3) {
+/* Cerrar: siempre rojo, identificable sin ambigüedad */
+.header-actions button.close-header-btn {
   background: #FF6B6B !important;
 }
 
 .header-actions button:hover {
   transform: scale(1.15);
   box-shadow: 0 4px 12px rgba(255,255,255,0.4);
-}
-
-/* --------------------------- */
-/* 🔵 BOTÓN INFERIOR (X CUADRADO → CIRCULAR) */
-/* --------------------------- */
-
-.chat-window .close-btn {
-  position: absolute;
-  bottom: 15px;
-  right: 15px;
-  width: 60px !important;
-  height: 60px !important;
-  border-radius: 50% !important;
-  background: linear-gradient(135deg, #48A3F3 0%, #5bb3ff 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 20px rgba(72,163,243,0.35);
-}
-
-.chat-window .close-btn mat-icon {
-  color: white !important;
-  font-size: 30px !important;
-}
-
-.chat-window .close-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 10px 28px rgba(72,163,243,0.45);
 }
 
 /* Área de Mensajes */
@@ -433,17 +396,24 @@
   box-shadow: 0 0 0 2px rgba(72, 163, 243, 0.2);
 }
 
-.chat-input {
+/* El <textarea matInput> vive fuera de un <mat-form-field>, así que
+   anulamos cualquier estilo residual de Angular Material (borde,
+   outline, line-height) para que no choque con el diseño transparente */
+.chat-input,
+.chat-input.mat-mdc-input-element {
   flex: 1;
-  border: none;
-  outline: none;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
   background: transparent;
   font-family: 'Poppins', sans-serif;
   font-size: 0.95rem;
   resize: none;
   max-height: 100px;
   padding: 0.5rem 0;
+  margin: 0;
   color: #333;
+  line-height: 1.4;
 }
 
 .chat-input:disabled {

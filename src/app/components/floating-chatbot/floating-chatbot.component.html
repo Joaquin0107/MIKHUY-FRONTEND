@@ -1,10 +1,11 @@
 <!-- Botón Flotante -->
-<button 
-  mat-fab 
+<button
+  mat-fab
   class="chatbot-fab"
   [class.chat-open]="isOpen"
   (click)="toggleChat()"
-  matTooltip="Chatbot Nutricional IA">
+  matTooltip="Chatbot Nutricional IA"
+>
   <mat-icon *ngIf="!isOpen">smart_toy</mat-icon>
   <mat-icon *ngIf="isOpen">close</mat-icon>
 </button>
@@ -26,10 +27,20 @@
       </div>
     </div>
     <div class="header-actions">
-      <button mat-icon-button (click)="limpiarChat()" matTooltip="Limpiar chat">
+      <button
+        mat-icon-button
+        class="refresh-btn"
+        (click)="limpiarChat()"
+        matTooltip="Limpiar chat"
+      >
         <mat-icon>refresh</mat-icon>
       </button>
-      <button mat-icon-button (click)="closeChat()" matTooltip="Cerrar">
+      <button
+        mat-icon-button
+        class="close-header-btn"
+        (click)="closeChat()"
+        matTooltip="Cerrar"
+      >
         <mat-icon>close</mat-icon>
       </button>
     </div>
@@ -40,38 +51,42 @@
     <!-- Sugerencias rápidas (solo al inicio) -->
     <div class="sugerencias-rapidas" *ngIf="mensajes.length <= 1">
       <p class="sugerencias-titulo">Preguntas sugeridas:</p>
-      <button 
-        mat-stroked-button 
+      <button
+        mat-stroked-button
         class="sugerencia-btn"
-        (click)="usarSugerencia('¿Qué alimentos son ricos en proteínas?')">
+        (click)="usarSugerencia('¿Qué alimentos son ricos en proteínas?')"
+      >
         🥩 ¿Alimentos ricos en proteínas?
       </button>
-      <button 
-        mat-stroked-button 
+      <button
+        mat-stroked-button
         class="sugerencia-btn"
-        (click)="usarSugerencia('¿Cómo puedo crear una dieta balanceada?')">
+        (click)="usarSugerencia('¿Cómo puedo crear una dieta balanceada?')"
+      >
         🥗 ¿Dieta balanceada?
       </button>
-      <button 
-        mat-stroked-button 
+      <button
+        mat-stroked-button
         class="sugerencia-btn"
-        (click)="usarSugerencia('¿Cuáles son los beneficios de las frutas?')">
+        (click)="usarSugerencia('¿Cuáles son los beneficios de las frutas?')"
+      >
         🍎 ¿Beneficios de las frutas?
       </button>
     </div>
 
     <!-- Mensajes del chat -->
-    <div 
-      *ngFor="let mensaje of mensajes" 
+    <div
+      *ngFor="let mensaje of mensajes"
       class="mensaje"
       [class.mensaje-usuario]="mensaje.esUsuario"
-      [class.mensaje-bot]="!mensaje.esUsuario">
+      [class.mensaje-bot]="!mensaje.esUsuario"
+    >
       <div class="mensaje-avatar" *ngIf="!mensaje.esUsuario">
         <mat-icon>smart_toy</mat-icon>
       </div>
       <div class="mensaje-contenido">
         <p>{{ mensaje.texto }}</p>
-        <span class="timestamp">{{ mensaje.timestamp | date:'short' }}</span>
+        <span class="timestamp">{{ mensaje.timestamp | date: "short" }}</span>
       </div>
       <div class="mensaje-avatar" *ngIf="mensaje.esUsuario">
         <mat-icon>person</mat-icon>
@@ -100,20 +115,22 @@
       <span>{{ error }}</span>
     </div>
     <div class="chat-input-wrapper">
-      <textarea 
+      <textarea
         [(ngModel)]="preguntaActual"
         (keydown)="manejarEnter($event)"
         [disabled]="cargando"
         placeholder="Escribe tu pregunta sobre nutrición..."
         rows="1"
         class="chat-input"
-        matInput></textarea>
-      <button 
-        mat-icon-button 
+        matInput
+      ></textarea>
+      <button
+        mat-icon-button
         color="primary"
         (click)="enviarPregunta()"
         [disabled]="!preguntaActual.trim() || cargando"
-        class="send-btn">
+        class="send-btn"
+      >
         <mat-icon>send</mat-icon>
       </button>
     </div>
