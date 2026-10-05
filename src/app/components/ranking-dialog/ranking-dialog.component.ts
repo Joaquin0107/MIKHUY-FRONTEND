@@ -354,6 +354,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         padding: 1.5rem 2rem;
         text-align: center;
         max-width: 320px;
+        box-sizing: border-box; /* RESPONSIVE */
       }
       .rk-solo-avatar {
         width: 60px;
@@ -371,6 +372,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         font-weight: 700;
         font-size: 1rem;
         color: #333;
+        overflow-wrap: anywhere; /* RESPONSIVE */
       }
       .rk-solo-pts {
         color: #f57c00;
@@ -396,6 +398,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         display: flex;
         flex-direction: column;
         max-height: 90vh;
+        max-height: 90dvh; /* RESPONSIVE: altura real en móviles */
         overflow: hidden;
       }
 
@@ -473,12 +476,13 @@ import { MatBadgeModule } from '@angular/material/badge';
         width: 18px;
         height: 18px;
         color: #42a5f5;
+        flex-shrink: 0; /* RESPONSIVE */
       }
 
       /* ── Podio ───────────────────────────────────────────────────────────── */
       .rk-podium {
         display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr)); /* RESPONSIVE: antes 1fr 1fr 1fr */
         gap: 10px;
         padding: 1.25rem 1.5rem;
         background: #fafafa;
@@ -619,7 +623,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 
       .rk-item {
         display: grid;
-        grid-template-columns: 44px 1fr auto;
+        grid-template-columns: 44px minmax(0, 1fr) auto; /* RESPONSIVE: antes 44px 1fr auto */
         align-items: center;
         gap: 12px;
         padding: 11px 14px;
@@ -628,9 +632,14 @@ import { MatBadgeModule } from '@angular/material/badge';
         background: #fff;
         transition: transform 0.15s;
       }
-      .rk-item:hover {
-        transform: translateX(3px);
+
+      /* RESPONSIVE: hover solo en dispositivos con mouse */
+      @media (hover: hover) {
+        .rk-item:hover {
+          transform: translateX(3px);
+        }
       }
+
       .rk-item.me {
         border: 2px solid #42a5f5;
         background: #e3f2fd;
@@ -654,6 +663,11 @@ import { MatBadgeModule } from '@angular/material/badge';
         color: #fff;
       }
 
+      /* RESPONSIVE: sin min-width: 0 un nombre largo empuja los puntos fuera */
+      .rk-info {
+        min-width: 0;
+      }
+
       .rk-info-name {
         font-size: 0.9rem;
         font-weight: 600;
@@ -662,6 +676,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         align-items: center;
         gap: 6px;
         min-width: 0;
+        overflow-wrap: anywhere; /* RESPONSIVE */
       }
 
       .me-tag {
@@ -751,7 +766,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 
       .rk-mypos-banner {
         display: grid;
-        grid-template-columns: auto 1fr auto;
+        grid-template-columns: auto minmax(0, 1fr) auto; /* RESPONSIVE: antes auto 1fr auto */
         align-items: center;
         gap: 14px;
         padding: 13px 16px;
@@ -776,6 +791,11 @@ import { MatBadgeModule } from '@angular/material/badge';
         color: #fff;
       }
 
+      /* RESPONSIVE */
+      .mypos-info {
+        min-width: 0;
+      }
+
       .mypos-label {
         font-size: 10px;
         color: #1565c0;
@@ -791,6 +811,8 @@ import { MatBadgeModule } from '@angular/material/badge';
         display: flex;
         align-items: center;
         gap: 6px;
+        flex-wrap: wrap;         /* RESPONSIVE */
+        overflow-wrap: anywhere; /* RESPONSIVE */
       }
       .mypos-meta {
         font-size: 12px;
@@ -976,14 +998,22 @@ import { MatBadgeModule } from '@angular/material/badge';
 
       /* ── Responsive ──────────────────────────────────────────────────────── */
       @media (max-width: 600px) {
+        /* RESPONSIVE: todo el diálogo hace scroll si no cabe en pantalla,
+           así el footer y el gráfico nunca quedan cortados */
         .rk-wrap {
           width: 100%;
+          max-height: 90vh;
+          max-height: 90dvh;
+          overflow-x: hidden;
+          overflow-y: auto;
+          overscroll-behavior: contain;
         }
 
-        /* El padding de 3.5rem a cada lado era fijo y aplastaba el header
-           en móvil — ahora se reduce junto con el ícono y los textos */
+        /* RESPONSIVE: margin 0. El margen negativo de -24px sacaba el header
+           del diálogo y el overflow lo recortaba (ícono y botón cerrar) */
         .rk-header {
-          padding: 18px 1.25rem;
+          margin: 0;
+          padding: 18px 1rem;
           gap: 10px;
         }
 
@@ -1004,6 +1034,20 @@ import { MatBadgeModule } from '@angular/material/badge';
 
         .rk-header-text p {
           font-size: 0.8rem;
+        }
+
+        .rk-stats {
+          padding: 8px 1rem;
+          font-size: 0.82rem;
+        }
+
+        .rk-solo {
+          padding: 1rem;
+        }
+
+        .rk-solo-card {
+          width: 100%;
+          padding: 1.25rem 1rem;
         }
 
         .rk-podium {
@@ -1036,9 +1080,46 @@ import { MatBadgeModule } from '@angular/material/badge';
           font-size: 19px;
         }
 
+        /* RESPONSIVE: la lista mantiene su altura y el scroll externo
+           se encarga del resto */
+        .rk-scroll-area {
+          padding: 0.75rem 1rem;
+          max-height: 200px;
+          flex-shrink: 0;
+        }
+
         .rk-item {
+          grid-template-columns: 40px minmax(0, 1fr) auto;
           padding: 10px 12px;
           gap: 10px;
+        }
+
+        .rk-pos {
+          width: 34px;
+          height: 34px;
+          font-size: 11px;
+        }
+
+        .rk-info-name {
+          font-size: 0.85rem;
+        }
+
+        .rk-pts-num {
+          font-size: 1.05rem;
+        }
+
+        .empty-state {
+          padding: 2rem 1rem;
+        }
+
+        .empty-state mat-icon {
+          font-size: 56px;
+          width: 56px;
+          height: 56px;
+        }
+
+        .rk-sticky {
+          padding: 8px 1rem;
         }
 
         .rk-mypos-banner {
@@ -1059,19 +1140,71 @@ import { MatBadgeModule } from '@angular/material/badge';
           font-size: 1.2rem;
         }
 
-        /* Los botones del footer ya no se aprietan en una sola fila:
-           pasan a ancho completo, uno debajo del otro */
+        /* RESPONSIVE: el footer queda fijo abajo mientras se hace scroll.
+           "Ver mi posición" y "Mi Evolución" van en una fila y
+           "Entendido" ocupa una fila completa debajo */
         .rk-footer {
-          padding: 12px 1rem;
+          order: 2;
+          position: sticky;
+          bottom: 0;
+          z-index: 2;
+          padding: 10px 1rem;
+          padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+          gap: 8px;
         }
 
         .rk-footer button {
           min-width: 0;
-          flex: 1 1 100%;
+          flex: 1 1 calc(50% - 4px);
+          padding: 0 10px;
+          font-size: 0.82rem;
         }
 
+        .rk-footer button:last-child {
+          flex-basis: 100%;
+        }
+
+        /* RESPONSIVE: el gráfico se muestra encima del footer, no debajo,
+           para que no quede fuera de la vista */
         .rk-evolucion {
+          order: 1;
           padding: 14px 12px 18px;
+        }
+
+        .rk-line-chart {
+          max-width: 100%;
+        }
+
+        /* RESPONSIVE: el SVG se escala ~0.6 en celular, así que se agrandan
+           textos, puntos y línea para que se vean con tamaño normal */
+        .ev-line {
+          stroke-width: 3.5;
+        }
+
+        .ev-point {
+          r: 7px;
+          stroke-width: 2.5;
+        }
+
+        .ev-point-best {
+          r: 9px;
+          stroke-width: 3;
+        }
+
+        .ev-pos-label {
+          font-size: 15px;
+        }
+
+        .ev-week-label {
+          font-size: 14px;
+        }
+
+        .ev-axis-label {
+          font-size: 13px;
+        }
+
+        .rk-evolucion-legend {
+          gap: 8px 14px;
         }
       }
 
@@ -1095,12 +1228,13 @@ import { MatBadgeModule } from '@angular/material/badge';
         }
 
         .rk-header {
-          padding: 16px 1rem;
+          padding: 16px 0.75rem;
         }
 
         .rk-footer button {
-          font-size: 0.82rem;
+          font-size: 0.78rem;
           height: 38px;
+          padding: 0 8px;
         }
       }
     `,
