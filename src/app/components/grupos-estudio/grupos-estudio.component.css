@@ -32,9 +32,13 @@
   gap: 10px;
   margin: 0;
   flex: 1;
+  min-width: 0;
   font-size: 21px;
   font-weight: 700;
   color: #1a1a2e;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .grupos-title mat-icon {
@@ -42,6 +46,7 @@
   width: 28px;
   height: 28px;
   color: #1976d2;
+  flex-shrink: 0;
 }
 
 .btn-crear {
@@ -51,6 +56,7 @@
   border-radius: 10px !important;
   padding: 0 20px !important;
   height: 42px !important;
+  flex-shrink: 0;
 }
 
 /* ── Loading ─────────────────────────────────────────────────────────── */
@@ -71,7 +77,9 @@
 /* ── Vista de Lista: Grid de Grupos ──────────────────────────────────── */
 .grupos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  /* min(340px, 100%) evita que la columna sea más ancha que la pantalla:
+     en vez de desbordar con scroll horizontal, se reduce a 1 columna sola */
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
   gap: 24px;
   padding: 0 32px;
   max-width: 1300px;
@@ -122,6 +130,7 @@
   display: flex;
   flex-direction: column;
   transition: transform 0.3s, box-shadow 0.3s;
+  min-width: 0;
 }
 
 .grupo-card:hover {
@@ -146,14 +155,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .grupo-card-icon mat-icon {
   color: white;
 }
 
-.grupo-card-title-wrap flex {
-  flex-direction: column;
+.grupo-card-title-wrap {
+  min-width: 0;
 }
 
 .grupo-card-title-wrap h3 {
@@ -161,6 +171,9 @@
   font-size: 18px;
   font-weight: 700;
   letter-spacing: -0.3px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .grupo-card-title-wrap span {
@@ -190,11 +203,18 @@
   color: #4a5568;
 }
 
+.mini-stat span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .mini-stat mat-icon {
   font-size: 18px;
   width: 18px;
   height: 18px;
   color: #718096;
+  flex-shrink: 0;
 }
 
 .grupo-miembros-preview {
@@ -229,6 +249,7 @@
   border-color: #1976d2 !important;
   font-weight: 600 !important;
   font-size: 13px !important;
+  flex-shrink: 0;
 }
 
 .btn-ver mat-icon {
@@ -257,17 +278,25 @@
   margin-bottom: 8px;
 }
 
+.title-section {
+  min-width: 0;
+}
+
 .title-section h2 {
   font-size: 24px;
   font-weight: 700;
   color: #1a1a2e;
   margin: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .acciones-detalle {
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
+  flex-shrink: 0;
 }
 
 .btn-pdf {
@@ -280,6 +309,7 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  white-space: nowrap;
 }
 
 .btn-pdf:hover {
@@ -289,6 +319,7 @@
 .btn-editar {
   border-radius: 10px !important;
   height: 40px !important;
+  white-space: nowrap;
 }
 
 .button-spinner {
@@ -303,7 +334,7 @@
 /* Grid Superior de Métricas (4 Columnas Horizontales Fijas) */
 .detalle-stats-grid {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important; 
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)) !important;
   gap: 20px !important;
   width: 100% !important;
   margin-bottom: 4px;
@@ -319,6 +350,7 @@
   border-radius: 14px !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
   border: 1px solid #f0f0f0 !important;
+  min-width: 0;
 }
 
 .stat-icon-wrap {
@@ -335,6 +367,7 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  min-width: 0;
 }
 
 .detalle-stat-card h3 {
@@ -389,6 +422,7 @@
   background: #fdfdfd;
   border: 1px solid #f5f5f5;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 .ranking-pos {
@@ -414,6 +448,7 @@
 
 .ranking-info {
   flex: 1;
+  min-width: 160px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -422,6 +457,9 @@
 .ranking-info strong {
   font-size: 14.5px;
   color: #2c3e50;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .ranking-bar-wrap {
@@ -440,7 +478,8 @@
 
 .ranking-stats {
   display: flex;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 10px 20px;
   font-size: 13px;
   color: #7f8c8d;
   font-weight: 500;
@@ -464,6 +503,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .comparativa-card mat-card-title {
@@ -508,6 +549,13 @@
   font-weight: 600;
   color: #2c3e50;
   flex-shrink: 0;
+  min-width: 0;
+}
+
+.comparativa-nombre span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .comparativa-nombre mat-icon {
@@ -515,6 +563,7 @@
   font-size: 20px;
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
 }
 
 .comparativa-barra-wrap {
@@ -543,6 +592,7 @@
   font-size: 13px;
   color: #555;
   flex-shrink: 0;
+  gap: 8px;
 }
 
 .comparativa-info span:first-child {
@@ -556,6 +606,7 @@
   border-radius: 4px;
   font-size: 11.5px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* ── Calendario de Actividad ─────────────────────────────────────────── */
@@ -570,6 +621,8 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .calendario-card mat-card-title {
@@ -691,6 +744,7 @@
   font-size: 12px;
   color: #666;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 .leyenda-item {
@@ -721,6 +775,7 @@
   margin-bottom: 12px;
   font-size: 14px;
   color: #333;
+  flex-wrap: wrap;
 }
 
 .cal-detalle-header mat-icon { color: #1976d2; }
@@ -744,6 +799,8 @@
   border-radius: 8px;
   margin-bottom: 8px;
   border-left: 3px solid #1976d2;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .cal-sesion-alumno {
@@ -753,10 +810,17 @@
   font-size: 13px;
   font-weight: 600;
   color: #333;
+  min-width: 0;
 }
 
-.cal-sesion-alumno mat-icon { font-size: 16px; width: 16px; height: 16px; color: #1976d2; }
-.cal-sesion-info { display: flex; align-items: center; gap: 10px; }
+.cal-sesion-alumno span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cal-sesion-alumno mat-icon { font-size: 16px; width: 16px; height: 16px; color: #1976d2; flex-shrink: 0; }
+.cal-sesion-info { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
 .cal-juego-badge {
   background: #e8f5e9;
@@ -765,9 +829,10 @@
   border-radius: 10px;
   font-size: 11px;
   font-weight: 600;
+  white-space: nowrap;
 }
 
-.cal-pts { font-size: 13px; font-weight: 700; color: #f9a825; }
+.cal-pts { font-size: 13px; font-weight: 700; color: #f9a825; white-space: nowrap; }
 .cal-check { font-size: 18px !important; width: 18px !important; height: 18px !important; }
 
 /* ── Modales (Overlay y Estructura del Formulario) ───────────────────── */
@@ -885,6 +950,7 @@
   font-size: 20px;
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
 }
 
 .estudiante-option.seleccionado {
@@ -903,11 +969,15 @@
 .est-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .est-info strong {
   font-size: 13.5px;
   color: #2d3748;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .est-info span {
@@ -976,6 +1046,11 @@
   .comparativa-info {
     width: 100% !important;
   }
+
+  /* Puntaje + grupo/stats se apilan en vez de competir por espacio */
+  .ranking-stats {
+    width: 100%;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -990,6 +1065,32 @@
   .btn-crear {
     width: 100% !important;
     order: 3; /* Envía el botón abajo en el header si es móvil */
+  }
+
+  .grupos-grid {
+    gap: 16px;
+  }
+
+  .title-section h2 {
+    font-size: 20px;
+  }
+
+  .detalle-stat-card h3 {
+    max-width: 130px;
+  }
+
+  .ranking-item {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .ranking-pos {
+    width: 36px;
+    height: 36px;
+  }
+
+  .cal-sesion-item {
+    align-items: flex-start;
   }
 
   /* Las celdas del calendario reducen su tamaño para no salirse de la pantalla */

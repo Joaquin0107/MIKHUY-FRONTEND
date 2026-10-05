@@ -372,12 +372,14 @@
   }
 }
 
-/* Responsive */
-@media (max-width: 968px) {
-  .header-center {
-    flex: auto;
-  }
+/* ════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   El botón DASHBOARDS ya NO se oculta en móvil: a partir de 768px el
+   header pasa a 2 filas (logo + menú arriba, botón abajo centrado) para
+   que siga siendo visible y ordenado.
+════════════════════════════════════════════════════════════════════════ */
 
+@media (max-width: 968px) {
   .nav-btn {
     padding: 0 1.5rem !important;
     font-size: 0.9rem !important;
@@ -396,13 +398,54 @@
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .header {
-    padding: 1rem;
+    flex-wrap: wrap;
+    row-gap: 0.75rem;
+    padding: 0.85rem 1.25rem;
   }
 
+  .header-left {
+    flex: 0 0 auto;
+  }
+
+  .header-right {
+    flex: 1 1 auto;
+    justify-content: flex-end;
+  }
+
+  /* El botón pasa a su propia fila, centrado, en vez de desaparecer */
   .header-center {
-    display: none;
+    order: 3;
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+
+  .nav-btn {
+    width: 100%;
+    max-width: 280px;
+    height: 44px !important;
+    padding: 0 1rem !important;
+    font-size: 0.85rem !important;
+  }
+
+  .notification-menu {
+    max-width: calc(100vw - 32px);
+  }
+}
+
+@media (max-width: 576px) {
+  .header {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  .nav-btn {
+    font-size: 0.8rem !important;
   }
 
   .main-content {
@@ -415,5 +458,27 @@
 
   .main-description {
     font-size: 1rem;
+    text-align: left;
+  }
+
+  .card-description {
+    text-align: left;
+  }
+}
+
+@media (max-width: 420px) {
+  .card-icon {
+    width: 96px;
+    height: 96px;
+  }
+
+  .card-icon mat-icon {
+    font-size: 38px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .icon-label {
+    font-size: 0.65rem;
   }
 }

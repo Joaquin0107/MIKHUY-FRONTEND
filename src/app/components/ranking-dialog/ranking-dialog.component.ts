@@ -430,6 +430,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 
       .rk-header-text {
         flex: 1;
+        min-width: 0;
       }
       .rk-header-text h2 {
         margin: 0;
@@ -441,10 +442,14 @@ import { MatBadgeModule } from '@angular/material/badge';
         margin: 2px 0 0;
         color: rgba(255, 255, 255, 0.9);
         font-size: 0.88rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .rk-close {
         color: white !important;
+        flex-shrink: 0;
       }
       .rk-close:hover {
         background: rgba(255, 255, 255, 0.15) !important;
@@ -492,6 +497,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         border: 1px solid #e0e0e0;
         background: #fff;
         position: relative;
+        min-width: 0;
       }
 
       .pod-1 {
@@ -514,8 +520,6 @@ import { MatBadgeModule } from '@angular/material/badge';
         display: flex;
         justify-content: center;
       }
-      .pod-1 .pod-trophy {
-      }
 
       .pod-avatar {
         width: 40px;
@@ -526,6 +530,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         justify-content: center;
         font-size: 14px;
         font-weight: 600;
+        flex-shrink: 0;
       }
       .pod-1 .pod-avatar {
         width: 52px;
@@ -550,6 +555,10 @@ import { MatBadgeModule } from '@angular/material/badge';
         text-align: center;
         max-width: 110px;
         line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
       }
       .pod-1 .pod-name {
         font-size: 12px;
@@ -652,6 +661,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         display: flex;
         align-items: center;
         gap: 6px;
+        min-width: 0;
       }
 
       .me-tag {
@@ -671,6 +681,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         font-size: 0.78rem;
         color: #888;
         margin-top: 2px;
+        flex-wrap: wrap;
       }
       .rk-info-sub mat-icon {
         font-size: 14px;
@@ -683,6 +694,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 
       .rk-pts-col {
         text-align: right;
+        flex-shrink: 0;
       }
       .rk-pts-num {
         font-size: 1.2rem;
@@ -787,6 +799,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         align-items: center;
         gap: 4px;
         margin-top: 3px;
+        flex-wrap: wrap;
       }
       .mypos-meta mat-icon {
         font-size: 14px;
@@ -796,6 +809,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 
       .mypos-pts {
         text-align: right;
+        flex-shrink: 0;
       }
       .mypos-pts-num {
         font-size: 1.4rem;
@@ -819,6 +833,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         justify-content: center;
         gap: 12px;
         background: #fff;
+        flex-wrap: wrap;
       }
 
       .rk-footer button {
@@ -827,24 +842,6 @@ import { MatBadgeModule } from '@angular/material/badge';
         border-radius: 8px !important;
         font-weight: 600;
         font-size: 0.88rem;
-      }
-
-      /* ── Responsive ──────────────────────────────────────────────────────── */
-      @media (max-width: 600px) {
-        .rk-wrap {
-          width: 100%;
-        }
-        .rk-podium {
-          padding: 1rem;
-          gap: 8px;
-        }
-        .rk-item {
-          padding: 10px 12px;
-          gap: 10px;
-        }
-        .rk-footer button {
-          min-width: 120px;
-        }
       }
 
       /* ── Evolución semanal CP118 ──────────────────────────────────────────── */
@@ -860,6 +857,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         align-items: center;
         gap: 8px;
         margin-bottom: 12px;
+        flex-wrap: wrap;
       }
 
       .rk-evolucion-header mat-icon {
@@ -945,6 +943,7 @@ import { MatBadgeModule } from '@angular/material/badge';
         gap: 20px;
         justify-content: center;
         margin-top: 10px;
+        flex-wrap: wrap;
       }
 
       .ev-legend-item {
@@ -973,6 +972,136 @@ import { MatBadgeModule } from '@angular/material/badge';
         border: 2px solid white;
         box-shadow: 0 0 0 1.5px #1976d2;
         flex-shrink: 0;
+      }
+
+      /* ── Responsive ──────────────────────────────────────────────────────── */
+      @media (max-width: 600px) {
+        .rk-wrap {
+          width: 100%;
+        }
+
+        /* El padding de 3.5rem a cada lado era fijo y aplastaba el header
+           en móvil — ahora se reduce junto con el ícono y los textos */
+        .rk-header {
+          padding: 18px 1.25rem;
+          gap: 10px;
+        }
+
+        .rk-header-icon {
+          width: 40px;
+          height: 40px;
+        }
+
+        .rk-header-icon mat-icon {
+          font-size: 22px;
+          width: 22px;
+          height: 22px;
+        }
+
+        .rk-header-text h2 {
+          font-size: 1.05rem;
+        }
+
+        .rk-header-text p {
+          font-size: 0.8rem;
+        }
+
+        .rk-podium {
+          padding: 1rem;
+          gap: 8px;
+        }
+
+        .pod-avatar {
+          width: 34px;
+          height: 34px;
+          font-size: 12px;
+        }
+
+        .pod-1 .pod-avatar {
+          width: 44px;
+          height: 44px;
+          font-size: 14px;
+        }
+
+        .pod-name {
+          font-size: 10px;
+          max-width: 92px;
+        }
+
+        .pod-pts {
+          font-size: 15px;
+        }
+
+        .pod-1 .pod-pts {
+          font-size: 19px;
+        }
+
+        .rk-item {
+          padding: 10px 12px;
+          gap: 10px;
+        }
+
+        .rk-mypos-banner {
+          gap: 10px;
+          padding: 10px 12px;
+        }
+
+        .mypos-circle {
+          width: 40px;
+          height: 40px;
+        }
+
+        .mypos-name {
+          font-size: 13px;
+        }
+
+        .mypos-pts-num {
+          font-size: 1.2rem;
+        }
+
+        /* Los botones del footer ya no se aprietan en una sola fila:
+           pasan a ancho completo, uno debajo del otro */
+        .rk-footer {
+          padding: 12px 1rem;
+        }
+
+        .rk-footer button {
+          min-width: 0;
+          flex: 1 1 100%;
+        }
+
+        .rk-evolucion {
+          padding: 14px 12px 18px;
+        }
+      }
+
+      @media (max-width: 380px) {
+        .rk-podium {
+          gap: 4px;
+          padding: 0.75rem 0.5rem;
+        }
+
+        .pod {
+          padding: 8px 4px;
+        }
+
+        .pod-name {
+          max-width: 74px;
+          font-size: 9px;
+        }
+
+        .pod-grade {
+          font-size: 9px;
+        }
+
+        .rk-header {
+          padding: 16px 1rem;
+        }
+
+        .rk-footer button {
+          font-size: 0.82rem;
+          height: 38px;
+        }
       }
     `,
   ],
